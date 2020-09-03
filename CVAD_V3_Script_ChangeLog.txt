@@ -1,0 +1,122 @@
+#webster@carlwebster.com
+#@carlwebster on Twitter
+#http://www.CarlWebster.com
+#Original script created on October 20, 2013
+#started updating for CVAD version 2006 on August 10, 2020
+
+# This script is based on the 2.36 script
+#
+#Version 3.00 3-Sep-2020
+#	Added a ValidateSet to the Sections parameter. You can use -Section, press tab, and tab through all the section options. (Credit to Guy Leech)
+#	Added the following missing Administrator Role permissions:
+#		Administrators
+#			Manage Administrator Custom Roles
+#			Manage Administrator Scopes
+#			Manage ServiceSettings
+#		Application Groups
+#			Add Application Group to Scope
+#			Add Application to Application Group
+#			Add Delivery Group to Application Group
+#			Change Tags on Application Group
+#			Change users assigned to an application (Application Group)
+#			Create Application (Application Group)
+#			Create Application Folder (Application Group)
+#			Create Application Group
+#			Delete Application (Application Group)
+#			Delete Application Group
+#			Edit Application Folder (Application Group)
+#			Edit Application Group Properties
+#			Edit Application Properties (Application Group)
+#			Edit Application tags (Application Group)
+#			Edit User Assignment on Application Group
+#			Move Application Folder (Application Group)
+#			Remove Application Folder (Application Group)
+#			Remove Application from Application Group
+#			Remove Application Group from Scope
+#			Remove Delivery Group from Application Group
+#			View Application Groups
+#			View Applications (Application Group)
+#		App-V
+#			Add App-V Application Libraries and Packages
+#			Create App-V Isolation Group
+#			Read App-V Application Libraries and Packages
+#			Remove App-V Application Libraries and Packages
+#			Remove App-V Isolation Groups
+#		Controllers
+#			Edit Controller
+#		Delivery Groups
+#			Add Application Group to Delivery Group
+#			Add Webhooks to Delivery Group
+#			Edit Delivery Group machine tags
+#			Edit machine tags
+#			Remove Application Group from Delivery Group
+#		Director
+#			Create\Edit\Delete Alert Policies
+#			Create\Edit\Remove Alert Email Server Configuration
+#			Create\Edit\Remove Cloud Analytics Configurations
+#			Create\Edit\Remove Probe Configurations
+#			Dismiss Alerts
+#			Edit Disk metrics related Broker machine command properties
+#			Edit GPO Data related Broker machine command properties
+#			Edit Gpu metrics related Broker machine command properties
+#			Edit HDX Protocol related Broker machine command properties
+#			Edit Profile Load Data related Broker machine command properties
+#			Edit Startup related Broker machine command properties
+#			View Alert Policies
+#			View Alerts
+#			View Applications page
+#			View Configurations page
+#		Machine Catalogs
+#			Edit Catalog tags
+#			Edit Catalog machine tags
+#		Other Permissions
+#			Create Tags
+#			Delete Tags
+#			Edit Tags
+#			Manage Orchestration Service REST API
+#			Manage Trust Service Keys
+#			Read Tags
+#		Zones
+#			Create Zone
+#			Delete Zone
+#			Edit Zone
+#			Manage Citrix Cloud Connector
+#	Allow multiple output formats. You can now select any combination of HTML, MSWord, PDF, or Text
+#	Change Policy Filter from Citrix CloudBridge to NetScaler SD-WAN
+#	Change some Write-Error to Write-Warning and changed some Write-Warning to Write-Host
+#		Added Function OutputNotice
+#	Change the beginning of the file names from XAXDV2 to CVAD for the error log, script info, and transcript logging files.
+#	Change the default output to HTML
+#	Change the Splats XDParams1 and XDParams2 to CVADParams1 and CVADParams2
+#	Change the variable XDSiteName to CVADSiteName
+#	Change the variable XDSiteVersion to CVADSiteVersion
+#	Change the variables XDSite1 and XDSite2 to CVADSite1 and CVADSite2
+#	Cleanup HTML, MSWord, PDF, and text output
+#	CVAD 2006 is the minimum version supported
+#	Fixed an issue for RemotePC machine catalogs based on OUs. (Thanks to Rene Bigler)
+#		Added all OUs defined
+#		Added Allow SubOUs by each defined OU
+#		Added machines excluded from the catalog
+#		Added machines included in the catalog
+#	If PDF is selected for Output and Microsoft Word is not installed, update the error message to state that PDF uses Word's SaveAs PDF function
+#	Implemented a lot of fixes for bugs found by Guy Leech
+#	PowerShell 5 is the minimum version supported since CVAD 2006 DDC requires a minimum of Windows Server 2016 which ships with PowerShell V5
+#	PowerShell 5 is the minimum version supported since CVAD 2006 Studio requires a minimum of Windows Server 2016 or Windows 10 which ship with PowerShell V5
+#	Reformatted most Write-Error message to show better in the console
+#	Removed all invalid links from comments
+#	Remove all checks for *AddedServiceCapability
+#	Remove all checks for determining what version supports what feature
+#	Remove all code and references to AppDisk
+#	Remove all code and references to Connection Leasing
+#	Remove all code and references to Personal vDisk/PvD
+#	Remove all code related to loading the old Snapins and change to importing all the new modules
+#	Remove all comments referencing V2.xx
+#	Remove all comments referencing versions 7.xx
+#	Remove all comments referencing versions 18xx, 19xx, and 2003
+#	Remove all policy settings that do not apply to CVAD 2006
+#	Remove all references to Desktop OS and Server OS
+#	Remove existing Script ParameterSets and leave only one for "WordPDF"
+#	Remove Citrix module Citrix.EnvTest.Admin as it is not needed for this script
+#	Replaced, where appropriate, XenApp and XenDesktop with CVAD, or Virtual Apps, or Virtual Desktops
+#	Updated the help text and all 46 examples
+#	Updated the link for the ReadMe file
