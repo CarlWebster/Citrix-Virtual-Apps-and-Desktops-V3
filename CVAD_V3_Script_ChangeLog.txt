@@ -5,7 +5,30 @@
 #started updating for CVAD version 2006 on August 10, 2020
 
 # This script is based on the 2.36 script
-#
+
+#Version 3.01
+#	Add a switch statement for the machine's Power State
+#	Change checking some String variables from just $Null to [String]::IsNullOrEmpty.
+#		Some cmdlet's string properties are sometimes Null and sometimes an empty string
+#	Fixed an issue with "Connections meeting any of the following (Access Gateway) filters".
+#		If you selected HTML and any other output format in the same run, only the HTML output had any Access Gateway data.
+#	Fixed issue with PowerShell 5.1.x and empty Hashtables for Ian Brighton's Word Table functions
+#		PoSH 3, 4, and 5.0 had no problem with an empty hashtable and would create a blank Word table with only column headings
+#		For many tables, before passing the hashtable to Ian's function, test if the hashtable is empty
+#		If it is, create a dummy row of data for the hashtable
+#		For example, a RemotePC catalog based on OU that contains no machines, or Applications with no administrators. 
+#		Instead of having a missing table, the table will now have a row that says "None found"
+#	Fixed issue with the array used for Appendix A and the CSV file when selecting multiple output formats.
+#		If HTML and Text and MSWord were selected, Appendix A and the CSV file contained three duplicate entries
+#		Changed from using only one array to three. Changed from using $Script:ALLVDARegistryItems to
+#			$Script:WordALLVDARegistryItems
+#			$Script:TextALLVDARegistryItems
+#			$Script:HTMLALLVDARegistryItems
+#	Fixed output issues with Power Management settings
+#	Fixed several more array out of bounds issues when accessing element 0 when the array was empty
+#	When VDARegistryKeys is used, now test the RemoteRegistry service for its status.
+#		If the service is not running, add that information into the various *VDARegistryItems arrays
+
 #Version 3.00 3-Sep-2020
 #	Added a ValidateSet to the Sections parameter. You can use -Section, press tab, and tab through all the section options. (Credit to Guy Leech)
 #	Added the following missing Administrator Role permissions:
