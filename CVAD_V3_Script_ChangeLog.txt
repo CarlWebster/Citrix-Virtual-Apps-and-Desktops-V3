@@ -7,9 +7,11 @@
 # This script is based on the 2.36 script
 
 #Version 3.01
-#	Add a switch statement for the machine's Power State
+#	Add a switch statement for the machine/desktop/server Power State
+#	Change all Write-Verbose $(Get-Date) to add -Format G to put the dates in the user's locale
 #	Change checking some String variables from just $Null to [String]::IsNullOrEmpty.
 #		Some cmdlet's string properties are sometimes Null and sometimes an empty string
+#	Change checking the way a machine is online or offline.
 #	Fixed an issue with "Connections meeting any of the following (Access Gateway) filters".
 #		If you selected HTML and any other output format in the same run, only the HTML output had any Access Gateway data.
 #	Fixed issue with PowerShell 5.1.x and empty Hashtables for Ian Brighton's Word Table functions
@@ -26,6 +28,13 @@
 #			$Script:HTMLALLVDARegistryItems
 #	Fixed output issues with Power Management settings
 #	Fixed several more array out of bounds issues when accessing element 0 when the array was empty
+#	For checking the registry on a Delivery Controller for installed Citrix components, test the RemoteRegistry service for its status.
+#		If the service is not running, set $GotCtxComponents to $False
+#	For the three datastore databases, check if the various variable are null or empty and if so, change the value to "Unable to determine"
+#	For Zones, add MemType into the Sort-Object for Site View and Zone View
+#	Since the RegistrationState property is an enum, add .ToString() to the machine/desktop/server variable so HTML output is correct
+#	When getting the provisioning scheme data for a machine, only process machines with a provisioning type of MCS
+#		There is no provisioning scheme data for manually or PVS provisioned machines
 #	When VDARegistryKeys is used, now test the RemoteRegistry service for its status.
 #		If the service is not running, add that information into the various *VDARegistryItems arrays
 
