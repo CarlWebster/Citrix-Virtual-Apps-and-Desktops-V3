@@ -1007,7 +1007,7 @@
 	NAME: CVAD_Inventory_V3.ps1
 	VERSION: 3.01
 	AUTHOR: Carl Webster
-	LASTEDIT: September 9, 2020
+	LASTEDIT: September 10, 2020
 #>
 
 #endregion
@@ -1196,12 +1196,13 @@ Param(
 
 # This script is based on the 2.36 script
 #
-#Version 3.01
+#Version 3.01 11-Sep-2020
 #	Add a switch statement for the machine/desktop/server Power State
 #	Change all Write-Verbose $(Get-Date) to add -Format G to put the dates in the user's locale
 #	Change checking some String variables from just $Null to [String]::IsNullOrEmpty.
 #		Some cmdlet's string properties are sometimes Null and sometimes an empty string
 #	Change checking the way a machine is online or offline.
+#	Change some cmdlets to sort on the left of the pipeline using the cmdlet's -SortBy option
 #	Fixed an issue with "Connections meeting any of the following (Access Gateway) filters".
 #		If you selected HTML and any other output format in the same run, only the HTML output had any Access Gateway data.
 #	Fixed issue with PowerShell 5.1.x and empty Hashtables for Ian Brighton's Word Table functions
@@ -1218,6 +1219,7 @@ Param(
 #			$Script:HTMLALLVDARegistryItems
 #	Fixed output issues with Power Management settings
 #	Fixed several more array out of bounds issues when accessing element 0 when the array was empty
+#	For Appendix A, Text output, change the column heading "DDC Name" to "Computer Name" to match the HTML and MSWord/PDF output
 #	For checking the registry on a Delivery Controller for installed Citrix components, test the RemoteRegistry service for its status.
 #		If the service is not running, set $GotCtxComponents to $False
 #	For the three datastore databases, check if the various variable are null or empty and if so, change the value to "Unable to determine"
@@ -1350,7 +1352,7 @@ Set-StrictMode -Version Latest
 #force  on
 $PSDefaultParameterValues = @{"*:Verbose"=$True}
 $SaveEAPreference = $ErrorActionPreference
-#$ErrorActionPreference = 'SilentlyContinue'
+$ErrorActionPreference = 'SilentlyContinue'
 
 If($Null -eq $HTML)
 {
@@ -5918,7 +5920,7 @@ Function GetAdmins
 			Where-Object {$_.Permissions | Where-Object { $permissions -contains $_ }} | `
 			Select-Object -ExpandProperty Id
 			#this is an unscoped object type as $admins is done differently than the others
-			$Admins = Get-AdminAdministrator @CVADParams2 | `
+			$Admins = Get-AdminAdministrator @CVADParams2 -SortBy Name | `
 			Where-Object {$_.Rights | Where-Object {$roles -contains $_.RoleId}}
 		}
 		"Catalog" {
@@ -5929,7 +5931,7 @@ Function GetAdmins
 			$roles = Get-AdminRole @CVADParams2 | `
 			Where-Object {$_.Permissions | Where-Object { $permissions -contains $_ }} | `
 			Select-Object -ExpandProperty Id
-			$Admins = Get-AdminAdministrator @CVADParams2 | `
+			$Admins = Get-AdminAdministrator @CVADParams2 -SortBy Name | `
 			Where-Object {$_.Rights | Where-Object {($_.ScopeId -eq [guid]::Empty -or $scopes -contains $_.ScopeId) -and $roles -contains $_.RoleId}}
 		}
 		"DesktopGroup" {
@@ -5941,7 +5943,7 @@ Function GetAdmins
 			$roles = Get-AdminRole @CVADParams2 | `
 			Where-Object {$_.Permissions | Where-Object { $permissions -contains $_ }} | `
 			Select-Object -ExpandProperty Id
-			$Admins = Get-AdminAdministrator @CVADParams2 | `
+			$Admins = Get-AdminAdministrator @CVADParams2 -SortBy Name | `
 			Where-Object {$_.Rights | Where-Object {($_.ScopeId -eq [guid]::Empty -or $scopes -contains $_.ScopeId) -and $roles -contains $_.RoleId}}
 		}
 		"Host" {
@@ -5953,7 +5955,7 @@ Function GetAdmins
 			$roles = Get-AdminRole @CVADParams2 | `
 			Where-Object {$_.Permissions | Where-Object { $permissions -contains $_ }} | `
 			Select-Object -ExpandProperty Id
-			$Admins = Get-AdminAdministrator @CVADParams2 | `
+			$Admins = Get-AdminAdministrator @CVADParams2 -SortBy Name | `
 			Where-Object {$_.Rights | Where-Object {($_.ScopeId -eq [guid]::Empty -or `
 			$scopes -contains $_.ScopeId) -and $roles -contains $_.RoleId}}
 		}
@@ -5966,7 +5968,7 @@ Function GetAdmins
 			Where-Object {$_.Permissions | Where-Object { $permissions -contains $_ }} | `
 			Select-Object -ExpandProperty Id
 			#this is an unscoped object type as $admins is done differently than the others
-			$Admins = Get-AdminAdministrator @CVADParams2 | `
+			$Admins = Get-AdminAdministrator @CVADParams2 -SortBy Name | `
 			Where-Object {$_.Rights | Where-Object {$roles -contains $_.RoleId}}
 		}
 	}
@@ -5991,7 +5993,7 @@ Function GetAdmins
 	#}
 	#$Admins = Get-AdminAdministrator @CVADParams2 | Where-Object {$_.Rights | Where-Object {($_.ScopeId -eq [guid]::Empty -or $scopes -contains $_.ScopeId) -and	$roles -contains $_.RoleId}}
 
-	$Admins = $Admins | Sort-Object Name
+	#$Admins = $Admins | Sort-Object Name
 	Return ,$Admins
 }
 #endregion
@@ -6462,8 +6464,16 @@ Function OutputMachines
 				{
 					If($Machines -is [array] -and $Machines.Count)
 					{
-						$CatalogInformation += @{Data = "Installed VDA version"; Value = $Machines[0].AgentVersion; }
-						$CatalogInformation += @{Data = "Operating System"; Value = $Machines[0].OSType; }
+						If([String]::IsNullOrEmpty($Machines[0].AgentVersion))
+						{
+							$CatalogInformation += @{Data = "Installed VDA version"; Value = "-"; }
+							$CatalogInformation += @{Data = "Operating System"; Value = "-"; }
+						}
+						Else
+						{
+							$CatalogInformation += @{Data = "Installed VDA version"; Value = $Machines[0].AgentVersion; }
+							$CatalogInformation += @{Data = "Operating System"; Value = $Machines[0].OSType; }
+						}
 					}
 					Else
 					{
@@ -6491,8 +6501,16 @@ Function OutputMachines
 				{
 					If($Machines -is [array] -and $Machines.Count)
 					{
-						$CatalogInformation += @{Data = "Installed VDA version"; Value = $Machines[0].AgentVersion; }
-						$CatalogInformation += @{Data = "Operating System"; Value = $Machines[0].OSType; }
+						If([String]::IsNullOrEmpty($Machines[0].AgentVersion))
+						{
+							$CatalogInformation += @{Data = "Installed VDA version"; Value = "-"; }
+							$CatalogInformation += @{Data = "Operating System"; Value = "-"; }
+						}
+						Else
+						{
+							$CatalogInformation += @{Data = "Installed VDA version"; Value = $Machines[0].AgentVersion; }
+							$CatalogInformation += @{Data = "Operating System"; Value = $Machines[0].OSType; }
+						}
 					}
 					Else
 					{
@@ -6577,8 +6595,16 @@ Function OutputMachines
 				{
 					If($Machines -is [array] -and $Machines.Count)
 					{
-						$CatalogInformation += @{Data = "Installed VDA version"; Value = $Machines[0].AgentVersion; }
-						$CatalogInformation += @{Data = "Operating System"; Value = $Machines[0].OSType; }
+						If([String]::IsNullOrEmpty($Machines[0].AgentVersion))
+						{
+							$CatalogInformation += @{Data = "Installed VDA version"; Value = "-"; }
+							$CatalogInformation += @{Data = "Operating System"; Value = "-"; }
+						}
+						Else
+						{
+							$CatalogInformation += @{Data = "Installed VDA version"; Value = $Machines[0].AgentVersion; }
+							$CatalogInformation += @{Data = "Operating System"; Value = $Machines[0].OSType; }
+						}
 					}
 					Else
 					{
@@ -6609,8 +6635,16 @@ Function OutputMachines
 				{
 					If($Machines -is [array] -and $Machines.Count)
 					{
-						$CatalogInformation += @{Data = "Installed VDA version"; Value = $Machines[0].AgentVersion; }
-						$CatalogInformation += @{Data = "Operating System"; Value = $Machines[0].OSType; }
+						If([String]::IsNullOrEmpty($Machines[0].AgentVersion))
+						{
+							$CatalogInformation += @{Data = "Installed VDA version"; Value = "-"; }
+							$CatalogInformation += @{Data = "Operating System"; Value = "-"; }
+						}
+						Else
+						{
+							$CatalogInformation += @{Data = "Installed VDA version"; Value = $Machines[0].AgentVersion; }
+							$CatalogInformation += @{Data = "Operating System"; Value = $Machines[0].OSType; }
+						}
 					}
 					Else
 					{
@@ -6747,8 +6781,16 @@ Function OutputMachines
 				{
 					If($Machines -is [array] -and $Machines.Count)
 					{
-						Line 1 "Installed VDA version`t`t`t: " $Machines[0].AgentVersion
-						Line 1 "Operating System`t`t`t: " $Machines[0].OSType
+						If([String]::IsNullOrEmpty($Machines[0].AgentVersion))
+						{
+							Line 1 "Installed VDA version`t`t`t: " "-"
+							Line 1 "Operating System`t`t`t: " "-"
+						}
+						Else
+						{
+							Line 1 "Installed VDA version`t`t`t: " $Machines[0].AgentVersion
+							Line 1 "Operating System`t`t`t: " $Machines[0].OSType
+						}
 					}
 					Else
 					{
@@ -6776,8 +6818,16 @@ Function OutputMachines
 				{
 					If($Machines -is [array] -and $Machines.Count)
 					{
-						Line 1 "Installed VDA version`t`t`t: " $Machines[0].AgentVersion
-						Line 1 "Operating System`t`t`t: " $Machines[0].OSType
+						If([String]::IsNullOrEmpty($Machines[0].AgentVersion))
+						{
+							Line 1 "Installed VDA version`t`t`t: " "-"
+							Line 1 "Operating System`t`t`t: " "-"
+						}
+						Else
+						{
+							Line 1 "Installed VDA version`t`t`t: " $Machines[0].AgentVersion
+							Line 1 "Operating System`t`t`t: " $Machines[0].OSType
+						}
 					}
 					Else
 					{
@@ -6862,8 +6912,16 @@ Function OutputMachines
 				{
 					If($Machines -is [array] -and $Machines.Count)
 					{
-						Line 1 "Installed VDA version`t`t`t: " $Machines[0].AgentVersion
-						Line 1 "Operating System`t`t`t: " $Machines[0].OSType
+						If([String]::IsNullOrEmpty($Machines[0].AgentVersion))
+						{
+							Line 1 "Installed VDA version`t`t`t: " "-"
+							Line 1 "Operating System`t`t`t: " "-"
+						}
+						Else
+						{
+							Line 1 "Installed VDA version`t`t`t: " $Machines[0].AgentVersion
+							Line 1 "Operating System`t`t`t: " $Machines[0].OSType
+						}
 					}
 					Else
 					{
@@ -6894,8 +6952,16 @@ Function OutputMachines
 				{
 					If($Machines -is [array] -and $Machines.Count)
 					{
-						Line 1 "Installed VDA version`t`t`t: " $Machines[0].AgentVersion
-						Line 1 "Operating System`t`t`t: " $Machines[0].OSType
+						If([String]::IsNullOrEmpty($Machines[0].AgentVersion))
+						{
+							Line 1 "Installed VDA version`t`t`t: " "-"
+							Line 1 "Operating System`t`t`t: " "-"
+						}
+						Else
+						{
+							Line 1 "Installed VDA version`t`t`t: " $Machines[0].AgentVersion
+							Line 1 "Operating System`t`t`t: " $Machines[0].OSType
+						}
 					}
 					Else
 					{
@@ -7003,8 +7069,16 @@ Function OutputMachines
 				{
 					If($Machines -is [array] -and $Machines.Count)
 					{
-						$rowdata += @(,('Installed VDA version',($global:htmlsb),$Machines[0].AgentVersion,$htmlwhite))
-						$rowdata += @(,('Operating System',($global:htmlsb),$Machines[0].OSType,$htmlwhite))
+						If([String]::IsNullOrEmpty($Machines[0].AgentVersion))
+						{
+							$rowdata += @(,('Installed VDA version',($global:htmlsb),"-",$htmlwhite))
+							$rowdata += @(,('Operating System',($global:htmlsb),"-",$htmlwhite))
+						}
+						Else
+						{
+							$rowdata += @(,('Installed VDA version',($global:htmlsb),$Machines[0].AgentVersion,$htmlwhite))
+							$rowdata += @(,('Operating System',($global:htmlsb),$Machines[0].OSType,$htmlwhite))
+						}
 					}
 					Else
 					{
@@ -7032,8 +7106,16 @@ Function OutputMachines
 				{
 					If($Machines -is [array] -and $Machines.Count)
 					{
-						$rowdata += @(,('Installed VDA version',($global:htmlsb),$Machines[0].AgentVersion,$htmlwhite))
-						$rowdata += @(,('Operating System',($global:htmlsb),$Machines[0].OSType,$htmlwhite))
+						If([String]::IsNullOrEmpty($Machines[0].AgentVersion))
+						{
+							$rowdata += @(,('Installed VDA version',($global:htmlsb),"-",$htmlwhite))
+							$rowdata += @(,('Operating System',($global:htmlsb),"-",$htmlwhite))
+						}
+						Else
+						{
+							$rowdata += @(,('Installed VDA version',($global:htmlsb),$Machines[0].AgentVersion,$htmlwhite))
+							$rowdata += @(,('Operating System',($global:htmlsb),$Machines[0].OSType,$htmlwhite))
+						}
 					}
 					Else
 					{
@@ -7118,8 +7200,16 @@ Function OutputMachines
 				{
 					If($Machines -is [array] -and $Machines.Count)
 					{
-						$rowdata += @(,('Installed VDA version',($global:htmlsb),$Machines[0].AgentVersion,$htmlwhite))
-						$rowdata += @(,('Operating System',($global:htmlsb),$Machines[0].OSType,$htmlwhite))
+						If([String]::IsNullOrEmpty($Machines[0].AgentVersion))
+						{
+							$rowdata += @(,('Installed VDA version',($global:htmlsb),"-",$htmlwhite))
+							$rowdata += @(,('Operating System',($global:htmlsb),"-",$htmlwhite))
+						}
+						Else
+						{
+							$rowdata += @(,('Installed VDA version',($global:htmlsb),$Machines[0].AgentVersion,$htmlwhite))
+							$rowdata += @(,('Operating System',($global:htmlsb),$Machines[0].OSType,$htmlwhite))
+						}
 					}
 					Else
 					{
@@ -7149,8 +7239,16 @@ Function OutputMachines
 				{
 					If($Machines -is [array] -and $Machines.Count)
 					{
-						$rowdata += @(,('Installed VDA version',($global:htmlsb),$Machines[0].AgentVersion,$htmlwhite))
-						$rowdata += @(,('Operating System',($global:htmlsb),$Machines[0].OSType,$htmlwhite))
+						If([String]::IsNullOrEmpty($Machines[0].AgentVersion))
+						{
+							$rowdata += @(,('Installed VDA version',($global:htmlsb),"-",$htmlwhite))
+							$rowdata += @(,('Operating System',($global:htmlsb),"-",$htmlwhite))
+						}
+						Else
+						{
+							$rowdata += @(,('Installed VDA version',($global:htmlsb),$Machines[0].AgentVersion,$htmlwhite))
+							$rowdata += @(,('Operating System',($global:htmlsb),$Machines[0].OSType,$htmlwhite))
+						}
 					}
 					Else
 					{
@@ -7652,7 +7750,7 @@ Function OutputMachineDetails
 	}
 	Else
 	{
-		$xSummaryState = $Machine.SummaryState
+		$xSummaryState = $Machine.SummaryState.ToString()
 	}
 
 	$xTags = @()
@@ -7941,6 +8039,42 @@ Function OutputMachineDetails
 		Default			{$xPowerState = "Unabled to determine machine Power State: $($Machine.PowerState)"; Break}
 	}
 	
+	If([String]::IsNullOrEmpty($Machine.IPAddress))
+	{
+		$xIPAddress = "-"
+	}
+	Else
+	{
+		$xIPAddress = $Machine.IPAddress.ToString()
+	}
+
+	If([String]::IsNullOrEmpty($Machine.LastDeregistrationTime))
+	{
+		$xLastDeregistrationTime = "-"
+	}
+	Else
+	{
+		$xLastDeregistrationTime = $Machine.LastDeregistrationTime.ToString()
+	}
+
+	If([String]::IsNullOrEmpty($Machine.OSType))
+	{
+		$xOSType = "-"
+	}
+	Else
+	{
+		$xOSType = $Machine.OSType
+	}
+
+	If([String]::IsNullOrEmpty($Machine.AgentVersion))
+	{
+		$xAgentVersion = "-"
+	}
+	Else
+	{
+		$xAgentVersion = $Machine.AgentVersion
+	}
+
 	If($MSWord -or $PDF)
 	{
 		$Selection.InsertNewPage()
@@ -7955,7 +8089,7 @@ Function OutputMachineDetails
 			If($NoSessions -eq $False)
 			{
                 ## GRL $xAssociatedUserFullNames can have a count of zero so $xAssociatedUserFullNames[0] isn't valid.
-                [string]$name = $(If( $xAssociatedUserFullNames -is [array] -and $xAssociatedUserFullNames.Count ) { $xAssociatedUserFullNames[0] } Else { '' } )
+                [string]$name = $(If( $xAssociatedUserFullNames -is [array] -and $xAssociatedUserFullNames.Count ) { $xAssociatedUserFullNames[0] } Else { '-' } )
 				$ScriptInformation += @{Data = "User Display Name"; Value = $name; }
 				$cnt = -1
 				ForEach($tmp in $xAssociatedUserFullNames)
@@ -7967,7 +8101,7 @@ Function OutputMachineDetails
 					}
 				}
                 ## GRL $xAssociatedUserNames can have a count of zero so $xAssociatedUserNames[0] isn't valid.
-                [string]$name = $(If( $xAssociatedUserNames -is [array] -and $xAssociatedUserNames.Count ) { $xAssociatedUserNames[0] } Else { '' } )
+                [string]$name = $(If( $xAssociatedUserNames -is [array] -and $xAssociatedUserNames.Count ) { $xAssociatedUserNames[0] } Else { '-' } )
 				$ScriptInformation += @{Data = "User"; Value = $name; }
 				$cnt = -1
 				ForEach($tmp in $xAssociatedUserNames)
@@ -7979,7 +8113,7 @@ Function OutputMachineDetails
 					}
 				}
                 ## GRL $xAssociatedUserUPNs can have a count of zero so $xAssociatedUserUPNs[0] isn't valid.
-                [string]$upn = $(If( $xAssociatedUserUPNs -is [array] -and $xAssociatedUserUPNs.Count ) { $xAssociatedUserUPNs[0] } Else { '' } )
+                [string]$upn = $(If( $xAssociatedUserUPNs -is [array] -and $xAssociatedUserUPNs.Count ) { $xAssociatedUserUPNs[0] } Else { '-' } )
 				$ScriptInformation += @{Data = "UPN"; Value = $upn; }
 				$cnt = -1
 				ForEach($tmp in $xAssociatedUserUPNs)
@@ -7991,7 +8125,7 @@ Function OutputMachineDetails
 					}
 				}
 			}
-			[string]$cond = $(If( $xDesktopConditions -is [array] -and $xDesktopConditions.Count ) { $xDesktopConditions[0] } Else { '' } )
+			[string]$cond = $(If( $xDesktopConditions -is [array] -and $xDesktopConditions.Count ) { $xDesktopConditions[0] } Else { '-' } )
 			$ScriptInformation += @{Data = "Desktop Conditions"; Value = $cond; }
 			$cnt = -1
 			ForEach($tmp in $xDesktopConditions)
@@ -8005,7 +8139,7 @@ Function OutputMachineDetails
 			$ScriptInformation += @{Data = "Allocation Type"; Value = $xAllocationType; }
 			$ScriptInformation += @{Data = "Maintenance Mode"; Value = $xInMaintenanceMode; }
 			$ScriptInformation += @{Data = "Windows Connection Setting"; Value = $xWindowsConnectionSetting; }
-			$ScriptInformation += @{Data = "Is Assigned"; Value = $Machine.IsAssigned; }
+			$ScriptInformation += @{Data = "Is Assigned"; Value = $Machine.IsAssigned.ToString(); }
 			$ScriptInformation += @{Data = "Is Physical"; Value = $xIsPhysical; }
 			$ScriptInformation += @{Data = "Provisioning Type"; Value = $Machine.ProvisioningType.ToString(); }
 			$ScriptInformation += @{Data = "Scheduled Reboot"; Value = $Machine.ScheduledReboot; }
@@ -8088,8 +8222,8 @@ Function OutputMachineDetails
 			
 			WriteWordLine 4 0 "Machine Details"
 			[System.Collections.Hashtable[]] $ScriptInformation = @()
-			$ScriptInformation += @{Data = "Agent Version"; Value = $Machine.AgentVersion; }
-			$ScriptInformation += @{Data = "IP Address"; Value = $Machine.IPAddress; }
+			$ScriptInformation += @{Data = "Agent Version"; Value = $xAgentVersion; }
+			$ScriptInformation += @{Data = "IP Address"; Value = $xIPAddress; }
 			$ScriptInformation += @{Data = "Is Assigned"; Value = $Machine.IsAssigned.ToString(); }
 
 			$Table = AddWordTable -Hashtable $ScriptInformation `
@@ -8112,7 +8246,7 @@ Function OutputMachineDetails
 			WriteWordLine 4 0 "Applications"
 			[System.Collections.Hashtable[]] $ScriptInformation = @()
 			
-			[string]$AppsInUse = $(If( $xApplicationsInUse -is [array] -and $xApplicationsInUse.Count ) { $xApplicationsInUse[0] } Else { '' } )
+			[string]$AppsInUse = $(If( $xApplicationsInUse -is [array] -and $xApplicationsInUse.Count ) { $xApplicationsInUse[0] } Else { '-' } )
 			$ScriptInformation += @{Data = "Applications In Use"; Value = $AppsInUse; }
 			$cnt = -1
 			ForEach($tmp in $xApplicationsInUse)
@@ -8123,7 +8257,7 @@ Function OutputMachineDetails
 					$ScriptInformation += @{Data = ""; Value = $tmp; }
 				}
 			}
-			[string]$PubApps = $(If( $xPublishedApplications -is [array] -and $xPublishedApplications.Count ) { $xPublishedApplications[0] } Else { '' } )
+			[string]$PubApps = $(If( $xPublishedApplications -is [array] -and $xPublishedApplications.Count ) { $xPublishedApplications[0] } Else { '-' } )
 			$ScriptInformation += @{Data = "Published Applications"; Value = $PubApps; }
 			$cnt = -1
 			ForEach($tmp in $xPublishedApplications)
@@ -8156,7 +8290,7 @@ Function OutputMachineDetails
 			[System.Collections.Hashtable[]] $ScriptInformation = @()
 			$ScriptInformation += @{Data = "Broker"; Value = $xBroker; }
 			$ScriptInformation += @{Data = "Last registration failure"; Value = $xLastDeregistrationReason; }
-			$ScriptInformation += @{Data = "Last registration failure time"; Value = $Machine.LastDeregistrationTime; }
+			$ScriptInformation += @{Data = "Last registration failure time"; Value = $xLastDeregistrationTime; }
 			$ScriptInformation += @{Data = "Registration State"; Value = $Machine.RegistrationState.ToString(); }
 			$ScriptInformation += @{Data = "Fault State"; Value = $xMachineFaultState; }
 
@@ -8233,7 +8367,7 @@ Function OutputMachineDetails
 				[System.Collections.Hashtable[]] $ScriptInformation = @()
 				$ScriptInformation += @{Data = "Launched Via"; Value = $xSessionLaunchedViaHostName; }
 				$ScriptInformation += @{Data = "Launched Via (IP)"; Value = $xSessionLaunchedViaIP; }
-				[string]$SSAT = $(If( $xSessionSmartAccessTags -is [array] -and $xSessionSmartAccessTags.Count ) { $xSessionSmartAccessTags[0] } Else { '' } )
+				[string]$SSAT = $(If( $xSessionSmartAccessTags -is [array] -and $xSessionSmartAccessTags.Count ) { $xSessionSmartAccessTags[0] } Else { '-' } )
 				$ScriptInformation += @{Data = "SmartAccess Filters"; Value = $SSAT; }
 				$cnt = -1
 				ForEach($tmp in $xSessionSmartAccessTags)
@@ -8293,7 +8427,7 @@ Function OutputMachineDetails
 			If($NoSessions -eq $False)
 			{
                 ## GRL $xAssociatedUserFullNames can have a count of zero so $xAssociatedUserFullNames[0] isn't valid.
-                [string]$name = $(If( $xAssociatedUserFullNames -is [array] -and $xAssociatedUserFullNames.Count ) { $xAssociatedUserFullNames[0] } Else { '' } )
+                [string]$name = $(If( $xAssociatedUserFullNames -is [array] -and $xAssociatedUserFullNames.Count ) { $xAssociatedUserFullNames[0] } Else { '-' } )
 				$ScriptInformation += @{Data = "User Display Name"; Value = $name; }
 				$cnt = -1
 				ForEach($tmp in $xAssociatedUserFullNames)
@@ -8305,7 +8439,7 @@ Function OutputMachineDetails
 					}
 				}
                 ## GRL $xAssociatedUserNames can have a count of zero so $xAssociatedUserNames[0] isn't valid.
-                [string]$name = $(If( $xAssociatedUserNames -is [array] -and $xAssociatedUserNames.Count ) { $xAssociatedUserNames[0] } Else { '' } )
+                [string]$name = $(If( $xAssociatedUserNames -is [array] -and $xAssociatedUserNames.Count ) { $xAssociatedUserNames[0] } Else { '-' } )
 				$ScriptInformation += @{Data = "User"; Value = $name; }
 				$cnt = -1
 				ForEach($tmp in $xAssociatedUserNames)
@@ -8317,7 +8451,7 @@ Function OutputMachineDetails
 					}
 				}
                 ## GRL $xAssociatedUserUPNs can have a count of zero so $xAssociatedUserUPNs[0] isn't valid.
-                [string]$upn = $(If( $xAssociatedUserUPNs -is [array] -and $xAssociatedUserUPNs.Count ) { $xAssociatedUserUPNs[0] } Else { '' } )
+                [string]$upn = $(If( $xAssociatedUserUPNs -is [array] -and $xAssociatedUserUPNs.Count ) { $xAssociatedUserUPNs[0] } Else { '-' } )
 				$ScriptInformation += @{Data = "UPN"; Value = $upn; }
 				$cnt = -1
 				ForEach($tmp in $xAssociatedUserUPNs)
@@ -8329,7 +8463,7 @@ Function OutputMachineDetails
 					}
 				}
 			}
-			[string]$cond = $(If( $xDesktopConditions -is [array] -and $xDesktopConditions.Count ) { $xDesktopConditions[0] } Else { '' } )
+			[string]$cond = $(If( $xDesktopConditions -is [array] -and $xDesktopConditions.Count ) { $xDesktopConditions[0] } Else { '-' } )
 			$ScriptInformation += @{Data = "Desktop Conditions"; Value = $cond; }
 			$cnt = -1
 			ForEach($tmp in $xDesktopConditions)
@@ -8348,7 +8482,7 @@ Function OutputMachineDetails
 			$ScriptInformation += @{Data = "Zone"; Value = $Machine.ZoneName; }
 			$ScriptInformation += @{Data = "Scheduled Reboot"; Value = $Machine.ScheduledReboot; }
 			$ScriptInformation += @{Data = "Summary State"; Value = $xSummaryState; }
-            [string]$TagName = $(If( $xTags -is [array] -and $xTags.Count ) { $xTags[0] } Else { '' } )
+            [string]$TagName = $(If( $xTags -is [array] -and $xTags.Count ) { $xTags[0] } Else { '-' } )
 			$ScriptInformation += @{Data = "Tags"; Value = $TagName; }
 			$cnt = -1
 			ForEach($tmp in $xTags)
@@ -8424,10 +8558,10 @@ Function OutputMachineDetails
 			
 			WriteWordLine 4 0 "Machine Details"
 			[System.Collections.Hashtable[]] $ScriptInformation = @()
-			$ScriptInformation += @{Data = "Agent Version"; Value = $Machine.AgentVersion; }
-			$ScriptInformation += @{Data = "IP Address"; Value = $Machine.IPAddress; }
+			$ScriptInformation += @{Data = "Agent Version"; Value = $xAgentVersion; }
+			$ScriptInformation += @{Data = "IP Address"; Value = $xIPAddress; }
 			$ScriptInformation += @{Data = "Is Assigned"; Value = $Machine.IsAssigned.ToString(); }
-			$ScriptInformation += @{Data = "OS Type"; Value = $Machine.OSType; }
+			$ScriptInformation += @{Data = "OS Type"; Value = $xOSType; }
 
 			$Table = AddWordTable -Hashtable $ScriptInformation `
 			-Columns Data,Value `
@@ -8449,7 +8583,7 @@ Function OutputMachineDetails
 			WriteWordLine 4 0 "Applications"
 			[System.Collections.Hashtable[]] $ScriptInformation = @()
 			
-            [string]$AppsInUse = $(If( $xApplicationsInUse -is [array] -and $xApplicationsInUse.Count ) { $xApplicationsInUse[0] } Else { '' } )
+            [string]$AppsInUse = $(If( $xApplicationsInUse -is [array] -and $xApplicationsInUse.Count ) { $xApplicationsInUse[0] } Else { '-' } )
 			$ScriptInformation += @{Data = "Applications In Use"; Value = $AppsInUse; }
 			$cnt = -1
 			ForEach($tmp in $xApplicationsInUse)
@@ -8460,7 +8594,7 @@ Function OutputMachineDetails
 					$ScriptInformation += @{Data = ""; Value = $tmp; }
 				}
 			}
-            [string]$PubApps = $(If( $xPublishedApplications -is [array] -and $xPublishedApplications.Count ) { $xPublishedApplications[0] } Else { '' } )
+            [string]$PubApps = $(If( $xPublishedApplications -is [array] -and $xPublishedApplications.Count ) { $xPublishedApplications[0] } Else { '-' } )
 			$ScriptInformation += @{Data = "Published Applications"; Value = $PubApps; }
 			$cnt = -1
 			ForEach($tmp in $xPublishedApplications)
@@ -8525,7 +8659,7 @@ Function OutputMachineDetails
 			[System.Collections.Hashtable[]] $ScriptInformation = @()
 			$ScriptInformation += @{Data = "Broker"; Value = $xBroker; }
 			$ScriptInformation += @{Data = "Last registration failure"; Value = $xLastDeregistrationReason; }
-			$ScriptInformation += @{Data = "Last registration failure time"; Value = $Machine.LastDeregistrationTime; }
+			$ScriptInformation += @{Data = "Last registration failure time"; Value = $xLastDeregistrationTime; }
 			$ScriptInformation += @{Data = "Registration State"; Value = $Machine.RegistrationState.ToString(); }
 			$ScriptInformation += @{Data = "Fault State"; Value = $xMachineFaultState; }
 
@@ -8581,7 +8715,7 @@ Function OutputMachineDetails
 				$ScriptInformation += @{Data = "Launched Via"; Value = $xSessionLaunchedViaHostName; }
 				$ScriptInformation += @{Data = "Launched Via (IP)"; Value = $xSessionLaunchedViaIP; }
 				$ScriptInformation += @{Data = "Session Change Time"; Value = $xSessionStateChangeTime; }
-				[string]$SSAT = $(If( $xSessionSmartAccessTags -is [array] -and $xSessionSmartAccessTags.Count ) { $xSessionSmartAccessTags[0] } Else { '' } )
+				[string]$SSAT = $(If( $xSessionSmartAccessTags -is [array] -and $xSessionSmartAccessTags.Count ) { $xSessionSmartAccessTags[0] } Else { '-' } )
 				$ScriptInformation += @{Data = "SmartAccess Filters"; Value = $SSAT; }
 				$cnt = -1
 				ForEach($tmp in $xSessionSmartAccessTags)
@@ -8647,7 +8781,7 @@ Function OutputMachineDetails
 			If($NoSessions -eq $False)
 			{
                 ## GRL $xAssociatedUserFullNames can have a count of zero so $xAssociatedUserFullNames[0] isn't valid.
-                [string]$name = $(If( $xAssociatedUserFullNames -is [array] -and $xAssociatedUserFullNames.Count ) { $xAssociatedUserFullNames[0] } Else { '' } )
+                [string]$name = $(If( $xAssociatedUserFullNames -is [array] -and $xAssociatedUserFullNames.Count ) { $xAssociatedUserFullNames[0] } Else { '-' } )
 				Line 2 "User Display Name`t`t: " $name
 				$cnt = -1
 				ForEach($tmp in $xAssociatedUserFullNames)
@@ -8659,7 +8793,7 @@ Function OutputMachineDetails
 					}
 				}
                 ## GRL $xAssociatedUserNames can have a count of zero so $xAssociatedUserNames[0] isn't valid.
-                [string]$name = $(If( $xAssociatedUserNames -is [array] -and $xAssociatedUserNames.Count ) { $xAssociatedUserNames[0] } Else { '' } )
+                [string]$name = $(If( $xAssociatedUserNames -is [array] -and $xAssociatedUserNames.Count ) { $xAssociatedUserNames[0] } Else { '-' } )
 				Line 2 "User`t`t`t`t: " $name
 				$cnt = -1
 				ForEach($tmp in $xAssociatedUserNames)
@@ -8671,7 +8805,7 @@ Function OutputMachineDetails
 					}
 				}
                 ## GRL $xAssociatedUserUPNs can have a count of zero so $xAssociatedUserUPNs[0] isn't valid.
-                [string]$upn = $(If( $xAssociatedUserUPNs -is [array] -and $xAssociatedUserUPNs.Count ) { $xAssociatedUserUPNs[0] } Else { '' } )
+                [string]$upn = $(If( $xAssociatedUserUPNs -is [array] -and $xAssociatedUserUPNs.Count ) { $xAssociatedUserUPNs[0] } Else { '-' } )
 				Line 2 "UPN`t`t`t`t: " $upn
 				$cnt = -1
 				ForEach($tmp in $xAssociatedUserUPNs)
@@ -8683,7 +8817,7 @@ Function OutputMachineDetails
 					}
 				}
 			}
-			[string]$cond = $(If( $xDesktopConditions -is [array] -and $xDesktopConditions.Count ) { $xDesktopConditions[0] } Else { '' } )
+			[string]$cond = $(If( $xDesktopConditions -is [array] -and $xDesktopConditions.Count ) { $xDesktopConditions[0] } Else { '-' } )
 			Line 2 "Desktop Conditions`t`t: " $cond
 			$cnt = -1
 			ForEach($tmp in $xDesktopConditions)
@@ -8703,7 +8837,7 @@ Function OutputMachineDetails
 			Line 2 "Scheduled Reboot`t`t: " $Machine.ScheduledReboot
 			Line 2 "Zone`t`t`t`t: " $Machine.ZoneName
 			Line 2 "Summary State`t`t`t: " $xSummaryState
-            [string]$TagName = $(If( $xTags -is [array] -and $xTags.Count ) { $xTags[0] } Else { '' } )
+            [string]$TagName = $(If( $xTags -is [array] -and $xTags.Count ) { $xTags[0] } Else { '-' } )
 			Line 2 "Tags`t`t`t`t: " $TagName
 			$cnt = -1
 			ForEach($tmp in $xTags)
@@ -8763,13 +8897,13 @@ Function OutputMachineDetails
 			}
 			
 			Line 1 "Machine Details"
-			Line 2 "Agent Version`t`t`t: " $Machine.AgentVersion
-			Line 2 "IP Address`t`t`t: " $Machine.IPAddress
+			Line 2 "Agent Version`t`t`t: " $xAgentVersion
+			Line 2 "IP Address`t`t`t: " $xIPAddress
 			Line 2 "Is Assigned`t`t`t: " $Machine.IsAssigned.ToString()
 			Line 0 ""
 			
 			Line 1 "Applications"
-            [string]$AppsInUse = $(If( $xApplicationsInUse -is [array] -and $xApplicationsInUse.Count ) { $xApplicationsInUse[0] } Else { '' } )
+            [string]$AppsInUse = $(If( $xApplicationsInUse -is [array] -and $xApplicationsInUse.Count ) { $xApplicationsInUse[0] } Else { '-' } )
 			Line 2 "Applications In Use`t`t: " $AppsInUse
 			$cnt = -1
 			ForEach($tmp in $xApplicationsInUse)
@@ -8780,7 +8914,7 @@ Function OutputMachineDetails
 					Line 6 "  " $tmp
 				}
 			}
-            [string]$PubApps = $(If( $xPublishedApplications -is [array] -and $xPublishedApplications.Count ) { $xPublishedApplications[0] } Else { '' } )
+            [string]$PubApps = $(If( $xPublishedApplications -is [array] -and $xPublishedApplications.Count ) { $xPublishedApplications[0] } Else { '-' } )
 			Line 2 "Published Applications`t`t: " $PubApps
 			$cnt = -1
 			ForEach($tmp in $xPublishedApplications)
@@ -8796,7 +8930,7 @@ Function OutputMachineDetails
 			Line 1 "Registration"
 			Line 2 "Broker`t`t`t`t: " $xBroker
 			Line 2 "Last registration failure`t: " $xLastDeregistrationReason
-			Line 2 "Last registration failure time`t: " $Machine.LastDeregistrationTime
+			Line 2 "Last registration failure time`t: " $xLastDeregistrationTime
 			Line 2 "Registration State`t`t: " $Machine.RegistrationState.ToString()
 			Line 2 "Fault State`t`t`t: " $xMachineFaultState
 			Line 0 ""
@@ -8822,7 +8956,7 @@ Function OutputMachineDetails
 				Line 1 "Session Details"
 				Line 2 "Launched Via`t`t`t: " $xSessionLaunchedViaHostName
 				Line 2 "Launched Via (IP)`t`t: " $xSessionLaunchedViaIP
-				[string]$SSAT = $(If( $xSessionSmartAccessTags -is [array] -and $xSessionSmartAccessTags.Count ) { $xSessionSmartAccessTags[0] } Else { '' } )
+				[string]$SSAT = $(If( $xSessionSmartAccessTags -is [array] -and $xSessionSmartAccessTags.Count ) { $xSessionSmartAccessTags[0] } Else { '-' } )
 				Line 2 "SmartAccess Filters`t`t: " $SSAT
 				$cnt = -1
 				ForEach($tmp in $xSessionSmartAccessTags)
@@ -8849,7 +8983,7 @@ Function OutputMachineDetails
 			If($NoSessions -eq $False)
 			{
                 ## GRL $xAssociatedUserFullNames can have a count of zero so $xAssociatedUserFullNames[0] isn't valid.
-                [string]$name = $(If( $xAssociatedUserFullNames -is [array] -and $xAssociatedUserFullNames.Count ) { $xAssociatedUserFullNames[0] } Else { '' } )
+                [string]$name = $(If( $xAssociatedUserFullNames -is [array] -and $xAssociatedUserFullNames.Count ) { $xAssociatedUserFullNames[0] } Else { '-' } )
 				Line 2 "User Display Name`t`t: " $name
 				$cnt = -1
 				ForEach($tmp in $xAssociatedUserFullNames)
@@ -8861,7 +8995,7 @@ Function OutputMachineDetails
 					}
 				}
                 ## GRL $xAssociatedUserNames can have a count of zero so $xAssociatedUserNames[0] isn't valid.
-                [string]$name = $(If( $xAssociatedUserNames -is [array] -and $xAssociatedUserNames.Count ) { $xAssociatedUserNames[0] } Else { '' } )
+                [string]$name = $(If( $xAssociatedUserNames -is [array] -and $xAssociatedUserNames.Count ) { $xAssociatedUserNames[0] } Else { '-' } )
 				Line 2 "User`t`t`t`t: " $name
 				$cnt = -1
 				ForEach($tmp in $xAssociatedUserNames)
@@ -8873,7 +9007,7 @@ Function OutputMachineDetails
 					}
 				}
                 ## GRL $xAssociatedUserUPNs can have a count of zero so $xAssociatedUserUPNs[0] isn't valid.
-                [string]$upn = $(If( $xAssociatedUserUPNs -is [array] -and $xAssociatedUserUPNs.Count ) { $xAssociatedUserUPNs[0] } Else { '' } )
+                [string]$upn = $(If( $xAssociatedUserUPNs -is [array] -and $xAssociatedUserUPNs.Count ) { $xAssociatedUserUPNs[0] } Else { '-' } )
 				Line 2 "UPN`t`t`t`t: " $upn
 				$cnt = -1
 				ForEach($tmp in $xAssociatedUserUPNs)
@@ -8885,7 +9019,7 @@ Function OutputMachineDetails
 					}
 				}
 			}
-			[string]$cond = $(If( $xDesktopConditions -is [array] -and $xDesktopConditions.Count ) { $xDesktopConditions[0] } Else { '' } )
+			[string]$cond = $(If( $xDesktopConditions -is [array] -and $xDesktopConditions.Count ) { $xDesktopConditions[0] } Else { '-' } )
 			Line 2 "Desktop Conditions`t`t: " $cond
 			$cnt = -1
 			ForEach($tmp in $xDesktopConditions)
@@ -8904,7 +9038,7 @@ Function OutputMachineDetails
 			Line 2 "Zone`t`t`t`t: " $Machine.ZoneName
 			Line 2 "Scheduled Reboot`t`t: " $Machine.ScheduledReboot
 			Line 2 "Summary State`t`t`t: " $xSummaryState
-            [string]$TagName = $(If( $xTags -is [array] -and $xTags.Count ) { $xTags[0] } Else { '' } )
+            [string]$TagName = $(If( $xTags -is [array] -and $xTags.Count ) { $xTags[0] } Else { '-' } )
 			Line 2 "Tags`t`t`t`t: " $TagName
 			$cnt = -1
 			ForEach($tmp in $xTags)
@@ -8963,14 +9097,14 @@ Function OutputMachineDetails
 			}
 			
 			Line 1 "Machine Details"
-			Line 2 "Agent Version`t`t`t: " $Machine.AgentVersion
-			Line 2 "IP Address`t`t`t: " $Machine.IPAddress
+			Line 2 "Agent Version`t`t`t: " $xAgentVersion
+			Line 2 "IP Address`t`t`t: " $xIPAddress
 			Line 2 "Is Assigned`t`t`t: " $Machine.IsAssigned.ToString()
-			Line 2 "OS Type`t`t`t`t: " $Machine.OSType
+			Line 2 "OS Type`t`t`t`t: " $xOSType
 			Line 0 ""
 			
 			Line 1 "Applications"
-            [string]$AppsInUse = $(If( $xApplicationsInUse -is [array] -and $xApplicationsInUse.Count ) { $xApplicationsInUse[0] } Else { '' } )
+            [string]$AppsInUse = $(If( $xApplicationsInUse -is [array] -and $xApplicationsInUse.Count ) { $xApplicationsInUse[0] } Else { '-' } )
 			Line 2 "Applications In Use`t`t: " $AppsInUse
 			$cnt = -1
 			ForEach($tmp in $xApplicationsInUse)
@@ -8981,7 +9115,7 @@ Function OutputMachineDetails
 					Line 6 "  " $tmp
 				}
 			}
-            [string]$PubApps = $(If( $xPublishedApplications -is [array] -and $xPublishedApplications.Count ) { $xPublishedApplications[0] } Else { '' } )
+            [string]$PubApps = $(If( $xPublishedApplications -is [array] -and $xPublishedApplications.Count ) { $xPublishedApplications[0] } Else { '-' } )
 			Line 2 "Published Applications`t`t: " $PubApps
 			$cnt = -1
 			ForEach($tmp in $xPublishedApplications)
@@ -9012,7 +9146,7 @@ Function OutputMachineDetails
 			Line 1 "Registration"
 			Line 2 "Broker`t`t`t`t: " $xBroker
 			Line 2 "Last registration failure`t: " $xLastDeregistrationReason
-			Line 2 "Last registration failure time`t: " $Machine.LastDeregistrationTime
+			Line 2 "Last registration failure time`t: " $xLastDeregistrationTime
 			Line 2 "Registration State`t`t: " $Machine.RegistrationState.ToString()
 			Line 2 "Fault State`t`t`t: " $xMachineFaultState
 			Line 0 ""
@@ -9034,7 +9168,7 @@ Function OutputMachineDetails
 				Line 2 "Launched Via`t`t`t: " $xSessionLaunchedViaHostName
 				Line 2 "Launched Via (IP)`t`t: " $xSessionLaunchedViaIP
 				Line 2 "Session Change Time`t`t: " $xSessionStateChangeTime
-				[string]$SSAT = $(If( $xSessionSmartAccessTags -is [array] -and $xSessionSmartAccessTags.Count ) { $xSessionSmartAccessTags[0] } Else { '' } )
+				[string]$SSAT = $(If( $xSessionSmartAccessTags -is [array] -and $xSessionSmartAccessTags.Count ) { $xSessionSmartAccessTags[0] } Else { '-' } )
 				Line 2 "SmartAccess Filters`t`t: " $SSAT
 				$cnt = -1
 				ForEach($tmp in $xSessionSmartAccessTags)
@@ -9068,7 +9202,7 @@ Function OutputMachineDetails
 			If($NoSessions -eq $False)
 			{
                 ## GRL $xAssociatedUserFullNames can have a count of zero so $xAssociatedUserFullNames[0] isn't valid.
-                [string]$name = $(If( $xAssociatedUserFullNames -is [array] -and $xAssociatedUserFullNames.Count ) { $xAssociatedUserFullNames[0] } Else { '' } )
+                [string]$name = $(If( $xAssociatedUserFullNames -is [array] -and $xAssociatedUserFullNames.Count ) { $xAssociatedUserFullNames[0] } Else { '-' } )
 				$rowdata += @(,('User Display Name',($global:htmlsb),$name,$htmlwhite))
 				$cnt = -1
 				ForEach($tmp in $xAssociatedUserFullNames)
@@ -9080,7 +9214,7 @@ Function OutputMachineDetails
 					}
 				}
                 ## GRL $xAssociatedUserNames can have a count of zero so $xAssociatedUserNames[0] isn't valid.
-                [string]$name = $(If( $xAssociatedUserNames -is [array] -and $xAssociatedUserNames.Count ) { $xAssociatedUserNames[0] } Else { '' } )
+                [string]$name = $(If( $xAssociatedUserNames -is [array] -and $xAssociatedUserNames.Count ) { $xAssociatedUserNames[0] } Else { '-' } )
 				$rowdata += @(,('User',($global:htmlsb),$name,$htmlwhite))
 				$cnt = -1
 				ForEach($tmp in $xAssociatedUserNames)
@@ -9092,7 +9226,7 @@ Function OutputMachineDetails
 					}
 				}
                 ## GRL $xAssociatedUserUPNs can have a count of zero so $xAssociatedUserUPNs[0] isn't valid.
-                [string]$upn = $(If( $xAssociatedUserUPNs -is [array] -and $xAssociatedUserUPNs.Count ) { $xAssociatedUserUPNs[0] } Else { '' } )
+                [string]$upn = $(If( $xAssociatedUserUPNs -is [array] -and $xAssociatedUserUPNs.Count ) { $xAssociatedUserUPNs[0] } Else { '-' } )
 				$rowdata += @(,('UPN',($global:htmlsb),$upn,$htmlwhite))
 				$cnt = -1
 				ForEach($tmp in $xAssociatedUserUPNs)
@@ -9104,7 +9238,7 @@ Function OutputMachineDetails
 					}
 				}
 			}
-			[string]$cond = $(If( $xDesktopConditions -is [array] -and $xDesktopConditions.Count ) { $xDesktopConditions[0] } Else { '' } )
+			[string]$cond = $(If( $xDesktopConditions -is [array] -and $xDesktopConditions.Count ) { $xDesktopConditions[0] } Else { '-' } )
 			$rowdata += @(,('Desktop Conditions',($global:htmlsb),$cond,$htmlwhite))
 			$cnt = -1
 			ForEach($tmp in $xDesktopConditions)
@@ -9124,7 +9258,7 @@ Function OutputMachineDetails
 			$rowdata += @(,('Scheduled Reboot',($global:htmlsb),$Machine.ScheduledReboot.ToString(),$htmlwhite))
 			$rowdata += @(,('Zone',($global:htmlsb),$Machine.ZoneName,$htmlwhite))
 			$rowdata += @(,('Summary State',($global:htmlsb),$xSummaryState,$htmlwhite))
-            [string]$TagName = $(If( $xTags -is [array] -and $xTags.Count ) { $xTags[0] } Else { '' } )
+            [string]$TagName = $(If( $xTags -is [array] -and $xTags.Count ) { $xTags[0] } Else { '-' } )
 			$rowdata += @(,('Tags',($global:htmlsb),$TagName,$htmlwhite))
 			$cnt = -1
 			ForEach($tmp in $xTags)
@@ -9188,8 +9322,8 @@ Function OutputMachineDetails
 			
 			WriteHTMLLine 4 0 "Machine Details"
 			$rowdata = @()
-			$columnHeaders = @("Agent Version",($global:htmlsb),$Machine.AgentVersion,$htmlwhite)
-			$rowdata += @(,('IP Address',($global:htmlsb),$Machine.IPAddress,$htmlwhite))
+			$columnHeaders = @("Agent Version",($global:htmlsb),$xAgentVersion,$htmlwhite)
+			$rowdata += @(,('IP Address',($global:htmlsb),$xIPAddress,$htmlwhite))
 			$rowdata += @(,('Is Assigned',($global:htmlsb),$Machine.IsAssigned.ToString(),$htmlwhite))
 
 			$msg = ""
@@ -9198,7 +9332,7 @@ Function OutputMachineDetails
 
 			WriteHTMLLine 4 0 "Applications"
 			$rowdata = @()
-            [string]$AppsInUse = $(If( $xApplicationsInUse -is [array] -and $xApplicationsInUse.Count ) { $xApplicationsInUse[0] } Else { '' } )
+            [string]$AppsInUse = $(If( $xApplicationsInUse -is [array] -and $xApplicationsInUse.Count ) { $xApplicationsInUse[0] } Else { '-' } )
 			$columnHeaders = @("Applications In Use",($global:htmlsb),$AppsInUse,$htmlwhite)
 			$cnt = -1
 			ForEach($tmp in $xApplicationsInUSe)
@@ -9209,7 +9343,7 @@ Function OutputMachineDetails
 					$rowdata += @(,('',($global:htmlsb),$tmp,$htmlwhite))
 				}
 			}
-            [string]$PubApps = $(If( $xPublishedApplications -is [array] -and $xPublishedApplications.Count ) { $xPublishedApplications[0] } Else { '' } )
+            [string]$PubApps = $(If( $xPublishedApplications -is [array] -and $xPublishedApplications.Count ) { $xPublishedApplications[0] } Else { '-' } )
 			$rowdata += @(,('Published Applications',($global:htmlsb),$PubApps,$htmlwhite))
 			$cnt = -1
 			ForEach($tmp in $xPublishedApplications)
@@ -9229,7 +9363,7 @@ Function OutputMachineDetails
 			$rowdata = @()
 			$columnHeaders = @("Broker",($global:htmlsb),$xBroker,$htmlwhite)
 			$rowdata += @(,('Last registration failure',($global:htmlsb),$xLastDeregistrationReason,$htmlwhite))
-			$rowdata += @(,('Last registration failure time',($global:htmlsb),$Machine.LastDeregistrationTime,$htmlwhite))
+			$rowdata += @(,('Last registration failure time',($global:htmlsb),$xLastDeregistrationTime,$htmlwhite))
 			$rowdata += @(,('Registration State',($global:htmlsb),$Machine.RegistrationState.ToString(),$htmlwhite))
 			$rowdata += @(,('Fault State',($global:htmlsb),$xMachineFaultState,$htmlwhite))
 
@@ -9267,7 +9401,7 @@ Function OutputMachineDetails
 				$rowdata = @()
 				$columnHeaders = @("Launched Via",($global:htmlsb),$xSessionLaunchedViaHostName,$htmlwhite)
 				$rowdata += @(,('Launched Via (IP)',($global:htmlsb),$xSessionLaunchedViaIP,$htmlwhite))
-				[string]$SSAT = $(If( $xSessionSmartAccessTags -is [array] -and $xSessionSmartAccessTags.Count ) { $xSessionSmartAccessTags[0] } Else { '' } )
+				[string]$SSAT = $(If( $xSessionSmartAccessTags -is [array] -and $xSessionSmartAccessTags.Count ) { $xSessionSmartAccessTags[0] } Else { '-' } )
 				$rowdata += @(,('SmartAccess Filters',($global:htmlsb),$SSAT,$htmlwhite))
 				$cnt = -1
 				ForEach($tmp in $xSessionSmartAccessTags)
@@ -9303,7 +9437,7 @@ Function OutputMachineDetails
 			If($NoSessions -eq $False)
 			{
                 ## GRL $xAssociatedUserFullNames can have a count of zero so $xAssociatedUserFullNames[0] isn't valid.
-                [string]$name = $(If( $xAssociatedUserFullNames -is [array] -and $xAssociatedUserFullNames.Count ) { $xAssociatedUserFullNames[0] } Else { '' } )
+                [string]$name = $(If( $xAssociatedUserFullNames -is [array] -and $xAssociatedUserFullNames.Count ) { $xAssociatedUserFullNames[0] } Else { '-' } )
 				$rowdata += @(,('User Display Name',($global:htmlsb),$name,$htmlwhite))
 				$cnt = -1
 				ForEach($tmp in $xAssociatedUserFullNames)
@@ -9315,7 +9449,7 @@ Function OutputMachineDetails
 					}
 				}
                 ## GRL $xAssociatedUserNames can have a count of zero so $xAssociatedUserNames[0] isn't valid.
-                [string]$name = $(If( $xAssociatedUserNames -is [array] -and $xAssociatedUserNames.Count ) { $xAssociatedUserNames[0] } Else { '' } )
+                [string]$name = $(If( $xAssociatedUserNames -is [array] -and $xAssociatedUserNames.Count ) { $xAssociatedUserNames[0] } Else { '-' } )
 				$rowdata += @(,('User',($global:htmlsb),$name,$htmlwhite))
 				$cnt = -1
 				ForEach($tmp in $xAssociatedUserNames)
@@ -9327,7 +9461,7 @@ Function OutputMachineDetails
 					}
 				}
                 ## GRL $xAssociatedUserUPNs can have a count of zero so $xAssociatedUserUPNs[0] isn't valid.
-                [string]$upn = $(If( $xAssociatedUserUPNs -is [array] -and $xAssociatedUserUPNs.Count ) { $xAssociatedUserUPNs[0] } Else { '' } )
+                [string]$upn = $(If( $xAssociatedUserUPNs -is [array] -and $xAssociatedUserUPNs.Count ) { $xAssociatedUserUPNs[0] } Else { '-' } )
 				$rowdata += @(,('UPN',($global:htmlsb),$upn,$htmlwhite))
 				$cnt = -1
 				ForEach($tmp in $xAssociatedUserUPNs)
@@ -9339,7 +9473,7 @@ Function OutputMachineDetails
 					}
 				}
 			}
-			[string]$cond = $(If( $xDesktopConditions -is [array] -and $xDesktopConditions.Count ) { $xDesktopConditions[0] } Else { '' } )
+			[string]$cond = $(If( $xDesktopConditions -is [array] -and $xDesktopConditions.Count ) { $xDesktopConditions[0] } Else { '-' } )
 			$rowdata += @(,('Desktop Conditions',($global:htmlsb),$cond,$htmlwhite))
 			$cnt = -1
 			ForEach($tmp in $xDesktopConditions)
@@ -9358,7 +9492,7 @@ Function OutputMachineDetails
 			$rowdata += @(,('Zone',($global:htmlsb),$Machine.ZoneName,$htmlwhite))
 			$rowdata += @(,('Scheduled Reboot',($global:htmlsb),$Machine.ScheduledReboot.ToString(),$htmlwhite))
 			$rowdata += @(,('Summary State',($global:htmlsb),$xSummaryState,$htmlwhite))
-            [string]$TagName = $(If( $xTags -is [array] -and $xTags.Count ) { $xTags[0] } Else { '' } )
+            [string]$TagName = $(If( $xTags -is [array] -and $xTags.Count ) { $xTags[0] } Else { '-' } )
 			$rowdata += @(,('Tags',($global:htmlsb),$TagName,$htmlwhite))
 			$cnt = -1
 			ForEach($tmp in $xTags)
@@ -9421,10 +9555,10 @@ Function OutputMachineDetails
 			
 			WriteHTMLLine 4 0 "Machine Details"
 			$rowdata = @()
-			$columnHeaders = @("Agent Version",($global:htmlsb),$Machine.AgentVersion,$htmlwhite)
-			$rowdata += @(,('IP Address',($global:htmlsb),$Machine.IPAddress,$htmlwhite))
+			$columnHeaders = @("Agent Version",($global:htmlsb),$xAgentVersion,$htmlwhite)
+			$rowdata += @(,('IP Address',($global:htmlsb),$xIPAddress,$htmlwhite))
 			$rowdata += @(,('Is Assigned',($global:htmlsb),$Machine.IsAssigned.ToString(),$htmlwhite))
-			$rowdata += @(,('OS Type',($global:htmlsb),$Machine.OSType,$htmlwhite))
+			$rowdata += @(,('OS Type',($global:htmlsb),$xOSType,$htmlwhite))
 
 			$msg = ""
 			$columnWidths = @("200px","250px")
@@ -9432,7 +9566,7 @@ Function OutputMachineDetails
 
 			WriteHTMLLine 4 0 "Applications"
 			$rowdata = @()
-            [string]$AppsInUse = $(If( $xApplicationsInUse -is [array] -and $xApplicationsInUse.Count ) { $xApplicationsInUse[0] } Else { '' } )
+            [string]$AppsInUse = $(If( $xApplicationsInUse -is [array] -and $xApplicationsInUse.Count ) { $xApplicationsInUse[0] } Else { '-' } )
 			$columnHeaders = @("Applications In Use",($global:htmlsb),$AppsInUse,$htmlwhite)
 			$cnt = -1
 			ForEach($tmp in $xApplicationsInUSe)
@@ -9443,7 +9577,7 @@ Function OutputMachineDetails
 					$rowdata += @(,('',($global:htmlsb),$tmp,$htmlwhite))
 				}
 			}
-            [string]$PubApps = $(If( $xPublishedApplications -is [array] -and $xPublishedApplications.Count ) { $xPublishedApplications[0] } Else { '' } )
+            [string]$PubApps = $(If( $xPublishedApplications -is [array] -and $xPublishedApplications.Count ) { $xPublishedApplications[0] } Else { '-' } )
 			$rowdata += @(,('Published Applications',($global:htmlsb),$PubApps,$htmlwhite))
 			$cnt = -1
 			ForEach($tmp in $xPublishedApplications)
@@ -9482,7 +9616,7 @@ Function OutputMachineDetails
 			$rowdata = @()
 			$columnHeaders = @("Broker",($global:htmlsb),$xBroker,$htmlwhite)
 			$rowdata += @(,('Last registration failure',($global:htmlsb),$xLastDeregistrationReason,$htmlwhite))
-			$rowdata += @(,('Last registration failure time',($global:htmlsb),$Machine.LastDeregistrationTime,$htmlwhite))
+			$rowdata += @(,('Last registration failure time',($global:htmlsb),$xLastDeregistrationTime,$htmlwhite))
 			$rowdata += @(,('Registration State',($global:htmlsb),$Machine.RegistrationState.ToString(),$htmlwhite))
 			$rowdata += @(,('Fault State',($global:htmlsb),$xMachineFaultState,$htmlwhite))
 
@@ -9512,7 +9646,7 @@ Function OutputMachineDetails
 				$columnHeaders = @("Launched Via",($global:htmlsb),$xSessionLaunchedViaHostName,$htmlwhite)
 				$rowdata += @(,('Launched Via (IP)',($global:htmlsb),$xSessionLaunchedViaIP,$htmlwhite))
 				$rowdata += @(,('Session Change Time',($global:htmlsb),$xSessionStateChangeTime,$htmlwhite))
-				[string]$SSAT = $(If( $xSessionSmartAccessTags -is [array] -and $xSessionSmartAccessTags.Count ) { $xSessionSmartAccessTags[0] } Else { '' } )
+				[string]$SSAT = $(If( $xSessionSmartAccessTags -is [array] -and $xSessionSmartAccessTags.Count ) { $xSessionSmartAccessTags[0] } Else { '-' } )
 				$rowdata += @(,('SmartAccess Filters',($global:htmlsb),$SSAT,$htmlwhite))
 				$cnt = -1
 				ForEach($tmp in $xSessionSmartAccessTags)
@@ -10481,7 +10615,7 @@ Function OutputDeliveryGroupDetails
 		$ScriptInformation += @{Data = "Color Depth"; Value = $xColorDepth; }
 		$ScriptInformation += @{Data = "Shutdown Desktops After Use"; Value = $xShutdownDesktopsAfterUse; }
 		$ScriptInformation += @{Data = "Turn On Added Machine"; Value = $xTurnOnAddedMachine; }
-		[string]$DGIU = $(If( $DGIncludedUsers -is [array] -and $DGIncludedUsers.Count ) { $DGIncludedUsers[0] } Else { '' } )
+		[string]$DGIU = $(If( $DGIncludedUsers -is [array] -and $DGIncludedUsers.Count ) { $DGIncludedUsers[0] } Else { '-' } )
 		$ScriptInformation += @{Data = "Included Users"; Value = $DGIU; }
 		$cnt = -1
 		ForEach($tmp in $DGIncludedUsers)
@@ -10526,7 +10660,15 @@ Function OutputDeliveryGroupDetails
 				{
 					$DesktopSettingIncludedUsers = @()
 					$DesktopSettingExcludedUsers = @()
-					$RestrictedToTag = $DesktopSetting.RestrictToTag
+					
+					If([String]::IsNullOrEmpty($DesktopSetting.RestrictToTag))
+					{
+						$RestrictedToTag = "-"
+					}
+					Else
+					{
+						$RestrictedToTag = $DesktopSetting.RestrictToTag
+					}
 					
 					If($DesktopSetting.IncludedUserFilterEnabled -eq $True)
 					{
@@ -10566,7 +10708,7 @@ Function OutputDeliveryGroupDetails
 					$ScriptInformation += @{Data = "     Display name"; Value = $DesktopSetting.PublishedName; }
 					$ScriptInformation += @{Data = "     Description"; Value = $DesktopSetting.Description; }
 					$ScriptInformation += @{Data = "     Restrict launches to machines with tag"; Value = $RestrictedToTag; }
-					[string]$DSIU = $(If( $DesktopSettingIncludedUsers -is [array] -and $DesktopSettingIncludedUsers.Count ) { $DesktopSettingIncludedUsers[0] } Else { '' } )
+					[string]$DSIU = $(If( $DesktopSettingIncludedUsers -is [array] -and $DesktopSettingIncludedUsers.Count ) { $DesktopSettingIncludedUsers[0] } Else { '-' } )
 					$ScriptInformation += @{Data = "     Included Users"; Value = $DSIU; }
 					$cnt = -1
 					ForEach($tmp in $DesktopSettingIncludedUsers)
@@ -10600,7 +10742,7 @@ Function OutputDeliveryGroupDetails
 			}
 		}
 		
-		[string]$DGS = $(If( $DGScopes -is [array] -and $DGScopes.Count ) { $DGScopes[0] } Else { '' } )
+		[string]$DGS = $(If( $DGScopes -is [array] -and $DGScopes.Count ) { $DGScopes[0] } Else { '-' } )
 		$ScriptInformation += @{Data = "Scopes"; Value = $DGS; }
 		$cnt = -1
 		ForEach($tmp in $DGScopes)
@@ -10612,7 +10754,7 @@ Function OutputDeliveryGroupDetails
 			}
 		}
 		
-		[string]$DGSFS = $(If( $DGSFServers -is [array] -and $DGSFServers.Count ) { $DGSFServers[0] } Else { '' } )
+		[string]$DGSFS = $(If( $DGSFServers -is [array] -and $DGSFServers.Count ) { $DGSFServers[0] } Else { '-' } )
 		$ScriptInformation += @{Data = "StoreFronts"; Value = $DGSFS; }
 		$cnt = -1
 		ForEach($tmp in $DGSFServers)
@@ -11055,7 +11197,7 @@ Function OutputDeliveryGroupDetails
 		
 		$ScriptInformation += @{Data = "All connections not through NetScaler Gateway"; Value = $xAllConnections; }
 		$ScriptInformation += @{Data = "Connections through NetScaler Gateway"; Value = $xNSConnection; }
-		[string]$AGF = $(If( $xAGFilters -is [array] -and $xAGFilters.Count ) { $xAGFilters[0] } Else { '' } )
+		[string]$AGF = $(If( $xAGFilters -is [array] -and $xAGFilters.Count ) { $xAGFilters[0] } Else { '-' } )
 		$ScriptInformation += @{Data = "Connections meeting any of the following filters"; Value = $AGF; }
 		$cnt = -1
 		ForEach($tmp in $xAGFilters)
@@ -11104,7 +11246,7 @@ Function OutputDeliveryGroupDetails
 		Line 1 "Color Depth`t`t`t`t`t`t: " $xColorDepth
 		Line 1 "Shutdown Desktops After Use`t`t`t`t: " $xShutdownDesktopsAfterUse
 		Line 1 "Turn On Added Machine`t`t`t`t`t: " $xTurnOnAddedMachine
-		[string]$DGIU = $(If( $DGIncludedUsers -is [array] -and $DGIncludedUsers.Count ) { $DGIncludedUsers[0] } Else { '' } )
+		[string]$DGIU = $(If( $DGIncludedUsers -is [array] -and $DGIncludedUsers.Count ) { $DGIncludedUsers[0] } Else { '-' } )
 		Line 1 "Included Users`t`t`t`t`t`t: " $DGIU
 		$cnt = -1
 		ForEach($tmp in $DGIncludedUsers)
@@ -11149,7 +11291,15 @@ Function OutputDeliveryGroupDetails
 				{
 					$DesktopSettingIncludedUsers = @()
 					$DesktopSettingExcludedUsers = @()
-					$RestrictedToTag = $DesktopSetting.RestrictToTag
+
+					If([String]::IsNullOrEmpty($DesktopSetting.RestrictToTag))
+					{
+						$RestrictedToTag = "-"
+					}
+					Else
+					{
+						$RestrictedToTag = $DesktopSetting.RestrictToTag
+					}
 					
 					If($DesktopSetting.IncludedUserFilterEnabled -eq $True)
 					{
@@ -11189,7 +11339,7 @@ Function OutputDeliveryGroupDetails
 					Line 2 "Display name`t`t`t`t`t: " $DesktopSetting.PublishedName
 					Line 2 "Description`t`t`t`t`t: " $DesktopSetting.Description
 					Line 2 "Restrict launches to machines with tag`t`t: " $RestrictedToTag
-					[string]$DSIU = $(If( $DesktopSettingIncludedUsers -is [array] -and $DesktopSettingIncludedUsers.Count ) { $DesktopSettingIncludedUsers[0] } Else { '' } )
+					[string]$DSIU = $(If( $DesktopSettingIncludedUsers -is [array] -and $DesktopSettingIncludedUsers.Count ) { $DesktopSettingIncludedUsers[0] } Else { '-' } )
 					Line 2 "Included Users`t`t`t`t`t: " $DSIU
 					$cnt = -1
 					ForEach($tmp in $DesktopSettingIncludedUsers)
@@ -11223,7 +11373,7 @@ Function OutputDeliveryGroupDetails
 			}
 		}
 		
-		[string]$DGS = $(If( $DGScopes -is [array] -and $DGScopes.Count ) { $DGScopes[0] } Else { '' } )
+		[string]$DGS = $(If( $DGScopes -is [array] -and $DGScopes.Count ) { $DGScopes[0] } Else { '-' } )
 		Line 1 "Scopes`t`t`t`t`t`t`t: " $DGS
 		$cnt = -1
 		ForEach($tmp in $DGScopes)
@@ -11235,7 +11385,7 @@ Function OutputDeliveryGroupDetails
 			}
 		}
 		
-		[string]$DGSFS = $(If( $DGSFServers -is [array] -and $DGSFServers.Count ) { $DGSFServers[0] } Else { '' } )
+		[string]$DGSFS = $(If( $DGSFServers -is [array] -and $DGSFServers.Count ) { $DGSFServers[0] } Else { '-' } )
 		Line 1 "StoreFronts`t`t`t`t`t`t: " $DGSFS
 		$cnt = -1
 		ForEach($tmp in $DGSFServers)
@@ -11678,7 +11828,7 @@ Function OutputDeliveryGroupDetails
 		
 		Line 1 "All connections not through NetScaler Gateway`t`t: " $xAllConnections
 		Line 1 "Connections through NetScaler Gateway`t`t`t: " $xNSConnection
-		[string]$AGF = $(If( $xAGFilters -is [array] -and $xAGFilters.Count ) { $xAGFilters[0] } Else { '' } )
+		[string]$AGF = $(If( $xAGFilters -is [array] -and $xAGFilters.Count ) { $xAGFilters[0] } Else { '-' } )
 		Line 1 "Connections meeting any of the following filters`t: " $AGF
 		$cnt = -1
 		ForEach($tmp in $xAGFilters)
@@ -11712,7 +11862,7 @@ Function OutputDeliveryGroupDetails
 		$rowdata += @(,('Color Depth',($global:htmlsb),$xColorDepth,$htmlwhite))
 		$rowdata += @(,("Shutdown Desktops After Use",($global:htmlsb),$xShutdownDesktopsAfterUse,$htmlwhite))
 		$rowdata += @(,("Turn On Added Machine",($global:htmlsb),$xTurnOnAddedMachine,$htmlwhite))
-		[string]$DGIU = $(If( $DGIncludedUsers -is [array] -and $DGIncludedUsers.Count ) { $DGIncludedUsers[0] } Else { '' } )
+		[string]$DGIU = $(If( $DGIncludedUsers -is [array] -and $DGIncludedUsers.Count ) { $DGIncludedUsers[0] } Else { '-' } )
 		$rowdata += @(,('Included Users',($global:htmlsb),$DGIU,$htmlwhite))
 		$cnt = -1
 		ForEach($tmp in $DGIncludedUsers)
@@ -11757,7 +11907,15 @@ Function OutputDeliveryGroupDetails
 				{
 					$DesktopSettingIncludedUsers = @()
 					$DesktopSettingExcludedUsers = @()
-					$RestrictedToTag = $DesktopSetting.RestrictToTag
+
+					If([String]::IsNullOrEmpty($DesktopSetting.RestrictToTag))
+					{
+						$RestrictedToTag = "-"
+					}
+					Else
+					{
+						$RestrictedToTag = $DesktopSetting.RestrictToTag
+					}
 					
 					If($DesktopSetting.IncludedUserFilterEnabled -eq $True)
 					{
@@ -11797,7 +11955,7 @@ Function OutputDeliveryGroupDetails
 					$rowdata += @(,("     Display name",($global:htmlsb),$DesktopSetting.PublishedName,$htmlwhite))
 					$rowdata += @(,("     Description",($global:htmlsb),$DesktopSetting.Description,$htmlwhite))
 					$rowdata += @(,("     Restrict launches to machines with tag",($global:htmlsb),$RestrictedToTag,$htmlwhite))
-					[string]$DSIU = $(If( $DesktopSettingIncludedUsers -is [array] -and $DesktopSettingIncludedUsers.Count ) { $DesktopSettingIncludedUsers[0] } Else { '' } )
+					[string]$DSIU = $(If( $DesktopSettingIncludedUsers -is [array] -and $DesktopSettingIncludedUsers.Count ) { $DesktopSettingIncludedUsers[0] } Else { '-' } )
 					$rowdata += @(,("     Included Users",($global:htmlsb),$DSIU,$htmlwhite))
 					$cnt = -1
 					ForEach($tmp in $DesktopSettingIncludedUsers)
@@ -11831,7 +11989,7 @@ Function OutputDeliveryGroupDetails
 			}
 		}
 		
-		[string]$DGS = $(If( $DGScopes -is [array] -and $DGScopes.Count ) { $DGScopes[0] } Else { '' } )
+		[string]$DGS = $(If( $DGScopes -is [array] -and $DGScopes.Count ) { $DGScopes[0] } Else { '-' } )
 		$rowdata += @(,('Scopes',($global:htmlsb),$DGS,$htmlwhite))
 		$cnt = -1
 		ForEach($tmp in $DGScopes)
@@ -11843,7 +12001,7 @@ Function OutputDeliveryGroupDetails
 			}
 		}
 		
-		[string]$DGSFS = $(If( $DGSFServers -is [array] -and $DGSFServers.Count ) { $DGSFServers[0] } Else { '' } )
+		[string]$DGSFS = $(If( $DGSFServers -is [array] -and $DGSFServers.Count ) { $DGSFServers[0] } Else { '-' } )
 		$rowdata += @(,('StoreFronts',($global:htmlsb),$DGSFS,$htmlwhite))
 		$cnt = -1
 		ForEach($tmp in $DGSFServers)
@@ -12285,7 +12443,7 @@ Function OutputDeliveryGroupDetails
 
 		$rowdata += @(,('All connections not through NetScaler Gateway',($global:htmlsb),$xAllConnections,$htmlwhite))
 		$rowdata += @(,('Connections through NetScaler Gateway',($global:htmlsb),$xNSConnection,$htmlwhite))
-		[string]$AGF = $(If( $xAGFilters -is [array] -and $xAGFilters.Count ) { $xAGFilters[0] } Else { '' } )
+		[string]$AGF = $(If( $xAGFilters -is [array] -and $xAGFilters.Count ) { $xAGFilters[0] } Else { '-' } )
 		$rowdata += @(,('Connections meeting any of the following filters',($global:htmlsb),$AGF,$htmlwhite))
 		$cnt = -1
 		ForEach($tmp in $xAGFilters)
@@ -12838,7 +12996,7 @@ Function OutputDeliveryGroupApplicationGroups
 	}
 	
 	#10-feb-2018 change from CVADParams1 to CVADParams2 to add maxrecordcount
-	$ApplicationGroups = Get-BrokerApplicationGroup @CVADParams2 -AssociatedDesktopGroupUid $Group.Uid | Sort-Object Name
+	$ApplicationGroups = Get-BrokerApplicationGroup @CVADParams2 -AssociatedDesktopGroupUid $Group.Uid -SortBy Name
 	
 	If($? -and $Null -ne $ApplicationGroups)
 	{
@@ -13186,6 +13344,15 @@ Function OutputApplicationDetails
 		"PublishedContent"	{$ApplicationType = "Published Content"; Break}
 		Default 			{$ApplicationType = "Unable to determine ApplicationType: $($Application.ApplicationType)"; Break}
 	}
+
+	If([String]::IsNullOrEmpty($Application.HomeZoneName))
+	{
+		$xHomeZoneName = "Not configured"
+	}
+	Else
+	{
+		$xHomeZoneName = $Application.HomeZoneName
+	}
 	
 	If($MSWord -or $PDF)
 	{
@@ -13193,7 +13360,7 @@ Function OutputApplicationDetails
 		$ScriptInformation += @{Data = "Name (for administrator)"; Value = $Application.Name; }
 		$ScriptInformation += @{Data = "Name (for user)"; Value = $Application.PublishedName; }
 		$ScriptInformation += @{Data = "Description and keywords"; Value = $Application.Description; }
-		[string]$xDGs = $(If( $DeliveryGroups -is [array] -and $DeliveryGroups.Count ) { $DeliveryGroups[0] } Else { '' } )
+		[string]$xDGs = $(If( $DeliveryGroups -is [array] -and $DeliveryGroups.Count ) { $DeliveryGroups[0] } Else { '-' } )
 		$ScriptInformation += @{Data = "Delivery Group"; Value = $xDGs; }
 		$cnt = -1
 		ForEach($Group in $DeliveryGroups)
@@ -13219,9 +13386,10 @@ Function OutputApplicationDetails
 		$ScriptInformation += @{Data = "Application Path"; Value = $Application.CommandLineExecutable; }
 		$ScriptInformation += @{Data = "Command line arguments"; Value = $Application.CommandLineArguments; }
 		$ScriptInformation += @{Data = "Working directory"; Value = $Application.WorkingDirectory; }
+
 		If([String]::IsNullOrEmpty($RedirectedFileTypes))
 		{
-			$ScriptInformation += @{Data = "Redirected file types"; Value = ""; }
+			$ScriptInformation += @{Data = "Redirected file types"; Value = "-"; }
 		}
 		Else
 		{
@@ -13233,7 +13401,8 @@ Function OutputApplicationDetails
 			$ScriptInformation += @{Data = "Redirected file types"; Value = $tmp1; }
 			$tmp1 = $Null
 		}
-        [string]$TagName = $(If( $xTags -is [array] -and $xTags.Count ) { $xTags[0] } Else { '' } )
+
+        [string]$TagName = $(If( $xTags -is [array] -and $xTags.Count ) { $xTags[0] } Else { '-' } )
 		$ScriptInformation += @{Data = "Tags"; Value = $TagName; }
 		$cnt = -1
 		ForEach($tmp in $xTags)
@@ -13279,7 +13448,7 @@ Function OutputApplicationDetails
 		
 		$ScriptInformation += @{Data = "Application Type"; Value = $ApplicationType; }
 		$ScriptInformation += @{Data = "CPU Priority Level"; Value = $CPUPriorityLevel; }
-		$ScriptInformation += @{Data = "Home Zone Name"; Value = $Application.HomeZoneName; }
+		$ScriptInformation += @{Data = "Home Zone Name"; Value = $xHomeZoneName; }
 		$ScriptInformation += @{Data = "Home Zone Only"; Value = $Application.HomeZoneOnly.ToString(); }
 		$ScriptInformation += @{Data = "Ignore User Home Zone"; Value = $Application.IgnoreUserHomeZone.ToString(); }
 		$ScriptInformation += @{Data = "Icon from Client"; Value = $Application.IconFromClient; }
@@ -13315,7 +13484,7 @@ Function OutputApplicationDetails
 		Line 1 "Name (for administrator)`t`t: " $Application.Name
 		Line 1 "Name (for user)`t`t`t`t: " $Application.PublishedName
 		Line 1 "Description and keywords`t`t: " $Application.Description
-		[string]$xDGs = $(If( $DeliveryGroups -is [array] -and $DeliveryGroups.Count ) { $DeliveryGroups[0] } Else { '' } )
+		[string]$xDGs = $(If( $DeliveryGroups -is [array] -and $DeliveryGroups.Count ) { $DeliveryGroups[0] } Else { '-' } )
 		Line 1 "Delivery Group`t`t`t`t: " $xDGs
 		$cnt = -1
 		ForEach($Group in $DeliveryGroups)
@@ -13341,14 +13510,23 @@ Function OutputApplicationDetails
 		Line 1 "Application Path`t`t`t: " $Application.CommandLineExecutable
 		Line 1 "Command line arguments`t`t`t: " $Application.CommandLineArguments
 		Line 1 "Working directory`t`t`t: " $Application.WorkingDirectory
-		$tmp1 = ""
-		ForEach($tmp in $RedirectedFileTypes)
+
+		If([String]::IsNullOrEmpty($RedirectedFileTypes))
 		{
-			$tmp1 += "$($tmp); "
+			Line 1 "Redirected file types`t`t`t: " "-"
 		}
-		Line 1 "Redirected file types`t`t`t: " $tmp1
-		$tmp1 = $Null
-        [string]$TagName = $(If( $xTags -is [array] -and $xTags.Count ) { $xTags[0] } Else { '' } )
+		Else
+		{
+			$tmp1 = ""
+			ForEach($tmp in $RedirectedFileTypes)
+			{
+				$tmp1 += "$($tmp); "
+			}
+			Line 1 "Redirected file types`t`t`t: " $tmp1
+			$tmp1 = $Null
+		}
+
+        [string]$TagName = $(If( $xTags -is [array] -and $xTags.Count ) { $xTags[0] } Else { '-' } )
 		Line 1 "Tags`t`t`t`t`t: " $TagName
 		$cnt = -1
 		ForEach($tmp in $xTags)
@@ -13395,7 +13573,7 @@ Function OutputApplicationDetails
 
 		Line 1 "Application Type`t`t`t: " $ApplicationType
 		Line 1 "CPU Priority Level`t`t`t: " $CPUPriorityLevel
-		Line 1 "Home Zone Name`t`t`t`t: " $Application.HomeZoneName
+		Line 1 "Home Zone Name`t`t`t`t: " $xHomeZoneName
 		Line 1 "Home Zone Only`t`t`t`t: " $Application.HomeZoneOnly.ToString()
 		Line 1 "Ignore User Home Zone`t`t`t: " $Application.IgnoreUserHomeZone.ToString()
 		Line 1 "Icon from Client`t`t`t: " $Application.IconFromClient
@@ -13416,7 +13594,7 @@ Function OutputApplicationDetails
 		$columnHeaders = @("Name (for administrator)",($global:htmlsb),$Application.Name,$htmlwhite)
 		$rowdata += @(,('Name (for user)',($global:htmlsb),$Application.PublishedName,$htmlwhite))
 		$rowdata += @(,('Description and keywords',($global:htmlsb),$Application.Description,$htmlwhite))
-		[string]$xDGs = $(If( $DeliveryGroups -is [array] -and $DeliveryGroups.Count ) { $DeliveryGroups[0] } Else { '' } )
+		[string]$xDGs = $(If( $DeliveryGroups -is [array] -and $DeliveryGroups.Count ) { $DeliveryGroups[0] } Else { '-' } )
 		$rowdata += @(,('Delivery Group',($global:htmlsb),$xDGs,$htmlwhite))
 		$cnt = -1
 		ForEach($Group in $DeliveryGroups)
@@ -13442,14 +13620,23 @@ Function OutputApplicationDetails
 		$rowdata += @(,('Application Path',($global:htmlsb),$Application.CommandLineExecutable,$htmlwhite))
 		$rowdata += @(,('Command Line arguments',($global:htmlsb),$Application.CommandLineArguments,$htmlwhite))
 		$rowdata += @(,('Working directory',($global:htmlsb),$Application.WorkingDirectory,$htmlwhite))
-		$tmp1 = ""
-		ForEach($tmp in $RedirectedFileTypes)
+
+		If([String]::IsNullOrEmpty($RedirectedFileTypes))
 		{
-			$tmp1 += "$($tmp); "
+			$rowdata += @(,("Redirected file types",($global:htmlsb),"-",$htmlwhite))
 		}
-		$rowdata += @(,('Redirected file types',($global:htmlsb),$tmp1,$htmlwhite))
-		$tmp1 = $Null
-        [string]$TagName = $(If( $xTags -is [array] -and $xTags.Count ) { $xTags[0] } Else { '' } )
+		Else
+		{
+			$tmp1 = ""
+			ForEach($tmp in $RedirectedFileTypes)
+			{
+				$tmp1 += "$($tmp); "
+			}
+			$rowdata += @(,("Redirected file types",($global:htmlsb),$tmp1,$htmlwhite))
+			$tmp1 = $Null
+		}
+
+        [string]$TagName = $(If( $xTags -is [array] -and $xTags.Count ) { $xTags[0] } Else { '-' } )
 		$rowdata += @(,('Tags',($global:htmlsb),$TagName,$htmlwhite))
 		$cnt = -1
 		ForEach($tmp in $xTags)
@@ -13495,7 +13682,7 @@ Function OutputApplicationDetails
 
 		$rowdata += @(,("Application Type",($global:htmlsb),$ApplicationType,$htmlwhite))
 		$rowdata += @(,("CPU Priority Level",($global:htmlsb),$CPUPriorityLevel,$htmlwhite))
-		$rowdata += @(,("Home Zone Name",($global:htmlsb),$Application.HomeZoneName,$htmlwhite))
+		$rowdata += @(,("Home Zone Name",($global:htmlsb),$xHomeZoneName,$htmlwhite))
 		$rowdata += @(,("Home Zone Only",($global:htmlsb),$Application.HomeZoneOnly.ToString(),$htmlwhite))
 		$rowdata += @(,("Ignore User Home Zone",($global:htmlsb),$Application.IgnoreUserHomeZone.ToString(),$htmlwhite))
 		$rowdata += @(,("Icon from Client",($global:htmlsb),$Application.IconFromClient,$htmlwhite))
@@ -13904,7 +14091,7 @@ Function ProcessApplicationGroupDetails
 				$ScriptInformation.Add(@{Data = "Single application per session"; Value = $xSingleSession; }) > $Null
 				$ScriptInformation.Add(@{Data = "Restrict launches to machines with tag"; Value = $AppGroup.RestrictToTag; }) > $Null
 
-				[string]$xxDGs = $(If( $DGs -is [array] -and $DGs.Count ) { $DGs[0] } Else { '' } )
+				[string]$xxDGs = $(If( $DGs -is [array] -and $DGs.Count ) { $DGs[0] } Else { '-' } )
 				$ScriptInformation.Add(@{Data = "Delivery Groups"; Value = $xxDGs; }) > $Null
 				$cnt = -1
 				ForEach($tmp in $DGs)
@@ -13916,7 +14103,7 @@ Function ProcessApplicationGroupDetails
 					}
 				}
 				
-				[string]$TagName = $(If( $xTags -is [array] -and $xTags.Count ) { $xTags[0] } Else { '' } )
+				[string]$TagName = $(If( $xTags -is [array] -and $xTags.Count ) { $xTags[0] } Else { '-' } )
 				$ScriptInformation.Add(@{Data = "Tags"; Value = $TagName; }) > $Null
 				$cnt = -1
 				ForEach($tmp in $xTags)
@@ -13970,7 +14157,7 @@ Function ProcessApplicationGroupDetails
 				Line 1 "Single application per session`t`t: " $xSingleSession
 				Line 1 "Restrict launches to machines with tag`t: " $AppGroup.RestrictToTag
 
-				[string]$xxDGs = $(If( $DGs -is [array] -and $DGs.Count ) { $DGs[0] } Else { '' } )
+				[string]$xxDGs = $(If( $DGs -is [array] -and $DGs.Count ) { $DGs[0] } Else { '-' } )
 				Line 1 "Delivery Groups`t`t`t`t: " $xxDGs
 				$cnt = -1
 				ForEach($tmp in $DGs)
@@ -13982,7 +14169,7 @@ Function ProcessApplicationGroupDetails
 					}
 				}
 				
-				[string]$TagName = $(If( $xTags -is [array] -and $xTags.Count ) { $xTags[0] } Else { '' } )
+				[string]$TagName = $(If( $xTags -is [array] -and $xTags.Count ) { $xTags[0] } Else { '-' } )
 				Line 1 "Tags`t`t`t`t`t: " $TagName
 				$cnt = -1
 				ForEach($tmp in $xTags)
@@ -14021,7 +14208,7 @@ Function ProcessApplicationGroupDetails
 				$rowdata += @(,('Single application per session',($global:htmlsb),$xSingleSession,$htmlwhite))
 				$rowdata += @(,('Restrict launches to machines with tag',($global:htmlsb),$AppGroup.RestrictToTag,$htmlwhite))
 				
-				[string]$xxDGs = $(If( $DGs -is [array] -and $DGs.Count ) { $DGs[0] } Else { '' } )
+				[string]$xxDGs = $(If( $DGs -is [array] -and $DGs.Count ) { $DGs[0] } Else { '-' } )
 				$rowdata += @(,('Delivery Groups',($global:htmlsb),$xxDGs,$htmlwhite))
 				$cnt = -1
 				ForEach($tmp in $DGs)
@@ -14033,7 +14220,7 @@ Function ProcessApplicationGroupDetails
 					}
 				}
 				
-				[string]$TagName = $(If( $xTags -is [array] -and $xTags.Count ) { $xTags[0] } Else { '' } )
+				[string]$TagName = $(If( $xTags -is [array] -and $xTags.Count ) { $xTags[0] } Else { '-' } )
 				$rowdata += @(,('Tags',($global:htmlsb),$TagName,$htmlwhite))
 				$cnt = -1
 				ForEach($tmp in $xTags)
@@ -28877,7 +29064,7 @@ Function ProcessAdministrators
 	Write-Verbose "$(Get-Date -Format G): Processing Administrators"
 	Write-Verbose "$(Get-Date -Format G): `tRetrieving Administrator data"
 	
-	$Admins = Get-AdminAdministrator @CVADParams2 | Sort-Object Name
+	$Admins = Get-AdminAdministrator @CVADParams2 -SortBy Name
 
 	If($? -and ($Null -ne $Admins))
 	{
@@ -30578,7 +30765,7 @@ Function OutputControllers
 				{
 					$results = Get-ChildItem HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall|`
 					ForEach-Object{Get-ItemProperty $_.pspath}|`
-					Where-Object {$_.Publisher -like 'Citrix*'}|`
+					Where-Object { $_.PSObject.Properties[ 'Publisher' ] -and $_.Publisher -like 'Citrix*'}|`
 					Select-Object DisplayName, DisplayVersion
 				}
 				Else
@@ -30586,7 +30773,7 @@ Function OutputControllers
 					$results = Invoke-Command -ComputerName $Controller.DNSName -ScriptBlock `
 					{Get-ChildItem HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall|`
 					ForEach-Object{Get-ItemProperty $_.pspath}|`
-					Where-Object {$_.Publisher -like 'Citrix*'}|`
+					Where-Object { $_.PSObject.Properties[ 'Publisher' ] -and $_.Publisher -like 'Citrix*'}|`
 					Select-Object DisplayName, DisplayVersion}
 				}
 				If($?)
@@ -32020,6 +32207,7 @@ Function OutputServerOSMachine
 		$msg = ""
 		$columnWidths = @("150","200")
 		FormatHTMLTable $msg -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths -tablewidth "350"
+		WriteHTMLLine 0 0 ""
 	}
 }
 
@@ -32250,7 +32438,7 @@ Function OutputLicensingOverview
 	}
 	Else
 	{
-		$LicenseModelType = $Script:CVADSite1.LicenseModel
+		$LicenseModelType = $Script:CVADSite1.LicenseModel.ToString()
 	}
 	$tmpdate = '{0:yyyy\.MMdd}' -f $Script:CVADSite1.LicensingBurnInDate
 	
@@ -32957,7 +33145,7 @@ Function ProcessZones
 	
 	#get all zone names
 	Write-Verbose "$(Get-Date -Format G): `tRetrieving All Zones"
-	$Zones = Get-ConfigZone @CVADParams1 | Sort-Object Name
+	$Zones = Get-ConfigZone @CVADParams1 -SortBy Name
 	$ZoneMembers = New-Object System.Collections.ArrayList
 	
 	ForEach($Zone in $Zones)
@@ -34160,7 +34348,7 @@ Function OutputAppendixA
 		Line 0 "These items may or may not be needed"
 		Line 0 "This Appendix is for VDA comparison only"
 		Line 0 ""
-		Line 1 "Registry Key                                                                                    Registry Value                                     Data                                                                                       VDA Type DDC Name                      " 
+		Line 1 "Registry Key                                                                                    Registry Value                                     Data                                                                                       VDA Type Computer Name                 " 
 		Line 1 "====================================================================================================================================================================================================================================================================================="
 		#       12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345S12345678901234567890123456789012345678901234567890S123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890S12345678S123456789012345678901234567890
 		
