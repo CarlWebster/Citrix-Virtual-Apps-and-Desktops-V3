@@ -20,6 +20,11 @@
 #		ICA\FIDO2 Redirection
 #		ICA\Limit clipboard client to session transfer size
 #		ICA\Limit clipboard session to client transfer size
+#	Added VDA Registry Keys:
+#		HKLM\SOFTWARE\Citrix\SmartCard\EnableReaderInsertCountReporting
+#		HKLM\SOFTWARE\\Policies\Citrix\VirtualDesktopAgent\SupportMultipleForestDdcLookup
+#		HKLM\SOFTWARE\Citrix\CtxKlMap\DisableWindowHook
+#		HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server\Wds\icawd\MtuDiscovery
 #	Changed testing for existing PSDrives from Get-PSDrive to Test-Path
 #	Fix three uninitialized variables
 #	If BrokerRegistryKeys is True, test for elevation
