@@ -6,6 +6,23 @@
 
 # This script is based on the 2.36 script
 
+#Version 3.10 1-Oct-2020
+#	Add Hosting Connection type Remote PC Wake on LAN
+#	Add version 7.27 for CVAD 2009 to version table
+#	Added the following new Administrator Role permissions:
+#		App-V
+#			Add App-V applications
+#			Remove App-V applications
+#	Added three new User policy settings
+#		ICA\FIDO2 Redirection
+#		ICA\Limit clipboard client to session transfer size
+#		ICA\Limit clipboard session to client transfer size
+#	Changed testing for existing PSDrives from Get-PSDrive to Test-Path
+#	Fix three uninitialized variables
+#	If BrokerRegistryKeys is True, test for elevation
+#		Update help text to show elevation is required when using BrokerRegistryKeys
+#	When getting the Master VM for an MCS based machine catalog, also check for images ending in .template for Nutanix
+
 #Version 3.01 11-Sep-2020
 #	Add a switch statement for the machine/desktop/server Power State
 #	Change all Write-Verbose $(Get-Date) to add -Format G to put the dates in the user's locale
