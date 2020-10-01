@@ -57,6 +57,8 @@
 
 	Using both the MachineCatalogs and DeliveryGroups parameters can cause the report to 
 	take an extremely long time to complete and generate an exceptionally long report.
+	
+	Using BrokerRegistryKeys requires the script is run elevated.
 
 	Creates an output file named after the CVAD Site.
 	
@@ -113,6 +115,8 @@
 	This parameter has an alias of Apps.
 .PARAMETER BrokerRegistryKeys
 	Adds information on 315 registry keys to the Controller section.
+	
+	*****Requires the script is run elevated*****
 	
 	For Word and PDF output, this adds eights pages, per Controller, to the report.
 	For Text and HTML, this adds 315 lines, per Controller, to the report.
@@ -342,6 +346,8 @@
 		StoreFront
 		VDARegistryKeys
 
+	*****Requires the script is run elevated*****
+
 	Does not change the value of NoADPolicies.
 	Does not change the value of NoSessions.
 	
@@ -377,11 +383,6 @@
 	
 	Using the Policies parameter can cause the report to take a very long time 
 	to complete and can generate an extremely long report.
-	
-	Note: The Citrix Group Policy PowerShell module will not load from an elevated 
-	PowerShell session. 
-	If the module is manually imported, the module is not detected from an elevated 
-	PowerShell session.
 	
 	There are three related parameters: Policies, NoPolicies, and NoADPolicies.
 	
@@ -767,6 +768,9 @@
 	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -BrokerRegistryKeys
 	
 	Creates an HTML report.
+
+	*****Requires the script is run elevated*****
+
 	Adds the information on over 300 Broker registry keys to the Controllers section.
 	The computer running the script for the AdminAddress.
 .EXAMPLE
@@ -795,6 +799,8 @@
 		
 		NoPolicies          = False
 		Section             = "All"
+
+	*****Requires the script is run elevated*****
 
 	Creates an HTML report.
 	The computer running the script for the AdminAddress.
@@ -830,6 +836,8 @@
 		NoPolicies          = False
 		Section             = "All"
 		
+	*****Requires the script is run elevated*****
+
 	The computer running the script for the AdminAddress.
 .EXAMPLE
 	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -Dev -ScriptInfo -Log
@@ -906,6 +914,8 @@
 		NoPolicies          = False
 		Section             = "All"
 		
+
+	*****Requires the script is run elevated*****
 
 	The computer running the script for the AdminAddress.
 .EXAMPLE
@@ -1005,9 +1015,9 @@
 	This script creates a Word, PDF, plain text, or HTML document.
 .NOTES
 	NAME: CVAD_Inventory_V3.ps1
-	VERSION: 3.01
+	VERSION: 3.10
 	AUTHOR: Carl Webster
-	LASTEDIT: September 10, 2020
+	LASTEDIT: October 1, 2020
 #>
 
 #endregion
@@ -1195,6 +1205,23 @@ Param(
 #started updating for CVAD version 2006 on August 10, 2020
 
 # This script is based on the 2.36 script
+#
+#Version 3.10 1-Oct-2020
+#	Add Hosting Connection type Remote PC Wake on LAN
+#	Add version 7.27 for CVAD 2009 to version table
+#	Added the following new Administrator Role permissions:
+#		App-V
+#			Add App-V applications
+#			Remove App-V applications
+#	Added three new User policy settings
+#		ICA\FIDO2 Redirection
+#		ICA\Limit clipboard client to session transfer size
+#		ICA\Limit clipboard session to client transfer size
+#	Changed testing for existing PSDrives from Get-PSDrive to Test-Path
+#	Fix three uninitialized variables
+#	If BrokerRegistryKeys is True, test for elevation
+#		Update help text to show elevation is required when using BrokerRegistryKeys
+#	When getting the Master VM for an MCS based machine catalog, also check for images ending in .template for Nutanix
 #
 #Version 3.01 11-Sep-2020
 #	Add a switch statement for the machine/desktop/server Power State
@@ -1481,6 +1508,28 @@ If($MaxDetails)
 	
 	$NoPolicies			= $False
 	$Section			= "All"
+}
+
+#added in 3.10, if BrokerRegistryKeys is True, test for elevation
+
+If($BrokerRegistryKeys -eq $True)
+{
+	$currentPrincipal = New-Object Security.Principal.WindowsPrincipal( [Security.Principal.WindowsIdentity]::GetCurrent() )
+
+	If($currentPrincipal.IsInRole( [Security.Principal.WindowsBuiltInRole]::Administrator ))
+	{
+		Write-Host "This is an elevated PowerShell session" -ForegroundColor
+	}
+	Else
+	{
+		Write-Error "
+		`n
+		BrokerRegistryKeys was specified and this is NOT an elevated PowerShell session.
+		`n
+		Script will exit.
+		`n"
+		Exit
+	}
 }
 
 If($NoPolicies)
@@ -6310,7 +6359,7 @@ Function OutputMachines
 					$MasterVM = ""
 					ForEach($Item in $tmp1)
 					{
-						If($Item.EndsWith(".vm"))
+						If(($Item.EndsWith(".vm")) -or ($Item.EndsWith(".template"))) #.template for Nutanix
 						{
 							$MasterVM = $Item
 						}
@@ -10549,6 +10598,12 @@ Function OutputDeliveryGroupDetails
 					$xAGFilters += "N/A"
 				}
 			}
+			Else
+			{
+				$xAllConnections = ""
+				$xNSConnection = ""
+				$xAGFilters = @()
+			}
 		}
 		
 		[array]$DGIncludedUsers = $DGIncludedUsers | Sort-Object -unique
@@ -14284,7 +14339,7 @@ Function ProcessPolicies
 	{
 	
 		Write-Verbose "$(Get-Date -Format G): `tDoes localfarmgpo PSDrive already exist?"
-		If(Get-PSDrive localfarmgpo -EA 0)
+		If(Test-Path localfarmgpo:)
 		{
 			Write-Verbose "$(Get-Date -Format G): `tRemoving the current localfarmgpo PSDrive"
 			Remove-PSDrive localfarmgpo -EA 0 4>$Null
@@ -14295,7 +14350,7 @@ Function ProcessPolicies
 		
 		#using Citrix policy stuff and new-psdrive breaks transcript logging so restart transcript logging
 		TranscriptLogging
-		If(Get-PSDrive localfarmgpo -EA 0)
+		If(Test-Path localfarmgpo:)
 		{
 			ProcessCitrixPolicies "localfarmgpo" "Computer" ""
 			Write-Verbose "$(Get-Date -Format G): Finished Processing Citrix Site Computer Policies"
@@ -14311,7 +14366,7 @@ Function ProcessPolicies
 		
 		#using Citrix policy stuff and new-psdrive breaks transcript logging so restart transcript logging
 		TranscriptLogging
-		If(Get-PSDrive localfarmgpo -EA 0)
+		If(Test-Path localfarmgpo:)
 		{
 			ProcessCitrixPolicies "localfarmgpo" "User" ""
 			Write-Verbose "$(Get-Date -Format G): Finished Processing Citrix Site User Policies"
@@ -14348,7 +14403,7 @@ Function ProcessPolicies
 		
 					#using Citrix policy stuff and new-psdrive breaks transcript logging so restart transcript logging
 					TranscriptLogging
-					If(Get-PSDrive ADGpoDrv -EA 0)
+					If(Test-Path ADGpoDrv:)
 					{
 						Write-Verbose "$(Get-Date -Format G): `tProcessing Citrix AD Policy $($CtxGPO)"
 					
@@ -14368,7 +14423,7 @@ Function ProcessPolicies
 		
 					#using Citrix policy stuff and new-psdrive breaks transcript logging so restart transcript logging
 					TranscriptLogging
-					If(Get-PSDrive ADGpoDrv -EA 0)
+					If(Test-Path ADGpoDrv:)
 					{
 						Write-Verbose "$(Get-Date -Format G): `tProcessing Citrix AD Policy $($CtxGPO)"
 					
@@ -14400,7 +14455,7 @@ Function ProcessPolicies
 Function ProcessPolicySummary
 {
 	Write-Verbose "$(Get-Date -Format G): `tDoes localfarmgpo PSDrive already exist?"
-	If(Get-PSDrive localfarmgpo -EA 0)
+	If(Test-Path localfarmgpo:)
 	{
 		Write-Verbose "$(Get-Date -Format G): `tRemoving the current localfarmgpo PSDrive"
 		Remove-PSDrive localfarmgpo -EA 0 4>$Null
@@ -14412,7 +14467,7 @@ Function ProcessPolicySummary
 	#using Citrix policy stuff and new-psdrive breaks transcript logging so restart transcript logging
 	TranscriptLogging
 
-	If(Get-PSDrive localfarmgpo -EA 0)
+	If(Test-Path localfarmgpo:)
 	{
 		$HDXPolicies = Get-CtxGroupPolicy -DriveName localfarmgpo -EA 0 `
 		| Select-Object PolicyName, Type, Description, Enabled, Priority `
@@ -14449,7 +14504,7 @@ Function ProcessPolicySummary
 		
 				#using Citrix policy stuff and new-psdrive breaks transcript logging so restart transcript logging
 				TranscriptLogging
-				If(Get-PSDrive ADGpoDrv -EA 0)
+				If(Test-Path ADGpoDrv:)
 				{
 					Write-Verbose "$(Get-Date -Format G): `tProcessing Citrix AD Policy $($CtxGPO)"
 				
@@ -15517,6 +15572,27 @@ Function ProcessCitrixPolicies
 							OutputPolicySetting $txt $Setting.DesktopLaunchForNonAdmins.State 
 						}
 					}
+					If((validStateProp $Setting AllowFidoRedirection State ) -and ($Setting.AllowFidoRedirection.State -ne "NotConfigured"))
+					{
+						$txt = "ICA\FIDO2 Redirection"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.AllowFidoRedirection.State;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.AllowFidoRedirection.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.AllowFidoRedirection.State 
+						}
+					}
 					If((validStateProp $Setting HDXAdaptiveTransport State ) -and ($Setting.HDXAdaptiveTransport.State -ne "NotConfigured"))
 					{
 						$txt = "ICA\HDX Adaptive Transport"
@@ -15609,6 +15685,48 @@ Function ProcessCitrixPolicies
 						If($Text)
 						{
 							OutputPolicySetting $txt $Setting.NonPublishedProgramLaunching.State
+						}
+					}
+					If((validStateProp $Setting LimitClipboardTransferC2H State ) -and ($Setting.LimitClipboardTransferC2H.State -ne "NotConfigured"))
+					{
+						$txt = "ICA\Limit clipboard client to session transfer size (KB)"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.LimitClipboardTransferC2H.Value;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.LimitClipboardTransferC2H.Value,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.LimitClipboardTransferC2H.Value 
+						}
+					}
+					If((validStateProp $Setting LimitClipboardTransferH2C State ) -and ($Setting.LimitClipboardTransferH2C.State -ne "NotConfigured"))
+					{
+						$txt = "ICA\Limit clipboard session to client transfer size (KB)"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.LimitClipboardTransferH2C.Value;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.LimitClipboardTransferH2C.Value,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.LimitClipboardTransferH2C.Value 
 						}
 					}
 					If((validStateProp $Setting LogoffCheckerStartupDelay State ) -and ($Setting.LogoffCheckerStartupDelay.State -ne "NotConfigured"))
@@ -30190,6 +30308,7 @@ Function GetRolePermissions
 			"Manage_ServiceConfigurationData"							{$Results.Add("Manage ServiceSettings", "Administrators")}
 			
 			"AppGroupApplications_ChangeTags"							{$Results.Add("Edit Application tags (Application Group)", "Application Groups")}
+			"AppGroupApplications_ChangeUserAssignment"					{$Results.Add("Change users assigned to an application (Application Group)", "Application Groups")}
 			"AppGroupApplications_Create"								{$Results.Add("Create Application (Application Group)", "Application Groups")}
 			"AppGroupApplications_CreateFolder"							{$Results.Add("Create Application Folder (Application Group)", "Application Groups")}
 			"AppGroupApplications_Delete"								{$Results.Add("Delete Application (Application Group)", "Application Groups")}
@@ -30198,7 +30317,6 @@ Function GetRolePermissions
 			"AppGroupApplications_MoveFolder"							{$Results.Add("Move Application Folder (Application Group)", "Application Groups")}
 			"AppGroupApplications_Read"									{$Results.Add("View Applications (Application Group)", "Application Groups")}
 			"AppGroupApplications_RemoveFolder"							{$Results.Add("Remove Application Folder (Application Group)", "Application Groups")}
-			"AppGroupApplications_ChangeUserAssignment"					{$Results.Add("Change users assigned to an application (Application Group)", "Application Groups")}
 			"ApplicationGroup_AddApplication"							{$Results.Add("Add Application to Application Group", "Application Groups")}
 			"ApplicationGroup_AddScope"									{$Results.Add("Add Application Group to Scope", "Application Groups")}
 			"ApplicationGroup_AddToDesktopGroup"						{$Results.Add("Add Delivery Group to Application Group", "Application Groups")}
@@ -30212,10 +30330,12 @@ Function GetRolePermissions
 			"ApplicationGroup_RemoveFromDesktopGroup"					{$Results.Add("Remove Delivery Group from Application Group", "Application Groups")}
 			"ApplicationGroup_RemoveScope"								{$Results.Add("Remove Application Group from Scope", "Application Groups")}
 			
+			"AppLib_AddApplication"										{$Results.Add("Add App-V applications", "App-V")}
 			"AppLib_AddPackage"											{$Results.Add("Add App-V Application Libraries and Packages", "App-V")}
 			"AppLib_IsolationGroup_Create"								{$Results.Add("Create App-V Isolation Group", "App-V")}
 			"AppLib_IsolationGroup_Remove"								{$Results.Add("Remove App-V Isolation Groups", "App-V")}
 			"AppLib_Read"												{$Results.Add("Read App-V Application Libraries and Packages", "App-V")}
+			"AppLib_RemoveApplication"									{$Results.Add("Remove App-V applications", "App-V")}
 			"AppLib_RemovePackage"										{$Results.Add("Remove App-V Application Libraries and Packages", "App-V")}
 			"AppV_AddServer"											{$Results.Add("Add App-V publishing server", "App-V")}
 			"AppV_DeleteServer"											{$Results.Add("Delete App-V publishing server", "App-V")}
@@ -31459,11 +31579,12 @@ Function OutputHosting
 	$xxConnectionType = ""
 	Switch ($xConnectionType)
 	{
-		"XenServer" {$xxConnectionType = "Citrix Hypervisor"; Break}
-		"SCVMM"     {$xxConnectionType = "Microsoft System Center Virtual Machine Manager"; Break}
-		"vCenter"   {$xxConnectionType = "VMware vSphere"; Break}
-		"Custom"    {$xxConnectionType = "Custom"; Break}
-		Default     {$xxConnectionType = "Hypervisor Type could not be determined: $($xConnectionType)"; Break}
+		"XenServer" 					{$xxConnectionType = "Citrix Hypervisor"; Break}
+		"SCVMM"     					{$xxConnectionType = "Microsoft System Center Virtual Machine Manager"; Break}
+		"VdaWOLMachineManagerFactory"	{$xxConnectionType = "Remote PC Wake on LAN"; Break} #added for CVAD 2009
+		"vCenter"   					{$xxConnectionType = "VMware vSphere"; Break}
+		"Custom"    					{$xxConnectionType = "Custom"; Break}
+		Default     					{$xxConnectionType = "Hypervisor Type could not be determined: $($xConnectionType)"; Break}
 	}
 
 	$xxState = ""
@@ -34055,6 +34176,7 @@ Script cannot continue
 	$tmp = $Script:CVADSiteVersion
 	Switch ($tmp)
 	{
+		"7.27"	{$Script:CVADSiteVersion = "2009"; Break}
 		"7.26"	{$Script:CVADSiteVersion = "2006"; Break}
 		"7.25"	{$Script:CVADSiteVersion = "2003"; Break}
 		"7.24"	{$Script:CVADSiteVersion = "1912"; Break}
