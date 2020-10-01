@@ -13,6 +13,9 @@
 #		App-V
 #			Add App-V applications
 #			Remove App-V applications
+#	Added two new Computer policy settings
+#		Profile Management\Profile container settings\Folders to exclude in profile container
+#		Profile Management\Profile container settings\Folders to include in profile container
 #	Added three new User policy settings
 #		ICA\FIDO2 Redirection
 #		ICA\Limit clipboard client to session transfer size

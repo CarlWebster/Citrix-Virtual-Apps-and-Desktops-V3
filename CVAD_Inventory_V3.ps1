@@ -1213,6 +1213,9 @@ Param(
 #		App-V
 #			Add App-V applications
 #			Remove App-V applications
+#	Added two new Computer policy settings
+#		Profile Management\Profile container settings\Folders to exclude in profile container
+#		Profile Management\Profile container settings\Folders to include in profile container
 #	Added three new User policy settings
 #		ICA\FIDO2 Redirection
 #		ICA\Limit clipboard client to session transfer size
@@ -24936,6 +24939,218 @@ Function ProcessCitrixPolicies
 						If($Text)
 						{
 							OutputPolicySetting $txt $Setting.LogLevel_RegistryDifference.State
+						}
+					}
+
+					Write-Verbose "$(Get-Date -Format G): `t`t`tProfile Management\Profile container settings"
+					If((validStateProp $Setting ProfileContainerExclusionListDir_Part State ) -and ($Setting.ProfileContainerExclusionListDir_Part.State -ne "NotConfigured"))
+					{
+						$txt = "Profile Management\Profile container settings\Folders to exclude in profile container"
+						If($Setting.ProfileContainerExclusionListDir_Part.State -eq "Enabled")
+						{
+							If(validStateProp $Setting ProfileContainerExclusionListDir_Part Values )
+							{
+								$tmpArray = $Setting.ProfileContainerExclusionListDir_Part.Values
+								$tmp = ""
+								$cnt = 0
+								ForEach($Thing in $tmpArray)
+								{
+									$cnt++
+									$tmp = "$($Thing)"
+									If($cnt -eq 1)
+									{
+										If($MSWord -or $PDF)
+										{
+											$WordTableRowHash = @{
+											Text = $txt;
+											Value = $tmp;
+											}
+											$SettingsWordTable += $WordTableRowHash;
+										}
+										If($HTML)
+										{
+											$rowdata += @(,(
+											$txt,$htmlbold,
+											$tmp,$htmlwhite))
+										}
+										If($Text)
+										{
+											OutputPolicySetting $txt $tmp
+										}
+									}
+									Else
+									{
+										If($MSWord -or $PDF)
+										{
+											$WordTableRowHash = @{
+											Text = "";
+											Value = $tmp;
+											}
+											$SettingsWordTable += $WordTableRowHash;
+										}
+										If($HTML)
+										{
+											$rowdata += @(,(
+											"",$htmlbold,
+											$tmp,$htmlwhite))
+										}
+										If($Text)
+										{
+											OutputPolicySetting "" $tmp
+										}
+									}
+								}
+								$tmpArray = $Null
+								$tmp = $Null
+							}
+							Else
+							{
+								$tmp = "No Exclusion list were found"
+								If($MSWord -or $PDF)
+								{
+									$WordTableRowHash = @{
+									Text = $txt;
+									Value = $tmp;
+									}
+									$SettingsWordTable += $WordTableRowHash;
+								}
+								If($HTML)
+								{
+									$rowdata += @(,(
+									$txt,$htmlbold,
+									$tmp,$htmlwhite))
+								}
+								If($Text)
+								{
+									OutputPolicySetting $txt $tmp
+								}
+							}
+						}
+						Else
+						{
+							If($MSWord -or $PDF)
+							{
+								$WordTableRowHash = @{
+								Text = $txt;
+								Value = $Setting.ProfileContainerExclusionListDir_Part.State;
+								}
+								$SettingsWordTable += $WordTableRowHash;
+							}
+							If($HTML)
+							{
+								$rowdata += @(,(
+								$txt,$htmlbold,
+								$Setting.ProfileContainerExclusionListDir_Part.State,$htmlwhite))
+							}
+							If($Text)
+							{
+								OutputPolicySetting $txt $Setting.ProfileContainerExclusionListDir_Part.State
+							}
+						}
+					}
+					If((validStateProp $Setting ProfileContainerInclusionListDir_Part State ) -and ($Setting.ProfileContainerInclusionListDir_Part.State -ne "NotConfigured"))
+					{
+						$txt = "Profile Management\Profile container settings\Folders to exclude in profile container"
+						If($Setting.ProfileContainerInclusionListDir_Part.State -eq "Enabled")
+						{
+							If(validStateProp $Setting ProfileContainerInclusionListDir_Part Values )
+							{
+								$tmpArray = $Setting.ProfileContainerInclusionListDir_Part.Values
+								$tmp = ""
+								$cnt = 0
+								ForEach($Thing in $tmpArray)
+								{
+									$cnt++
+									$tmp = "$($Thing)"
+									If($cnt -eq 1)
+									{
+										If($MSWord -or $PDF)
+										{
+											$WordTableRowHash = @{
+											Text = $txt;
+											Value = $tmp;
+											}
+											$SettingsWordTable += $WordTableRowHash;
+										}
+										If($HTML)
+										{
+											$rowdata += @(,(
+											$txt,$htmlbold,
+											$tmp,$htmlwhite))
+										}
+										If($Text)
+										{
+											OutputPolicySetting $txt $tmp
+										}
+									}
+									Else
+									{
+										If($MSWord -or $PDF)
+										{
+											$WordTableRowHash = @{
+											Text = "";
+											Value = $tmp;
+											}
+											$SettingsWordTable += $WordTableRowHash;
+										}
+										If($HTML)
+										{
+											$rowdata += @(,(
+											"",$htmlbold,
+											$tmp,$htmlwhite))
+										}
+										If($Text)
+										{
+											OutputPolicySetting "" $tmp
+										}
+									}
+								}
+								$tmpArray = $Null
+								$tmp = $Null
+							}
+							Else
+							{
+								$tmp = "No Exclusion list were found"
+								If($MSWord -or $PDF)
+								{
+									$WordTableRowHash = @{
+									Text = $txt;
+									Value = $tmp;
+									}
+									$SettingsWordTable += $WordTableRowHash;
+								}
+								If($HTML)
+								{
+									$rowdata += @(,(
+									$txt,$htmlbold,
+									$tmp,$htmlwhite))
+								}
+								If($Text)
+								{
+									OutputPolicySetting $txt $tmp
+								}
+							}
+						}
+						Else
+						{
+							If($MSWord -or $PDF)
+							{
+								$WordTableRowHash = @{
+								Text = $txt;
+								Value = $Setting.ProfileContainerInclusionListDir_Part.State;
+								}
+								$SettingsWordTable += $WordTableRowHash;
+							}
+							If($HTML)
+							{
+								$rowdata += @(,(
+								$txt,$htmlbold,
+								$Setting.ProfileContainerInclusionListDir_Part.State,$htmlwhite))
+							}
+							If($Text)
+							{
+								OutputPolicySetting $txt $Setting.ProfileContainerInclusionListDir_Part.State
+							}
 						}
 					}
 
