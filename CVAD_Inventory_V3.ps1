@@ -1017,7 +1017,7 @@
 	NAME: CVAD_Inventory_V3.ps1
 	VERSION: 3.10
 	AUTHOR: Carl Webster
-	LASTEDIT: October 1, 2020
+	LASTEDIT: October 6, 2020
 #>
 
 #endregion
@@ -1208,6 +1208,8 @@ Param(
 #
 #Version 3.10 1-Oct-2020
 #	Add Hosting Connection type Remote PC Wake on LAN
+#	Add Manage Security Data information
+#		https://docs.citrix.com/en-us/citrix-virtual-apps-desktops/secure/security-keys.html
 #	Add version 7.27 for CVAD 2009 to version table
 #	Added the following new Administrator Role permissions:
 #		App-V
@@ -27614,6 +27616,27 @@ Function OutputSiteSettings
 		Default {$xVDAVersion = "Unable to determine VDA version: $($Script:CVADSite1.DefaultMinimumFunctionalLevel)"; Break}
 	}
 
+	$SecurityKeyValue = "Not set"
+	$itemKeys = $Script:CVADSite2.MetadataMap.Keys
+
+	ForEach( $itemKey in $itemKeys )
+	{
+		If($itemKey.StartsWith("Citrix_DesktopStudio_SecurityKeyManagementEnabled"))
+		{
+			$SecurityKeyValue = $Script:CVADSite2.MetadataMap[ $itemKey ].ToString()
+			
+			If($SecurityKeyValue -eq "")
+			{
+				$SecurityKeyValue = "Not set"
+			}
+			Break
+		}
+		Else
+		{
+			Continue
+		}
+	}
+
 	Write-Verbose "$(Get-Date -Format G): `tOutput Site Settings"
 	If($MSWord -or $PDF)
 	{
@@ -27633,6 +27656,7 @@ Function OutputSiteSettings
 		$ScriptInformation.Add(@{Data = "Secure ICA Required"; Value = $Script:CVADSite1.SecureIcaRequired.ToString(); }) > $Null
 		$ScriptInformation.Add(@{Data = "Trust Managed Anonymous XML Service Requests"; Value = $Script:CVADSite1.TrustManagedAnonymousXmlServiceRequests.ToString(); }) > $Null
 		$ScriptInformation.Add(@{Data = "Trust Requests Sent to the XML Service Port"; Value = $Script:CVADSite1.TrustRequestsSentToTheXmlServicePort.ToString(); }) > $Null
+		$ScriptInformation.Add(@{Data = "Security Key Management Enabled"; Value = $SecurityKeyValue; }) > $Null
 		$Table = AddWordTable -Hashtable $ScriptInformation `
 		-Columns Data,Value `
 		-List `
@@ -27665,6 +27689,7 @@ Function OutputSiteSettings
 		Line 1 "Secure ICA Required`t`t`t`t`t: " $Script:CVADSite1.SecureIcaRequired.ToString()
 		Line 1 "Trust Managed Anonymous XML Service Requests`t`t: " $Script:CVADSite1.TrustManagedAnonymousXmlServiceRequests.ToString()
 		Line 1 "Trust Requests Sent to the XML Service Port`t`t: " $Script:CVADSite1.TrustRequestsSentToTheXmlServicePort.ToString()
+		Line 1 "Security Key Management Enabled`t`t`t`t: " $SecurityKeyValue
 		Line 0 ""
 	}
 	If($HTML)
@@ -27684,6 +27709,7 @@ Function OutputSiteSettings
 		$rowdata += @(,("Secure ICA Required",($global:htmlsb),$Script:CVADSite1.SecureIcaRequired.ToString(),$htmlwhite))
 		$rowdata += @(,("Trust Managed Anonymous XML Service Requests",($global:htmlsb),$Script:CVADSite1.TrustManagedAnonymousXmlServiceRequests.ToString(),$htmlwhite))
 		$rowdata += @(,("Trust Requests Sent to the XML Service Port",($global:htmlsb),$Script:CVADSite1.TrustRequestsSentToTheXmlServicePort.ToString(),$htmlwhite))
+		$rowdata += @(,("Security Key Management Enabled",($global:htmlsb),$SecurityKeyValue,$htmlwhite))
 		
 		$msg = ""
 		FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders

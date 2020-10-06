@@ -8,6 +8,8 @@
 
 #Version 3.10 1-Oct-2020
 #	Add Hosting Connection type Remote PC Wake on LAN
+#	Add Manage Security Data information
+#		https://docs.citrix.com/en-us/citrix-virtual-apps-desktops/secure/security-keys.html
 #	Add version 7.27 for CVAD 2009 to version table
 #	Added the following new Administrator Role permissions:
 #		App-V
