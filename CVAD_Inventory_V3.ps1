@@ -1015,9 +1015,9 @@
 	This script creates a Word, PDF, plain text, or HTML document.
 .NOTES
 	NAME: CVAD_Inventory_V3.ps1
-	VERSION: 3.10
+	VERSION: 3.20
 	AUTHOR: Carl Webster
-	LASTEDIT: October 6, 2020
+	LASTEDIT: November 21, 2020
 #>
 
 #endregion
@@ -1206,6 +1206,14 @@ Param(
 
 # This script is based on the 2.36 script
 #
+#Version 3.20
+#	Added Computer policy
+#		ICA\Rendezvous proxy configuration
+#	Added User policy
+#		ICA\Drag and drop
+#		ICA\WIA Redirection
+#	Updated for CVAD 2012
+
 #Version 3.10 1-Oct-2020
 #	Add Hosting Connection type Remote PC Wake on LAN
 #	Add Manage Security Data information
@@ -2501,6 +2509,7 @@ Function OutputDriveItem
 		$msg = ""
 		$columnWidths = @("150px","200px")
 		FormatHTMLTable $msg -rowarray $rowdata -columnArray $columnheaders -fixedWidth $columnWidths
+		WriteHTMLLine 0 0 ""
 	}
 }
 
@@ -2625,6 +2634,7 @@ Function OutputProcessorItem
 		$msg = ""
 		$columnWidths = @("150px","200px")
 		FormatHTMLTable $msg -rowarray $rowdata -columnArray $columnheaders -fixedWidth $columnWidths
+		WriteHTMLLine 0 0 ""
 	}
 }
 
@@ -15568,25 +15578,25 @@ Function ProcessCitrixPolicies
 						}
 						$tmp = $Null
 					}
-					If((validStateProp $Setting DesktopLaunchForNonAdmins State ) -and ($Setting.DesktopLaunchForNonAdmins.State -ne "NotConfigured"))
+					If((validStateProp $Setting DragDrop State ) -and ($Setting.DragDrop.State -ne "NotConfigured"))
 					{
-						$txt = "ICA\Desktop launches"
+						$txt = "ICA\Drag and Drop"
 						If($MSWord -or $PDF)
 						{
 							$SettingsWordTable += @{
 							Text = $txt;
-							Value = $Setting.DesktopLaunchForNonAdmins.State;
+							Value = $Setting.DragDrop.State;
 							}
 						}
 						If($HTML)
 						{
 							$rowdata += @(,(
 							$txt,$htmlbold,
-							$Setting.DesktopLaunchForNonAdmins.State,$htmlwhite))
+							$Setting.DragDrop.State,$htmlwhite))
 						}
 						If($Text)
 						{
-							OutputPolicySetting $txt $Setting.DesktopLaunchForNonAdmins.State 
+							OutputPolicySetting $txt $Setting.DragDrop.State 
 						}
 					}
 					If((validStateProp $Setting AllowFidoRedirection State ) -and ($Setting.AllowFidoRedirection.State -ne "NotConfigured"))
@@ -15608,6 +15618,27 @@ Function ProcessCitrixPolicies
 						If($Text)
 						{
 							OutputPolicySetting $txt $Setting.AllowFidoRedirection.State 
+						}
+					}
+					If((validStateProp $Setting AllowWIARedirection State ) -and ($Setting.AllowWIARedirection.State -ne "NotConfigured"))
+					{
+						$txt = "ICA\WIA Redirection"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.AllowWIARedirection.State;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.AllowWIARedirection.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.AllowWIARedirection.State 
 						}
 					}
 					If((validStateProp $Setting HDXAdaptiveTransport State ) -and ($Setting.HDXAdaptiveTransport.State -ne "NotConfigured"))
@@ -15839,6 +15870,27 @@ Function ProcessCitrixPolicies
 						If($Text)
 						{
 							OutputPolicySetting $txt $Setting.RendezvousProtocol.State 
+						}
+					}
+					If((validStateProp $Setting RendezvousProxy State ) -and ($Setting.RendezvousProxy.State -ne "NotConfigured"))
+					{
+						$txt = "ICA\Rendezvous proxy configuration"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.RendezvousProxy.Value;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.RendezvousProxy.Value,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.RendezvousProxy.Value 
 						}
 					}
 					If((validStateProp $Setting RestrictClientClipboardWrite State ) -and ($Setting.RestrictClientClipboardWrite.State -ne "NotConfigured"))
@@ -34429,6 +34481,7 @@ Script cannot continue
 	$tmp = $Script:CVADSiteVersion
 	Switch ($tmp)
 	{
+		"7.28"	{$Script:CVADSiteVersion = "2012"; Break}
 		"7.27"	{$Script:CVADSiteVersion = "2009"; Break}
 		"7.26"	{$Script:CVADSiteVersion = "2006"; Break}
 		"7.25"	{$Script:CVADSiteVersion = "2003"; Break}
