@@ -10,7 +10,7 @@
 	Creates an inventory of a Citrix Virtual Apps and Desktops (CVAD) 2006 or later Site 
 	using Microsoft PowerShell, Word, plain text, or HTML.
 	
-	This Script requires at least PowerShell version 5.
+	This script requires at least PowerShell version 5.
 
 	Default output is now HTML.
 	
@@ -80,25 +80,9 @@
 .PARAMETER HTML
 	Creates an HTML file with an.html extension.
 	This parameter is set True if no other output format is selected.
-.PARAMETER MSWord
-	SaveAs DOCX file
-	This parameter is disabled by default.
-.PARAMETER PDF
-	SaveAs PDF file instead of DOCX file.
-	This parameter is disabled by default.
-	The PDF file is roughly 5X to 10X larger than the DOCX file.
-	This parameter requires Microsoft Word to be installed.
-	This parameter uses the Word SaveAs PDF capability.
 .PARAMETER Text
 	Creates a formatted text file with a.txt extension.
 	This parameter is disabled by default.
-.PARAMETER AddDateTime
-	Adds a date timestamp to the end of the file name.
-	The timestamp is in the format of yyyy-MM-dd_HHmm.
-	June 1, 2020 at 6PM is 2020-06-01_1800.
-	Output filename will be ReportName_2020-06-01_1800.docx (or.pdf).
-	This parameter is disabled by default.
-	This parameter has an alias of ADT.
 .PARAMETER AdminAddress
 	Specifies the address of a CVAD controller the PowerShell snapins will connect 
 	to. 
@@ -123,6 +107,240 @@
 
 	This parameter is disabled by default.
 	This parameter has an alias of BRK.
+.PARAMETER Controllers
+	Lists the following information to the Controllers section:
+		List of installed Microsoft Hotfixes and Updates
+		List of Citrix installed components
+		List of Windows installed Roles and Features
+		Appendix C List of installed Microsoft Hotfixes and Updates for all 
+		Controllers
+		Appendix D List of Citrix installed components for all Controllers
+		Appendix E List of Windows installed Roles and Features for all Controllers
+	
+	This parameter is disabled by default.
+	This parameter has an alias of DDC.
+.PARAMETER Hardware
+	Use WMI to gather hardware information on Computer System, Disks, Processor, and 
+	Network Interface Cards
+
+	This parameter may require the script be run from an elevated PowerShell session 
+	using an account with permission to retrieve hardware information (i.e. Domain Admin 
+	or Local Administrator).
+
+	Selecting this parameter will add to both the time it takes to run the script and 
+	size of the report.
+
+	This parameter is disabled by default.
+	This parameter has an alias of HW.
+.PARAMETER DeliveryGroups
+	Gives detailed information on all desktops in all Desktop (Delivery) Groups.
+	
+	Using the DeliveryGroups parameter can cause the report to take a very long 
+	time to complete and can generate an extremely long report.
+	
+	Using both the MachineCatalogs and DeliveryGroups parameters can cause the 
+	report to take an extremely long time to complete and generate an exceptionally 
+	long report.
+	
+	This parameter is disabled by default.
+	This parameter has an alias of DG.
+.PARAMETER DeliveryGroupsUtilization
+	Gives a chart with the delivery group utilization for the last 7 days 
+	depending on the information in the database.
+	
+	This option is only available when the report is generated in Word and requires 
+	Microsoft Excel to be locally installed.
+	
+	Using the DeliveryGroupsUtilization parameter causes the report to take a longer 
+	time to complete and generates a longer report.
+	
+	This parameter is disabled by default.
+	This parameter has an alias of DGU.
+.PARAMETER Hosting
+	Give detailed information for Hosts, Host Connections, and Resources.
+
+	This parameter is disabled by default.
+	This parameter has an alias of Host.
+.PARAMETER Logging
+	Give the Configuration Logging report with, by default, details for the previous 
+	seven days.
+
+	This parameter is disabled by default.
+.PARAMETER StartDate
+	The start date for the Configuration Logging report.
+	
+	The format for date only is MM/DD/YYYY.
+	
+	Format to include a specific time range is "MM/DD/YYYY HH:MM:SS" in 24-hour format.
+	The double quotes are needed.
+	
+	The default is today's date minus seven days.
+	This parameter has an alias of SD.
+.PARAMETER EndDate
+	The end date for the Configuration Logging report.
+	
+	The format for date only is MM/DD/YYYY.
+	
+	Format to include a specific time range is "MM/DD/YYYY HH:MM:SS" in 24-hour format.
+	The double quotes are needed.
+	
+	The default is today's date.
+	This parameter has an alias of ED.
+.PARAMETER MachineCatalogs
+	Gives detailed information for all machines in all Machine Catalogs.
+	
+	Using the MachineCatalogs parameter can cause the report to take a very long 
+	time to complete and can generate an extremely long report.
+	
+	Using both the MachineCatalogs and DeliveryGroups parameters can cause the 
+	report to take an extremely long time to complete and generate an exceptionally 
+	long report.
+	
+	This parameter is disabled by default.
+	This parameter has an alias of MC.
+.PARAMETER NoADPolicies
+	Excludes all Citrix AD-based policy information from the output document.
+	Includes only Site policies created in Studio.
+	
+	This Switch is useful in large AD environments, where there may be thousands
+	of policies, to keep SYSVOL from being searched.
+	
+	This parameter is disabled by default.
+	This parameter has an alias of NoAD.
+.PARAMETER NoPolicies
+	Excludes all Site and Citrix AD-based policy information from the output document.
+	
+	Using the NoPolicies parameter will cause the Policies parameter to be set to False.
+	
+	This parameter is disabled by default.
+	This parameter has an alias of NP.
+.PARAMETER NoSessions
+	Excludes Machine Catalog, Application and Hosting session data from the report.
+	
+	Using the MaxDetails parameter does not change this setting.
+	
+	This parameter is disabled by default.
+	This parameter has an alias of NS.
+.PARAMETER Policies
+	Give detailed information for both Site and Citrix AD based Policies.
+	
+	Using the Policies parameter can cause the report to take a very long time 
+	to complete and can generate an extremely long report.
+	
+	There are three related parameters: Policies, NoPolicies, and NoADPolicies.
+	
+	Policies and NoPolicies are mutually exclusive and priority is given to NoPolicies.
+	
+	This parameter is disabled by default.
+	This parameter has an alias of Pol.
+.PARAMETER StoreFront
+	Give detailed information for StoreFront.
+	This parameter is disabled by default.
+	This parameter has an alias of SF.
+.PARAMETER VDARegistryKeys
+	Adds information on registry keys to the Machine Details section.
+	
+	If this parameter is used, MachineCatalogs is set to True.
+	
+	This parameter is disabled by default.
+	This parameter has an alias of VRK.
+.PARAMETER MaxDetails
+	Adds maximum detail to the report.
+	
+	This is the same as using the following parameters:
+		Administrators
+		Applications
+		BrokerRegistryKeys
+		Controllers
+		DeliveryGroups
+		HardWare
+		Hosting
+		Logging
+		MachineCatalogs
+		Policies
+		StoreFront
+		VDARegistryKeys
+
+	*****Requires the script is run elevated*****
+
+	Does not change the value of NoADPolicies.
+	Does not change the value of NoSessions.
+	
+	WARNING: Using this parameter can create an extremely large report and 
+	can take a very long time to run.
+
+	This parameter has an alias of MAX.
+.PARAMETER Section
+	Processes a specific section of the report.
+	Valid options are:
+		Admins (Administrators)
+		Apps (Applications and Application Group Details)
+		AppV
+		Catalogs (Machine Catalogs)
+		Config (Configuration)
+		Controllers
+		Groups (Delivery Groups)
+		Hosting
+		Licensing
+		Logging
+		Policies
+		StoreFront
+		Zones
+		All
+	This parameter defaults to All sections.
+	
+	Notes:
+	Using Logging will force the Logging Switch to True.
+	Using Policies will force the Policies Switch to True.
+	If Policies is selected and the NoPolicies Switch is used, the script will terminate.
+.PARAMETER AddDateTime
+	Adds a date timestamp to the end of the file name.
+	The timestamp is in the format of yyyy-MM-dd_HHmm.
+	June 1, 2020 at 6PM is 2020-06-01_1800.
+	Output filename will be ReportName_2020-06-01_1800.docx (or.pdf).
+	This parameter is disabled by default.
+	This parameter has an alias of ADT.
+.PARAMETER CSV
+	Will create a CSV file for each Appendix.
+	The default value is False.
+	
+	Output CSV filename is in the format:
+	
+	CVADSiteName_Documentation_Appendix#_NameOfAppendix.csv
+	
+	For example:
+		CVADSiteName_Documentation_AppendixA_VDARegistryItems.csv
+		CVADSiteName_Documentation_AppendixB_ControllerRegistryItems.csv
+		CVADSiteName_Documentation_AppendixC_MicrosoftHotfixesandUpdates.csv
+		CVADSiteName_Documentation_AppendixD_CitrixInstalledComponents.csv
+		CVADSiteName_Documentation_AppendixE_WindowsInstalledComponents.csv	
+.PARAMETER Dev
+	Clears errors at the beginning of the script.
+	Outputs all errors to a text file at the end of the script.
+	
+	This is used when the script developer requests more troubleshooting data.
+	The text file is placed in the same folder from where the script is run.
+	
+	This parameter is disabled by default.
+.PARAMETER Folder
+	Specifies the optional output folder to save the output report. 
+.PARAMETER Log
+	Generates a log file for troubleshooting.
+.PARAMETER ScriptInfo
+	Outputs information about the script to a text file.
+	The text file is placed in the same folder from where the script is run.
+	
+	This parameter is disabled by default.
+	This parameter has an alias of SI.
+.PARAMETER MSWord
+	SaveAs DOCX file
+	This parameter is disabled by default.
+.PARAMETER PDF
+	SaveAs PDF file instead of DOCX file.
+	This parameter is disabled by default.
+	The PDF file is roughly 5X to 10X larger than the DOCX file.
+	This parameter requires Microsoft Word to be installed.
+	This parameter uses the Word SaveAs PDF capability.
 .PARAMETER CompanyAddress
 	Company Address to use for the Cover Page, if the Cover Page has the Address field.
 	
@@ -183,9 +401,9 @@
 		Alphabet (Word 2010. Works)
 		Annual (Word 2010. Doesn't work well for this report)
 		Austere (Word 2010. Works)
-		Austin (Word 2010/2013/2016. Doesn't work in 2013 or 2016, mostly 
-		works in 2010 but Subtitle/Subject & Author fields need to be moved 
-		after title box is moved up)
+		Austin (Word 2010/2013/2016. Doesn't work in 2013 or 2016, mostly
+		works in 2010, but Subtitle/Subject & Author fields need moving
+		after the title box is moved up)
 		Banded (Word 2013/2016. Works)
 		Conservative (Word 2010. Works)
 		Contrast (Word 2010. Works)
@@ -222,230 +440,11 @@
 	The default value is Sideline.
 	This parameter has an alias of CP.
 	This parameter is only valid with the MSWORD and PDF output parameters.
-.PARAMETER Controllers
-	Lists the following information to the Controllers section:
-		List of installed Microsoft Hotfixes and Updates
-		List of Citrix installed components
-		List of Windows installed Roles and Features
-		Appendix C List of installed Microsoft Hotfixes and Updates for all 
-		Controllers
-		Appendix D List of Citrix installed components for all Controllers
-		Appendix E List of Windows installed Roles and Features for all Controllers
-	
-	This parameter is disabled by default.
-	This parameter has an alias of DDC.
-.PARAMETER CSV
-	Will create a CSV file for each Appendix.
-	The default value is False.
-	
-	Output CSV filename is in the format:
-	
-	CVADSiteName_Documentation_Appendix#_NameOfAppendix.csv
-	
-	For example:
-		CVADSiteName_Documentation_AppendixA_VDARegistryItems.csv
-		CVADSiteName_Documentation_AppendixB_ControllerRegistryItems.csv
-		CVADSiteName_Documentation_AppendixC_MicrosoftHotfixesandUpdates.csv
-		CVADSiteName_Documentation_AppendixD_CitrixInstalledComponents.csv
-		CVADSiteName_Documentation_AppendixE_WindowsInstalledComponents.csv	
-.PARAMETER DeliveryGroups
-	Gives detailed information on all desktops in all Desktop (Delivery) Groups.
-	
-	Using the DeliveryGroups parameter can cause the report to take a very long 
-	time to complete and can generate an extremely long report.
-	
-	Using both the MachineCatalogs and DeliveryGroups parameters can cause the 
-	report to take an extremely long time to complete and generate an exceptionally 
-	long report.
-	
-	This parameter is disabled by default.
-	This parameter has an alias of DG.
-.PARAMETER DeliveryGroupsUtilization
-	Gives a chart with the delivery group utilization for the last 7 days 
-	depending on the information in the database.
-	
-	This option is only available when the report is generated in Word and requires 
-	Microsoft Excel to be locally installed.
-	
-	Using the DeliveryGroupsUtilization parameter causes the report to take a longer 
-	time to complete and generates a longer report.
-	
-	This parameter is disabled by default.
-	This parameter has an alias of DGU.
-.PARAMETER Dev
-	Clears errors at the beginning of the script.
-	Outputs all errors to a text file at the end of the script.
-	
-	This is used when the script developer requests more troubleshooting data.
-	The text file is placed in the same folder from where the script is run.
-	
-	This parameter is disabled by default.
-.PARAMETER EndDate
-	The end date for the Configuration Logging report.
-	
-	The format for date only is MM/DD/YYYY.
-	
-	Format to include a specific time range is "MM/DD/YYYY HH:MM:SS" in 24-hour format.
-	The double quotes are needed.
-	
-	The default is today's date.
-	This parameter has an alias of ED.
-.PARAMETER Folder
-	Specifies the optional output folder to save the output report. 
-.PARAMETER Hardware
-	Use WMI to gather hardware information on Computer System, Disks, Processor, and 
-	Network Interface Cards
-
-	This parameter may require the script be run from an elevated PowerShell session 
-	using an account with permission to retrieve hardware information (i.e. Domain Admin 
-	or Local Administrator).
-
-	Selecting this parameter will add to both the time it takes to run the script and 
-	size of the report.
-
-	This parameter is disabled by default.
-	This parameter has an alias of HW.
-.PARAMETER Hosting
-	Give detailed information for Hosts, Host Connections, and Resources.
-
-	This parameter is disabled by default.
-	This parameter has an alias of Host.
-.PARAMETER Log
-	Generates a log file for troubleshooting.
-.PARAMETER Logging
-	Give the Configuration Logging report with, by default, details for the previous 
-	seven days.
-
-	This parameter is disabled by default.
-.PARAMETER MachineCatalogs
-	Gives detailed information for all machines in all Machine Catalogs.
-	
-	Using the MachineCatalogs parameter can cause the report to take a very long 
-	time to complete and can generate an extremely long report.
-	
-	Using both the MachineCatalogs and DeliveryGroups parameters can cause the 
-	report to take an extremely long time to complete and generate an exceptionally 
-	long report.
-	
-	This parameter is disabled by default.
-	This parameter has an alias of MC.
-.PARAMETER MaxDetails
-	Adds maximum detail to the report.
-	
-	This is the same as using the following parameters:
-		Administrators
-		Applications
-		BrokerRegistryKeys
-		Controllers
-		DeliveryGroups
-		HardWare
-		Hosting
-		Logging
-		MachineCatalogs
-		Policies
-		StoreFront
-		VDARegistryKeys
-
-	*****Requires the script is run elevated*****
-
-	Does not change the value of NoADPolicies.
-	Does not change the value of NoSessions.
-	
-	WARNING: Using this parameter can create an extremely large report and 
-	can take a very long time to run.
-
-	This parameter has an alias of MAX.
-.PARAMETER NoADPolicies
-	Excludes all Citrix AD-based policy information from the output document.
-	Includes only Site policies created in Studio.
-	
-	This Switch is useful in large AD environments, where there may be thousands
-	of policies, to keep SYSVOL from being searched.
-	
-	This parameter is disabled by default.
-	This parameter has an alias of NoAD.
-.PARAMETER NoPolicies
-	Excludes all Site and Citrix AD-based policy information from the output document.
-	
-	Using the NoPolicies parameter will cause the Policies parameter to be set to False.
-	
-	This parameter is disabled by default.
-	This parameter has an alias of NP.
-.PARAMETER NoSessions
-	Excludes Machine Catalog, Application and Hosting session data from the report.
-	
-	Using the MaxDetails parameter does not change this setting.
-	
-	This parameter is disabled by default.
-	This parameter has an alias of NS.
-.PARAMETER Policies
-	Give detailed information for both Site and Citrix AD based Policies.
-	
-	Using the Policies parameter can cause the report to take a very long time 
-	to complete and can generate an extremely long report.
-	
-	There are three related parameters: Policies, NoPolicies, and NoADPolicies.
-	
-	Policies and NoPolicies are mutually exclusive and priority is given to NoPolicies.
-	
-	This parameter is disabled by default.
-	This parameter has an alias of Pol.
-.PARAMETER ScriptInfo
-	Outputs information about the script to a text file.
-	The text file is placed in the same folder from where the script is run.
-	
-	This parameter is disabled by default.
-	This parameter has an alias of SI.
-.PARAMETER Section
-	Processes a specific section of the report.
-	Valid options are:
-		Admins (Administrators)
-		Apps (Applications and Application Group Details)
-		AppV
-		Catalogs (Machine Catalogs)
-		Config (Configuration)
-		Controllers
-		Groups (Delivery Groups)
-		Hosting
-		Licensing
-		Logging
-		Policies
-		StoreFront
-		Zones
-		All
-	This parameter defaults to All sections.
-	
-	Notes:
-	Using Logging will force the Logging Switch to True.
-	Using Policies will force the Policies Switch to True.
-	If Policies is selected and the NoPolicies Switch is used, the script will terminate.
-	
-.PARAMETER StartDate
-	The start date for the Configuration Logging report.
-	
-	The format for date only is MM/DD/YYYY.
-	
-	Format to include a specific time range is "MM/DD/YYYY HH:MM:SS" in 24-hour format.
-	The double quotes are needed.
-	
-	The default is today's date minus seven days.
-	This parameter has an alias of SD.
-.PARAMETER StoreFront
-	Give detailed information for StoreFront.
-	This parameter is disabled by default.
-	This parameter has an alias of SF.
 .PARAMETER UserName
 	Username to use for the Cover Page and Footer.
 	The default value is contained in $env:username
 	This parameter has an alias of UN.
 	This parameter is only valid with the MSWORD and PDF output parameters.
-.PARAMETER VDARegistryKeys
-	Adds information on registry keys to the Machine Details section.
-	
-	If this parameter is used, MachineCatalogs is set to True.
-	
-	This parameter is disabled by default.
-	This parameter has an alias of VRK.
 .PARAMETER SmtpServer
 	Specifies the optional email server to send the output report. 
 .PARAMETER SmtpPort
@@ -1030,19 +1029,9 @@ Param(
 	[parameter(Mandatory=$False)] 
 	[Switch]$HTML=$False,
 
-	[parameter(ParameterSetName="WordPDF",Mandatory=$False)] 
-	[Switch]$MSWord=$False,
-
-	[parameter(ParameterSetName="WordPDF",Mandatory=$False)] 
-	[Switch]$PDF=$False,
-
 	[parameter(Mandatory=$False)] 
 	[Switch]$Text=$False,
 
-	[parameter(Mandatory=$False)] 
-	[Alias("ADT")]
-	[Switch]$AddDateTime=$False,
-	
 	[parameter(Mandatory=$False)] 
 	[ValidateNotNullOrEmpty()]
 	[Alias("AA")]
@@ -1059,6 +1048,100 @@ Param(
 	[parameter(Mandatory=$False)] 
 	[Alias("BRK")]
 	[Switch]$BrokerRegistryKeys=$False,
+
+	[parameter(Mandatory=$False)] 
+	[Alias("DDC")]
+	[Switch]$Controllers=$False,	
+	
+	[parameter(Mandatory=$False)] 
+	[Alias("HW")]
+	[Switch]$Hardware=$False,
+
+	[parameter(Mandatory=$False)] 
+	[Alias("DG")]
+	[Switch]$DeliveryGroups=$False,	
+
+	[parameter(Mandatory=$False)] 
+	[Alias("DGU")]
+	[Switch]$DeliveryGroupsUtilization=$False,	
+	
+	[parameter(Mandatory=$False)] 
+	[Alias("Host")]
+	[Switch]$Hosting=$False,	
+	
+	[parameter(Mandatory=$False)] 
+	[Switch]$Logging=$False,	
+	
+	[parameter(Mandatory=$False)] 
+	[Alias("SD")]
+	[Datetime]$StartDate = ((Get-Date -displayhint date).AddDays(-7)),
+
+	[parameter(Mandatory=$False)] 
+	[Alias("ED")]
+	[Datetime]$EndDate = (Get-Date -displayhint date),
+	
+	[parameter(Mandatory=$False)] 
+	[Alias("MC")]
+	[Switch]$MachineCatalogs=$False,	
+	
+	[parameter(Mandatory=$False)] 
+	[Alias("NoAD")]
+	[Switch]$NoADPolicies=$False,	
+	
+	[parameter(Mandatory=$False)] 
+	[Alias("NP")]
+	[Switch]$NoPolicies=$False,	
+	
+	[parameter(Mandatory=$False)] 
+	[Alias("NS")]
+	[Switch]$NoSessions=$False,	
+	
+	[parameter(Mandatory=$False)] 
+	[Alias("Pol")]
+	[Switch]$Policies=$False,	
+	
+	[parameter(Mandatory=$False)] 
+	[Alias("SF")]
+	[Switch]$StoreFront=$False,	
+	
+	[parameter(Mandatory=$False)] 
+	[Alias("VRK")]
+	[Switch]$VDARegistryKeys=$False,
+
+	[parameter(Mandatory=$False)] 
+	[Alias("MAX")]
+	[Switch]$MaxDetails=$False,
+
+	[ValidateSet('All', 'Admins', 'Apps', 'AppV', 'Catalogs', 'Config', 'Controllers', 
+	'Groups', 'Hosting', 'Licensing', 'Logging', 'Policies', 'StoreFront', 'Zones')]
+	[parameter(Mandatory=$False)] 
+	[string]$Section="All",
+	
+	[parameter(Mandatory=$False)] 
+	[Alias("ADT")]
+	[Switch]$AddDateTime=$False,
+	
+	[parameter(Mandatory=$False)] 
+	[Switch]$CSV=$False,
+
+	[parameter(Mandatory=$False)] 
+	[Switch]$Dev=$False,
+	
+	[parameter(Mandatory=$False)] 
+	[string]$Folder="",
+	
+	[parameter(Mandatory=$False)] 
+	[Switch]$Log=$False,
+	
+	[parameter(Mandatory=$False)] 
+	[Alias("SI")]
+	[Switch]$ScriptInfo=$False,
+	
+	[parameter(ParameterSetName="WordPDF",Mandatory=$False)] 
+	[Switch]$MSWord=$False,
+
+	[parameter(ParameterSetName="WordPDF",Mandatory=$False)] 
+	[Switch]$PDF=$False,
 
 	[parameter(ParameterSetName="WordPDF",Mandatory=$False)] 
 	[Alias("CA")]
@@ -1090,94 +1173,10 @@ Param(
 	[ValidateNotNullOrEmpty()]
 	[string]$CoverPage="Sideline", 
 
-	[parameter(Mandatory=$False)] 
-	[Alias("DDC")]
-	[Switch]$Controllers=$False,	
-	
-	[parameter(Mandatory=$False)] 
-	[Switch]$CSV=$False,
-
-	[parameter(Mandatory=$False)] 
-	[Alias("DG")]
-	[Switch]$DeliveryGroups=$False,	
-
-	[parameter(Mandatory=$False)] 
-	[Alias("DGU")]
-	[Switch]$DeliveryGroupsUtilization=$False,	
-	
-	[parameter(Mandatory=$False)] 
-	[Switch]$Dev=$False,
-	
-	[parameter(Mandatory=$False)] 
-	[Alias("ED")]
-	[Datetime]$EndDate = (Get-Date -displayhint date),
-	
-	[parameter(Mandatory=$False)] 
-	[string]$Folder="",
-	
-	[parameter(Mandatory=$False)] 
-	[Alias("HW")]
-	[Switch]$Hardware=$False,
-
-	[parameter(Mandatory=$False)] 
-	[Alias("Host")]
-	[Switch]$Hosting=$False,	
-	
-	[parameter(Mandatory=$False)] 
-	[Switch]$Log=$False,
-	
-	[parameter(Mandatory=$False)] 
-	[Switch]$Logging=$False,	
-	
-	[parameter(Mandatory=$False)] 
-	[Alias("MC")]
-	[Switch]$MachineCatalogs=$False,	
-	
-	[parameter(Mandatory=$False)] 
-	[Alias("MAX")]
-	[Switch]$MaxDetails=$False,
-
-	[parameter(Mandatory=$False)] 
-	[Alias("NoAD")]
-	[Switch]$NoADPolicies=$False,	
-	
-	[parameter(Mandatory=$False)] 
-	[Alias("NP")]
-	[Switch]$NoPolicies=$False,	
-	
-	[parameter(Mandatory=$False)] 
-	[Alias("NS")]
-	[Switch]$NoSessions=$False,	
-	
-	[parameter(Mandatory=$False)] 
-	[Alias("Pol")]
-	[Switch]$Policies=$False,	
-	
-	[parameter(Mandatory=$False)] 
-	[Alias("SI")]
-	[Switch]$ScriptInfo=$False,
-	
-	[ValidateSet('All', 'Admins', 'Apps', 'AppV', 'Catalogs', 'Config', 'Controllers', 
-	'Groups', 'Hosting', 'Licensing', 'Logging', 'Policies', 'StoreFront', 'Zones')]
-	[parameter(Mandatory=$False)] 
-	[string]$Section="All",
-	
-	[parameter(Mandatory=$False)] 
-	[Alias("SD")]
-	[Datetime]$StartDate = ((Get-Date -displayhint date).AddDays(-7)),
-
-	[parameter(Mandatory=$False)] 
-	[Alias("SF")]
-	[Switch]$StoreFront=$False,	
-	
 	[parameter(ParameterSetName="WordPDF",Mandatory=$False)] 
 	[Alias("UN")]
 	[ValidateNotNullOrEmpty()]
 	[string]$UserName=$env:username,
-
-	[parameter(Mandatory=$False)] 
-	[Alias("VRK")]
-	[Switch]$VDARegistryKeys=$False,
 
 	[parameter(Mandatory=$False)] 
 	[string]$SmtpServer="",
@@ -1206,6 +1205,7 @@ Param(
 
 # This script is based on the 2.36 script
 #
+
 #Version 3.20
 #	Added Computer policy
 #		ICA\Rendezvous proxy configuration
@@ -1224,6 +1224,7 @@ Param(
 #	Fixed alignment in the Text output for the ScriptInfo output file
 #	Fixed bug reported by David Prows in the Hosting section. First, check to see if the hosting connection's 
 #		AdditionalStorage.StorageLocations is valid
+#	For all calls to Get-AdminAdministrator, remove the -SortBy Name. Sorting by Name is the default behavior.
 #	For HTML and MSWord/PDF output, changed the formatting for the Application setting "How do you want to control the use of this application?"
 #	For MCS Machine Catalogs:
 #		Check that the catalog's ProvisioningSchemeId is not $Null before retrieving the Provision Scheme's machine data
@@ -1240,6 +1241,7 @@ Param(
 #		<MachineName> was not found in DNS. VDA Registry Key data cannot be gathered.
 #		Otherwise, every machine was reported as offline, which may not be true.
 #	In Function OutputPerZoneView, add "There are no zone members for Zone <ZoneName>" to replace blank tables and text output
+#	Reordered the parameters in an order recommended by Guy Leech
 #	Updated for CVAD 2012
 
 #Version 3.10 1-Oct-2020
@@ -1425,7 +1427,7 @@ Set-StrictMode -Version Latest
 #force  on
 $PSDefaultParameterValues = @{"*:Verbose"=$True}
 $SaveEAPreference = $ErrorActionPreference
-#$ErrorActionPreference = 'SilentlyContinue'
+$ErrorActionPreference = 'SilentlyContinue'
 
 If($Null -eq $HTML)
 {
@@ -6035,7 +6037,7 @@ Function GetAdmins
 			Select-Object -ExpandProperty Id
 
 			#this is an unscoped object type as $admins is done differently than the others
-			$Admins = Get-AdminAdministrator @CVADParams2 -SortBy Name | `
+			$Admins = Get-AdminAdministrator @CVADParams2 | `
 			Where-Object {$_.UserIdentityType -ne "Sid" -and (-not ([String]::IsNullOrEmpty($_.UserIdentityType)))} | `
 			Where-Object {$_.Rights | Where-Object {$roles -contains $_.RoleId}}
 		}
@@ -6050,7 +6052,7 @@ Function GetAdmins
 			Where-Object {$_.Permissions | Where-Object { $permissions -contains $_ }} | `
 			Select-Object -ExpandProperty Id
 
-			$Admins = Get-AdminAdministrator @CVADParams2 -SortBy Name | `
+			$Admins = Get-AdminAdministrator @CVADParams2 | `
 			Where-Object {$_.UserIdentityType -ne "Sid" -and (-not ([String]::IsNullOrEmpty($_.Name)))} | `
 			Where-Object {$_.Rights | `
 			Where-Object {($_.ScopeId -eq [guid]::Empty -or $scopes -contains $_.ScopeId) -and $roles -contains $_.RoleId}}
@@ -6067,7 +6069,7 @@ Function GetAdmins
 			Where-Object {$_.Permissions | Where-Object { $permissions -contains $_ }} | `
 			Select-Object -ExpandProperty Id
 
-			$Admins = Get-AdminAdministrator @CVADParams2 -SortBy Name | `
+			$Admins = Get-AdminAdministrator @CVADParams2 | `
 			Where-Object {$_.UserIdentityType -ne "Sid" -and (-not ([String]::IsNullOrEmpty($_.Name)))} | `
 			Where-Object {$_.Rights | `
 			Where-Object {($_.ScopeId -eq [guid]::Empty -or $scopes -contains $_.ScopeId) -and $roles -contains $_.RoleId}}
@@ -6087,7 +6089,7 @@ Function GetAdmins
 			    Where-Object {$_.Permissions | Where-Object { $permissions -contains $_ }} | `
 			    Select-Object -ExpandProperty Id
 
-			    $Admins = Get-AdminAdministrator @CVADParams2 -SortBy Name | `
+			    $Admins = Get-AdminAdministrator @CVADParams2 | `
 			    Where-Object {$_.UserIdentityType -ne "Sid" -and (-not ([String]::IsNullOrEmpty($_.Name)))} | `
 			    Where-Object {$_.Rights | `
 			    Where-Object {($_.ScopeId -eq [guid]::Empty -or `
@@ -6107,7 +6109,7 @@ Function GetAdmins
 			    Where-Object {$_.Permissions | Where-Object { $permissions -contains $_ }} | `
 			    Select-Object -ExpandProperty Id
 
-			    $Admins = Get-AdminAdministrator @CVADParams2 -SortBy Name | `
+			    $Admins = Get-AdminAdministrator @CVADParams2 | `
 			    Where-Object {$_.UserIdentityType -ne "Sid" -and (-not ([String]::IsNullOrEmpty($_.Name)))} | `
 			    Where-Object {$_.Rights | `
 			    Where-Object {($_.ScopeId -eq [guid]::Empty -or `
@@ -6126,7 +6128,7 @@ Function GetAdmins
 			Select-Object -ExpandProperty Id
 
 			#this is an unscoped object type as $admins is done differently than the others
-			$Admins = Get-AdminAdministrator @CVADParams2 -SortBy Name | `
+			$Admins = Get-AdminAdministrator @CVADParams2 | `
 			Where-Object {$_.UserIdentityType -ne "Sid" -and (-not ([String]::IsNullOrEmpty($_.Name)))} | `
 			Where-Object {$_.Rights | `
 			Where-Object {$roles -contains $_.RoleId}}
@@ -29698,7 +29700,7 @@ Function ProcessAdministrators
 	Write-Verbose "$(Get-Date -Format G): Processing Administrators"
 	Write-Verbose "$(Get-Date -Format G): `tRetrieving Administrator data"
 	
-	$Admins = Get-AdminAdministrator @CVADParams2 -SortBy Name
+	$Admins = Get-AdminAdministrator @CVADParams2
 
 	If($? -and ($Null -ne $Admins))
 	{
@@ -31615,7 +31617,7 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "WorkerSettingsAssessmentMinutes" $ComputerName
 
 	#HostingManagementSettings
-	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "LegacyPeakTransitionDisconnectedBehaviour" $ComputerName
+	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "LegacyPeakTransitionDisconnectedbehavior" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "BulkPowerCheckingCoolOffActivePowerActionsSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "BulkPowerCheckingCoolOffSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "CompletedActionRetentionPeriodSec" $ComputerName
@@ -31632,7 +31634,7 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "MaxTimeBeforeUnregisteredFaultSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "SimplePowerActionTimeoutSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "StarvationBoostPeriodSec" $ComputerName
-	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "LegacyPeakTransitionDisconnectedBehaviour" $ComputerName
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "LegacyPeakTransitionDisconnectedbehavior" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "BulkPowerCheckingCoolOffActivePowerActionsSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "BulkPowerCheckingCoolOffSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "CompletedActionRetentionPeriodSec" $ComputerName

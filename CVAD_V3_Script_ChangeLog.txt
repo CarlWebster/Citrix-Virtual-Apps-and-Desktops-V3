@@ -24,6 +24,7 @@
 #	Fixed alignment in the Text output for the ScriptInfo output file
 #	Fixed bug reported by David Prows in the Hosting section. First, check to see if the hosting connection's 
 #		AdditionalStorage.StorageLocations is valid
+#	For all calls to Get-AdminAdministrator, remove the -SortBy Name. Sorting by Name is the default behavior.
 #	For HTML and MSWord/PDF output, changed the formatting for the Application setting "How do you want to control the use of this application?"
 #	For MCS Machine Catalogs:
 #		Check that the catalog's ProvisioningSchemeId is not $Null before retrieving the Provision Scheme's machine data
@@ -40,6 +41,7 @@
 #		<MachineName> was not found in DNS. VDA Registry Key data cannot be gathered.
 #		Otherwise, every machine was reported as offline, which may not be true.
 #	In Function OutputPerZoneView, add "There are no zone members for Zone <ZoneName>" to replace blank tables and text output
+#	Reordered the parameters in an order recommended by Guy Leech
 #	Updated for CVAD 2012
 
 #Version 3.10 1-Oct-2020
