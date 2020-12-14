@@ -1016,7 +1016,7 @@
 	NAME: CVAD_Inventory_V3.ps1
 	VERSION: 3.20
 	AUTHOR: Carl Webster
-	LASTEDIT: December 3, 2020
+	LASTEDIT: December 14, 2020
 #>
 
 #endregion
@@ -1206,7 +1206,7 @@ Param(
 # This script is based on the 2.36 script
 #
 
-#Version 3.20
+#Version 3.20 14-Dec-2020
 #	Added Computer policy
 #		ICA\Rendezvous proxy configuration
 #	Added to Hosting Connection section:

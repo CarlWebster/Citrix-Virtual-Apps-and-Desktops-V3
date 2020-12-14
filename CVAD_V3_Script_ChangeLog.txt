@@ -6,7 +6,7 @@
 
 # This script is based on the 2.36 script
 
-#Version 3.20
+#Version 3.20 14-Dec-2020
 #	Added Computer policy
 #		ICA\Rendezvous proxy configuration
 #	Added to Hosting Connection section:
