@@ -6,6 +6,44 @@
 
 # This script is based on the 2.36 script
 
+#Version 3.20 14-Dec-2020
+#	Added Computer policy
+#		ICA\Rendezvous proxy configuration
+#	Added to Hosting Connection section:
+#	Thanks to fellow CTPs Neil Spellings, Kees Baggerman, and Trond Eirik Haavarstein for getting this info for me
+#		Microsoft Configuration Manager Wake on LAN   
+#		Nutanix AHV
+#		Remote PC Wake on LAN (corrected)
+#	Added to the Site Settings section, Site Provisioning Settings based on CTX241288 (Thanks to Per Lorentzen)
+#		https://support.citrix.com/article/CTX241288
+#	Added User policy
+#		ICA\Drag and drop
+#		ICA\WIA Redirection
+#	Added version 7.28 for CVAD 2012 to version table
+#	Correct the invalid variable name in the ScriptInfo output file for WordFilename
+#	Fixed alignment in the Text output for the ScriptInfo output file
+#	Fixed bug reported by David Prows in the Hosting section. First, check to see if the hosting connection's 
+#		AdditionalStorage.StorageLocations is valid
+#	For all calls to Get-AdminAdministrator, remove the -SortBy Name. Sorting by Name is the default behavior.
+#	For HTML and MSWord/PDF output, changed the formatting for the Application setting "How do you want to control the use of this application?"
+#	For MCS Machine Catalogs:
+#		Check that the catalog's ProvisioningSchemeId is not $Null before retrieving the Provision Scheme's machine data
+#		Check that $MachneData is not $Null before checking for HostingUnitName
+#	For the Hosting section, for High Availability Servers and Power Actions, handle empty arrays
+#	In Function GetAdmins, for Hosting Connections, handle the error "The property 'ScopeId' cannot be found on this object. Verify that the property exists."
+#		Also, add some white space to make the function easier for me to read
+#	In Function OutputAdminsForDetails, add "No Admins found" to replace blank tables and text output
+#	In Function OutputAppendixD, adjust the Text output to handle longer component names
+#	In Function OutputCVADLicenses, if there are no licenses installed, output the text "Citrix Virtual Desktops 7 Premium (30-day trial)"
+#	In Function OutputDeliveryGroupCatalogs, handle the case where a Delivery Group has no Machine Catalog(s) assigned
+#	In Function OutputMachineDetails, when using Test-NetConnection, add Resolve-DnsName first to see if the machine name is resolvable. 
+#		This prevents every call to Test-NetConnection from failing with "<MachineName> was not found in DNS". Add error message:
+#		<MachineName> was not found in DNS. VDA Registry Key data cannot be gathered.
+#		Otherwise, every machine was reported as offline, which may not be true.
+#	In Function OutputPerZoneView, add "There are no zone members for Zone <ZoneName>" to replace blank tables and text output
+#	Reordered the parameters in an order recommended by Guy Leech
+#	Updated for CVAD 2012
+
 #Version 3.10 1-Oct-2020
 #	Add Hosting Connection type Remote PC Wake on LAN
 #	Add Manage Security Data information
