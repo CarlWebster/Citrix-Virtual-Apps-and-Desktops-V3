@@ -6,6 +6,11 @@
 
 # This script is based on the 2.36 script
 
+#Version 3.21
+#	Added to the Computer Hardware section, the server's Power Plan
+#	Updated help text
+#	Updated ReadMe file
+
 #Version 3.20 14-Dec-2020
 #	Added Computer policy
 #		ICA\Rendezvous proxy configuration
