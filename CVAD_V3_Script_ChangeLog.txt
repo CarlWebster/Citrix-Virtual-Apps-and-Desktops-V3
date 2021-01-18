@@ -6,7 +6,7 @@
 
 # This script is based on the 2.36 script
 
-#Version 3.21
+#Version 3.21 18-Jan-2021
 #	Added to the Computer Hardware section, the server's Power Plan
 #	Updated help text
 #	Updated ReadMe file

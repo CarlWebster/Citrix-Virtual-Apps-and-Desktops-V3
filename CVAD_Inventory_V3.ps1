@@ -924,10 +924,10 @@
 	The script will use the email server mail.domain.tld, sending from 
 	CVADAdmin@domain.tld, sending to ITGroup@domain.tld.
 
-	The script will use the default SMTP port 25 and will not use SSL.
+	The script uses the default SMTP port 25 and does not use SSL.
 
 	If the current user's credentials are not valid to send email, 
-	the user will be prompted to enter valid credentials.
+	the script prompts the user to enter valid credentials.
 
 	Creates an HTML report.
 	The computer running the script for the AdminAddress.
@@ -943,7 +943,7 @@
 	To send unauthenticated email using an email relay server requires the From email account 
 	to use the name Anonymous.
 
-	The script will use the default SMTP port 25 and will not use SSL.
+	The script uses the default SMTP port 25 and does not use SSL.
 	
 	***GMAIL/G SUITE SMTP RELAY***
 	https://support.google.com/a/answer/2956491?hl=en
@@ -953,7 +953,7 @@
 	the "Less secure app access" option on your account.
 	***GMAIL/G SUITE SMTP RELAY***
 
-	The script will generate an anonymous secure password for the anonymous@domain.tld 
+	The script generates an anonymous secure password for the anonymous@domain.tld 
 	account.
 
 	Creates an HTML report.
@@ -982,11 +982,11 @@
 	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -SmtpServer smtp.office365.com -SmtpPort 587 
 	-UseSSL -From Webster@CarlWebster.com -To ITGroup@CarlWebster.com	
 
-	The script will use the email server smtp.office365.com on port 587 using SSL, 
+	The script uses the email server smtp.office365.com on port 587 using SSL, 
 	sending from webster@carlwebster.com, sending to ITGroup@carlwebster.com.
 
 	If the current user's credentials are not valid to send email, 
-	the user will be prompted to enter valid credentials.
+	the script prompts the user to enter valid credentials.
 
 	Creates an HTML report.
 	The computer running the script for the AdminAddress.
@@ -999,11 +999,11 @@
 	the "Less secure app access" option on your account.
 	*** NOTE ***
 	
-	The script will use the email server smtp.gmail.com on port 587 using SSL, 
+	The script uses the email server smtp.gmail.com on port 587 using SSL, 
 	sending from webster@gmail.com, sending to ITGroup@carlwebster.com.
 
 	If the current user's credentials are not valid to send email, 
-	the user will be prompted to enter valid credentials.
+	the script prompts the user to enter valid credentials.
 
 	Creates an HTML report.
 	The computer running the script for the AdminAddress.
@@ -1206,7 +1206,7 @@ Param(
 # This script is based on the 2.36 script
 #
 
-#Version 3.21
+#Version 3.21 18-Jan-2021
 #	Added to the Computer Hardware section, the server's Power Plan
 #	Updated help text
 #	Updated ReadMe file
