@@ -6,6 +6,12 @@
 
 # This script is based on the 2.36 script
 
+#Version 3.22 25-Jan-2021
+#	Added error checking in Function Check-NeededPSSnapins (Requested by Guy Leech)
+#	Updated Function ProcessScriptSetup to have standard error checking between the four XA/XD/CVAD/CC doc scripts
+#	Updated the help text
+#	Updated the ReadMe file
+
 #Version 3.21 18-Jan-2021
 #	Added to the Computer Hardware section, the server's Power Plan
 #	Updated help text
