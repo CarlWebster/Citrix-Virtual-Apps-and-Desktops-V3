@@ -34954,6 +34954,20 @@ Function ProcessScriptSetup
 		"
 		AbortScript
 	}
+	ElseIf($Script:CVADSite2.ProductCode -eq "CVADS")
+	{
+		#this is not a CVAD 2006 or later Site, script cannot proceed
+		Write-Host "You are running on Citrix Cloud" -ForegroundColor White
+		Write-Error "
+	`n`n
+	This script is designed for On-Premises CVAD 2006 and later and should not be run on Citrix Cloud. Please use:
+	`n`n
+	https://carlwebster.com/downloads/download-info/citrix-cloud-citrix-virtual-apps-and-desktops-service/
+	`n`n
+	Script cannot continue
+	`n`n
+		"
+		AbortScript
 	ElseIf($Script:CVADSiteVersion.Major -eq 7 -and $Script:CVADSiteVersion.Minor -lt 26)
 	{
 		#this is not a CVAD 2006 or later Site, script cannot proceed
@@ -34975,6 +34989,7 @@ Function ProcessScriptSetup
 	`n`n
 		"
 		AbortScript
+	}
 	}
 	
 	[string]$Script:CVADSiteName = $Script:CVADSite2.SiteName
