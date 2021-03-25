@@ -1023,9 +1023,9 @@
 	This script creates a Word, PDF, plain text, or HTML document.
 .NOTES
 	NAME: CVAD_Inventory_V3.ps1
-	VERSION: 3.23
+	VERSION: 3.24
 	AUTHOR: Carl Webster
-	LASTEDIT: January 30, 2021
+	LASTEDIT: March 25, 2021
 #>
 
 #endregion
@@ -1215,6 +1215,25 @@ Param(
 # This script is based on the 2.36 script
 #
 
+#Version 3.24 25-Mar-2021 (20 years of Dave Ramsey)
+#	Added Computer policy
+#		Profile Management\Enable profile streaming for folders
+#		Workspace Environment Management\Citrix Cloud Connectors
+#	Added Server VDA Registry Key:
+#		HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\Explorer.exe\DontUseDesktopChangeRouter
+#	Added User policy
+#		ICA\Multimedia\Browser Content Redirection Server Fetch Proxy Auth
+#	Fixed one @XDParams1 that I missed and changed it to @CVADParams1
+#		This made the Monitoring Database Details and Groom Retention Settings in Days always show as Disabled
+#	For 2103 Restart schedules, added the following items:
+#		Use natural reboot
+#		Ignore maintenance mode
+#		Maximum Overtime Start Minutes
+#	Renamed computer policy
+#		Enable multi-session write-back for FSLogix Profile Container to Enable multi-session write-back for profile containers
+#		Virtual channel white list to Virtual channel allow list
+#	Updated for CVAD 2103/7.29
+#
 #Version 3.23 30-Jan-2021
 #	Added getting hardware information for the license server when -Hardware is used
 #	Added getting hardware information for the SQL Server(s) when -Hardware is used
@@ -7806,6 +7825,7 @@ Function GetVDARegistryKeys
 		Get-VDARegKeyToObject "HKLM:\SOFTWARE\Policies\Citrix\VirtualDesktopAgent" "SupportMultipleForestDdcLookup" $ComputerName $xType #CVAD2009
 		Get-VDARegKeyToObject "HKLM:\SOFTWARE\Citrix\CtxKlMap" "DisableWindowHook" $ComputerName $xType #CVAD2009
 		Get-VDARegKeyToObject "HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\Wds\icawd" "MtuDiscovery" $ComputerName $xType #CVAD2009
+		Get-VDARegKeyToObject "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\Explorer.exe" "DontUseDesktopChangeRouter" $ComputerName $xType #CVAD2103
 	}
 	ElseIf($xType -eq "Desktop")
 	{
@@ -11119,6 +11139,19 @@ Function OutputDeliveryGroupDetails
 						$ScriptInformation += @{Data = "     Notification message"; Value = $RestartSchedule.WarningMessage; }
 					}
 					$ScriptInformation += @{Data = "     Notification frequency"; Value = $RestartScheduleWarningRepeatInterval; }
+
+					If(validObject $RestartSchedule UseNaturalReboot)
+					{
+						$ScriptInformation += @{Data = "     Use natural reboot"; Value = $RestartSchedule.UseNaturalReboot.ToString(); }
+					}
+					If(validObject $RestartSchedule IgnoreMaintenanceMode)
+					{
+						$ScriptInformation += @{Data = "     Ignore maintenance mode"; Value = $RestartSchedule.IgnoreMaintenanceMode.ToString(); }
+					}
+					If(validObject $RestartSchedule MaxOvertimeStartMins)
+					{
+						$ScriptInformation += @{Data = "     Maximum Overtime Start Minutes"; Value = $RestartSchedule.MaxOvertimeStartMins.ToString(); }
+					}
 				}
 			}
 			Else
@@ -11750,6 +11783,19 @@ Function OutputDeliveryGroupDetails
 						Line 2 "Notification message`t`t`t`t: " $RestartSchedule.WarningMessage
 					}
 					Line 2 "Notification frequency`t`t`t`t: " $RestartScheduleWarningRepeatInterval
+
+					If(validObject $RestartSchedule UseNaturalReboot)
+					{
+						Line 2 "Use natural reboot`t`t`t`t: " $RestartSchedule.UseNaturalReboot.ToString()
+					}
+					If(validObject $RestartSchedule IgnoreMaintenanceMode)
+					{
+						Line 2 "Ignore maintenance mode`t`t`t`t: " $RestartSchedule.IgnoreMaintenanceMode.ToString()
+					}
+					If(validObject $RestartSchedule MaxOvertimeStartMins)
+					{
+						Line 2 "Maximum Overtime Start Minutes`t`t`t: " $RestartSchedule.MaxOvertimeStartMins.ToString()
+					}
 				}
 			}
 			Else
@@ -12366,6 +12412,19 @@ Function OutputDeliveryGroupDetails
 						$rowdata += @(,('     Notification message',($global:htmlsb),$RestartSchedule.WarningMessage,$htmlwhite))
 					}
 					$rowdata += @(,('     Notification frequency',($global:htmlsb),$RestartScheduleWarningRepeatInterval,$htmlwhite))
+
+					If(validObject $RestartSchedule UseNaturalReboot)
+					{
+						$rowdata += @(,("     Use natural reboot",($global:htmlsb),$RestartSchedule.UseNaturalReboot.ToString(),$htmlwhite))
+					}
+					If(validObject $RestartSchedule IgnoreMaintenanceMode)
+					{
+						$rowdata += @(,("     Ignore maintenance mode",($global:htmlsb),$RestartSchedule.IgnoreMaintenanceMode.ToString(),$htmlwhite))
+					}
+					If(validObject $RestartSchedule MaxOvertimeStartMins)
+					{
+						$rowdata += @(,("     Maximum Overtime Start Minutes",($global:htmlsb),$RestartSchedule.MaxOvertimeStartMins.ToString(),$htmlwhite))
+					}
 				}
 			}
 			Else
@@ -16069,7 +16128,7 @@ Function ProcessCitrixPolicies
 					}
 					If((validStateProp $Setting RendezvousProxy State ) -and ($Setting.RendezvousProxy.State -ne "NotConfigured"))
 					{
-						$txt = "ICA\Rendezvous proxy configuration"
+						$txt = "ICA\Rendezvous proxy configuration" #added in 2103
 						If($MSWord -or $PDF)
 						{
 							$SettingsWordTable += @{
@@ -16215,7 +16274,7 @@ Function ProcessCitrixPolicies
 					}
 					If((validStateProp $Setting VirtualChannelWhiteList State ) -and ($Setting.VirtualChannelWhiteList.State -ne "NotConfigured"))
 					{
-						$txt = "ICA\Virtual channel white list"
+						$txt = "ICA\Virtual channel allow list" #renamed in 2103
 						If(validStateProp $Setting VirtualChannelWhiteList Values )
 						{
 							$tmpArray = $Setting.VirtualChannelWhiteList.Values
@@ -18157,7 +18216,7 @@ Function ProcessCitrixPolicies
 					{
 						If( $Setting.WebBrowserRedirectionBlacklist.PSObject.Properties[ 'Values' ] )
 						{
-							$txt = "ICA\Multimedia\Browser Content Redirection Blacklist Configuration"
+							$txt = "ICA\Multimedia\Browser Content Redirection Block List Configuration" #renamed in 2103
 							$array = $Setting.WebBrowserRedirectionBlacklist.Values
 							$tmp = $array[0]
 							If($MSWord -or $PDF)
@@ -18251,6 +18310,50 @@ Function ProcessCitrixPolicies
 							If($Text)
 							{
 								OutputPolicySetting $txt $Setting.WebBrowserRedirectionProxy.State 
+							}
+						}
+					}
+					If((validStateProp $Setting WebBrowserRedirectionProxyAuth State ) -and ($Setting.WebBrowserRedirectionProxyAuth.State -ne "NotConfigured"))
+					{
+						$txt = "ICA\Multimedia\Browser Content Redirection Server Fetch Proxy Auth" #added in 2103
+						If($Setting.WebBrowserRedirectionProxyAuth.State -eq "Enabled")
+						{
+							If($MSWord -or $PDF)
+							{
+								$SettingsWordTable += @{
+								Text = $txt;
+								Value = $Setting.WebBrowserRedirectionProxyAuth.Value;
+								}
+							}
+							If($HTML)
+							{
+								$rowdata += @(,(
+								$txt,$htmlbold,
+								$Setting.WebBrowserRedirectionProxyAuth.Value,$htmlwhite))
+							}
+							If($Text)
+							{
+								OutputPolicySetting $txt $Setting.WebBrowserRedirectionProxyAuth.Value 
+							}
+						}
+						Else
+						{
+							If($MSWord -or $PDF)
+							{
+								$SettingsWordTable += @{
+								Text = $txt;
+								Value = $Setting.WebBrowserRedirectionProxyAuth.State;
+								}
+							}
+							If($HTML)
+							{
+								$rowdata += @(,(
+								$txt,$htmlbold,
+								$Setting.WebBrowserRedirectionProxyAuth.State,$htmlwhite))
+							}
+							If($Text)
+							{
+								OutputPolicySetting $txt $Setting.WebBrowserRedirectionProxyAuth.State 
 							}
 						}
 					}
@@ -21789,6 +21892,27 @@ Function ProcessCitrixPolicies
 					}
 
 					Write-Verbose "$(Get-Date -Format G): `t`t`tProfile Management"
+					If((validStateProp $Setting PSForFoldersEnabled State ) -and ($Setting.PSForFoldersEnabled.State -ne "NotConfigured"))
+					{
+						$txt = "Profile Management\Enable profile streaming for folders" #added in 2012
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.PSForFoldersEnabled.State;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.PSForFoldersEnabled.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.PSForFoldersEnabled.State
+						}
+					}
 					Write-Verbose "$(Get-Date -Format G): `t`t`tProfile Management\Advanced settings"
 					If((validStateProp $Setting CEIPEnabled State ) -and ($Setting.CEIPEnabled.State -ne "NotConfigured"))
 					{
@@ -21834,7 +21958,7 @@ Function ProcessCitrixPolicies
 					}
 					If((validStateProp $Setting FSLogixProfileContainerSupport State ) -and ($Setting.FSLogixProfileContainerSupport.State -ne "NotConfigured"))
 					{
-						$txt = "Profile Management\Advanced settings\Enable multi-session write-back for FSLogix Profile Container"
+						$txt = "Profile Management\Advanced settings\Enable multi-session write-back for profile containers" #renamed in 2103
 						If($MSWord -or $PDF)
 						{
 							$SettingsWordTable += @{
@@ -27039,6 +27163,114 @@ Function ProcessCitrixPolicies
 						}
 					}
 				}
+
+				Write-Verbose "$(Get-Date -Format G): `t`t`tWorkspace Environment Management"
+				If((validStateProp $Setting WemCloudConnectorList State ) -and ($Setting.WemCloudConnectorList.State -ne "NotConfigured"))
+				{
+					$txt = "Workspace Environment Management\Citrix Cloud Connectors" #addedin 2103
+					If($Setting.WemCloudConnectorList.State -eq "Enabled")
+					{
+						If(validStateProp $Setting WemCloudConnectorList Values )
+						{
+							$tmpArray = $Setting.WemCloudConnectorList.Values.Split(",")
+							$tmp = ""
+							$cnt = 0
+							ForEach($Thing in $tmpArray)
+							{
+								$cnt++
+								$tmp = "$($Thing)"
+								If($cnt -eq 1)
+								{
+									If($MSWord -or $PDF)
+									{
+										$WordTableRowHash = @{
+										Text = $txt;
+										Value = $tmp;
+										}
+										$SettingsWordTable += $WordTableRowHash;
+									}
+									If($HTML)
+									{
+										$rowdata += @(,(
+										$txt,$htmlbold,
+										$tmp,$htmlwhite))
+									}
+									If($Text)
+									{
+										OutputPolicySetting $txt $tmp
+									}
+								}
+								Else
+								{
+									If($MSWord -or $PDF)
+									{
+										$WordTableRowHash = @{
+										Text = "";
+										Value = $tmp;
+										}
+										$SettingsWordTable += $WordTableRowHash;
+									}
+									If($HTML)
+									{
+										$rowdata += @(,(
+										"",$htmlbold,
+										$tmp,$htmlwhite))
+									}
+									If($Text)
+									{
+										OutputPolicySetting "" $tmp
+									}
+								}
+							}
+							$tmpArray = $Null
+							$tmp = $Null
+						}
+						Else
+						{
+							$tmp = "No Citrix Cloud Connectors were found"
+							If($MSWord -or $PDF)
+							{
+								$WordTableRowHash = @{
+								Text = $txt;
+								Value = $tmp;
+								}
+								$SettingsWordTable += $WordTableRowHash;
+							}
+							If($HTML)
+							{
+								$rowdata += @(,(
+								$txt,$htmlbold,
+								$tmp,$htmlwhite))
+							}
+							If($Text)
+							{
+								OutputPolicySetting $txt $tmp
+							}
+						}
+					}
+					Else
+					{
+						If($MSWord -or $PDF)
+						{
+							$WordTableRowHash = @{
+							Text = $txt;
+							Value = $Setting.WemCloudConnectorList.State;
+							}
+							$SettingsWordTable += $WordTableRowHash;
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.WemCloudConnectorList.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.WemCloudConnectorList.State 
+						}
+					}
+				}
+
 				If($MSWord -or $PDF)
 				{
 					If($SettingsWordTable.Count -gt 0) #don't process if array is empty
@@ -28767,7 +28999,7 @@ Function OutputDatastores
 		}
 		
 		$MonitorConfig = $Null
-		$MonitorConfig = Get-MonitorConfiguration @XDParams1
+		$MonitorConfig = Get-MonitorConfiguration @CVADParams1
 		
 		If($? -and $Null -ne $MonitorConfig)
 		{
@@ -34749,6 +34981,7 @@ Function ProcessScriptSetup
 			$CVADSiteVersionReal = "Unknown"
 			Switch ($CVADSiteVersion)
 			{
+				"7.29"	{$CVADSiteVersionReal = "CVAD 2103"; Break}
 				"7.28"	{$CVADSiteVersionReal = "CVAD 2012"; Break}
 				"7.27"	{$CVADSiteVersionReal = "CVAD 2009"; Break}
 				"7.26"	{$CVADSiteVersionReal = "CVAD 2006"; Break}
@@ -34982,6 +35215,7 @@ Function ProcessScriptSetup
 	$Script:CVADSiteVersionReal = "Unknown"
 	Switch ($Script:CVADSiteVersion)
 	{
+		"7.29"	{$Script:CVADSiteVersionReal = "CVAD 2103"; Break}
 		"7.28"	{$Script:CVADSiteVersionReal = "CVAD 2012"; Break}
 		"7.27"	{$Script:CVADSiteVersionReal = "CVAD 2009"; Break}
 		"7.26"	{$Script:CVADSiteVersionReal = "CVAD 2006"; Break}

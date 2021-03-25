@@ -6,6 +6,25 @@
 
 # This script is based on the 2.36 script
 
+#Version 3.24 25-Mar-2021 (20 years of Dave Ramsey)
+#	Added Computer policy
+#		Profile Management\Enable profile streaming for folders
+#		Workspace Environment Management\Citrix Cloud Connectors
+#	Added Server VDA Registry Key:
+#		HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\Explorer.exe\DontUseDesktopChangeRouter
+#	Added User policy
+#		ICA\Multimedia\Browser Content Redirection Server Fetch Proxy Auth
+#	Fixed one @XDParams1 that I missed and changed it to @CVADParams1
+#		This made the Monitoring Database Details and Groom Retention Settings in Days always show as Disabled
+#	For 2103 Restart schedules, added the following items:
+#		Use natural reboot
+#		Ignore maintenance mode
+#		Maximum Overtime Start Minutes
+#	Renamed computer policy
+#		Enable multi-session write-back for FSLogix Profile Container to Enable multi-session write-back for profile containers
+#		Virtual channel white list to Virtual channel allow list
+#	Updated for CVAD 2103/7.29
+
 #Version 3.23 30-Jan-2021
 #	Added getting hardware information for the license server when -Hardware is used
 #	Added getting hardware information for the SQL Server(s) when -Hardware is used
