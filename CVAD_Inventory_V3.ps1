@@ -28469,7 +28469,7 @@ Function OutputDatastores
 		If($ConfigSQLServerPrincipalName.Contains("\"))
 		{
 			$ConfigSQLServerPrincipalNameIPAddress = Get-IPAddress $ConfigSQLServerPrincipalName.Substring(0,$ConfigSQLServerPrincipalName.IndexOf("\"))
-			#add in V2.40 get hardware info for the sql server(s)
+			#add in V3.23 get hardware info for the sql server(s)
 			$SQLServerNames += $ConfigSQLServerPrincipalName.Substring(0,$ConfigSQLServerPrincipalName.IndexOf("\"))
 		}
 		ElseIf($ConfigSQLServerPrincipalName -like "*tcp://*")
@@ -28484,7 +28484,7 @@ Function OutputDatastores
 		Else
 		{
 			$ConfigSQLServerPrincipalNameIPAddress = Get-IPAddress $ConfigSQLServerPrincipalName
-			#add in V2.40 get hardware info for the sql server(s)
+			#add in V3.23 get hardware info for the sql server(s)
 			$SQLServerNames += $ConfigSQLServerPrincipalName
 		}
 
@@ -28493,7 +28493,7 @@ Function OutputDatastores
 			If($ConfigSQLServerMirrorName.Contains("\"))
 			{
 				$ConfigSQLServerMirrorNameIPAddress = Get-IPAddress $ConfigSQLServerMirrorName.Substring(0,$ConfigSQLServerMirrorName.IndexOf("\"))
-				#add in V2.40 get hardware info for the sql server(s)
+				#add in V3.23 get hardware info for the sql server(s)
 				$SQLServerNames += $ConfigSQLServerMirrorName.Substring(0,$ConfigSQLServerMirrorName.IndexOf("\"))
 			}
 			ElseIf($ConfigSQLServerMirrorName -like "*tcp://*")
@@ -28508,7 +28508,7 @@ Function OutputDatastores
 			Else
 			{
 				$ConfigSQLServerMirrorNameIPAddress = Get-IPAddress $ConfigSQLServerMirrorName
-				#add in V2.40 get hardware info for the sql server(s)
+				#add in V3.23 get hardware info for the sql server(s)
 				$SQLServerNames += $ConfigSQLServerMirrorName
 			}
 		}
@@ -28574,7 +28574,7 @@ Function OutputDatastores
 				If($Configdb.MirroringPartner.Contains("\"))
 				{
 					$ConfigDBMirroringPartnerIPAddress = Get-IPAddress $Configdb.MirroringPartner.Substring(0,$Configdb.MirroringPartner.IndexOf("\"))
-					#add in V2.40 get hardware info for the sql server(s)
+					#add in V3.23 get hardware info for the sql server(s)
 					$SQLServerNames += $Configdb.MirroringPartner.Substring(0,$Configdb.MirroringPartner.IndexOf("\"))
 				}
 				ElseIf($Configdb.MirroringPartner -like "*tcp://*")
@@ -28589,7 +28589,7 @@ Function OutputDatastores
 				Else
 				{
 					$ConfigDBMirroringPartnerIPAddress = Get-IPAddress $Configdb.MirroringPartner
-					#add in V2.40 get hardware info for the sql server(s)
+					#add in V3.23 get hardware info for the sql server(s)
 					$SQLServerNames += $Configdb.MirroringPartner
 				}
 				$ConfigDBMirroringPartnerInstance	= $Configdb.MirroringPartnerInstance
@@ -28599,7 +28599,7 @@ Function OutputDatastores
 				If($Configdb.MirroringWitness.Contains("\"))
 				{
 					$ConfigDBMirroringWitnessIPAddress = Get-IPAddress $Configdb.MirroringWitness.Substring(0,$Configdb.MirroringWitness.IndexOf("\"))
-					#add in V2.40 get hardware info for the sql server(s)
+					#add in V3.23 get hardware info for the sql server(s)
 					$SQLServerNames += $Configdb.MirroringWitness.Substring(0,$Configdb.MirroringWitness.IndexOf("\"))
 				}
 				ElseIf($Configdb.MirroringWitness -like "*tcp://*")
@@ -28614,7 +28614,7 @@ Function OutputDatastores
 				Else
 				{
 					$ConfigDBMirroringWitnessIPAddress = Get-IPAddress $Configdb.MirroringWitness
-					#add in V2.40 get hardware info for the sql server(s)
+					#add in V3.23 get hardware info for the sql server(s)
 					$SQLServerNames += $Configdb.MirroringWitness
 				}
 				$ConfigDBMirroringWitnessStatus		= $Configdb.MirroringWitnessStatus
@@ -28698,7 +28698,7 @@ Function OutputDatastores
 		If($LogSQLServerPrincipalName.Contains("\"))
 		{
 			$LogSQLServerPrincipalNameIPAddress = Get-IPAddress $LogSQLServerPrincipalName.Substring(0,$LogSQLServerPrincipalName.IndexOf("\"))
-			#add in V2.40 get hardware info for the sql server(s)
+			#add in V3.23 get hardware info for the sql server(s)
 			$SQLServerNames += $LogSQLServerPrincipalName.Substring(0,$LogSQLServerPrincipalName.IndexOf("\"))
 		}
 		ElseIf($LogSQLServerPrincipalName -like "*tcp://*")
@@ -28713,7 +28713,7 @@ Function OutputDatastores
 		Else
 		{
 			$LogSQLServerPrincipalNameIPAddress = Get-IPAddress $LogSQLServerPrincipalName
-			#add in V2.40 get hardware info for the sql server(s)
+			#add in V3.23 get hardware info for the sql server(s)
 			$SQLServerNames += $LogSQLServerPrincipalName
 		}
 
@@ -28722,7 +28722,7 @@ Function OutputDatastores
 			If($LogSQLServerMirrorName.Contains("\"))
 			{
 				$LogSQLServerMirrorNameIPAddress = Get-IPAddress $LogSQLServerMirrorName.Substring(0,$LogSQLServerMirrorName.IndexOf("\"))
-				#add in V2.40 get hardware info for the sql server(s)
+				#add in V3.23 get hardware info for the sql server(s)
 				$SQLServerNames += $LogSQLServerMirrorName.Substring(0,$LogSQLServerMirrorName.IndexOf("\"))
 			}
 			ElseIf($LogSQLServerMirrorName -like "*tcp://*")
@@ -28737,7 +28737,7 @@ Function OutputDatastores
 			Else
 			{
 				$LogSQLServerMirrorNameIPAddress = Get-IPAddress $LogSQLServerMirrorName
-				#add in V2.40 get hardware info for the sql server(s)
+				#add in V3.23 get hardware info for the sql server(s)
 				$SQLServerNames += $LogSQLServerMirrorName
 			}
 		}
@@ -28803,7 +28803,7 @@ Function OutputDatastores
 				If($Logdb.MirroringPartner.Contains("\"))
 				{
 					$LogDBMirroringPartnerIPAddress = Get-IPAddress $Logdb.MirroringPartner.Substring(0,$Logdb.MirroringPartner.IndexOf("\"))
-					#add in V2.40 get hardware info for the sql server(s)
+					#add in V3.23 get hardware info for the sql server(s)
 					$SQLServerNames += $Logdb.MirroringPartner.Substring(0,$Logdb.MirroringPartner.IndexOf("\"))
 				}
 				ElseIf($Logdb.MirroringPartner -like "*tcp://*")
@@ -28818,7 +28818,7 @@ Function OutputDatastores
 				Else
 				{
 					$LogDBMirroringPartnerIPAddress = Get-IPAddress $Logdb.MirroringPartner
-					#add in V2.40 get hardware info for the sql server(s)
+					#add in V3.23 get hardware info for the sql server(s)
 					$SQLServerNames += $Logdb.MirroringPartner
 				}
 				$LogDBMirroringPartnerInstance	= $LogDB.MirroringPartnerInstance
@@ -28828,7 +28828,7 @@ Function OutputDatastores
 				If($Logdb.MirroringWitness.Contains("\"))
 				{
 					$LogDBMirroringWitnessIPAddress = Get-IPAddress $Logdb.MirroringWitness.Substring(0,$Logdb.MirroringWitness.IndexOf("\"))
-					#add in V2.40 get hardware info for the sql server(s)
+					#add in V3.23 get hardware info for the sql server(s)
 					$SQLServerNames += $Logdb.MirroringWitness.Substring(0,$Logdb.MirroringWitness.IndexOf("\"))
 				}
 				ElseIf($Logdb.MirroringWitness -like "*tcp://*")
@@ -28843,7 +28843,7 @@ Function OutputDatastores
 				Else
 				{
 					$LogDBMirroringWitnessIPAddress = Get-IPAddress $Logdb.MirroringWitness
-					#add in V2.40 get hardware info for the sql server(s)
+					#add in V3.23 get hardware info for the sql server(s)
 					$SQLServerNames += $Logdb.MirroringWitness
 				}
 				$LogDBMirroringWitnessStatus	= $LogDB.MirroringWitnessStatus
@@ -28930,7 +28930,7 @@ Function OutputDatastores
 		If($MonitorSQLServerPrincipalName.Contains("\"))
 		{
 			$MonitorSQLServerPrincipalNameIPAddress = Get-IPAddress $MonitorSQLServerPrincipalName.Substring(0,$MonitorSQLServerPrincipalName.IndexOf("\"))
-			#add in V2.40 get hardware info for the sql server(s)
+			#add in V3.23 get hardware info for the sql server(s)
 			$SQLServerNames += $MonitorSQLServerPrincipalName.Substring(0,$MonitorSQLServerPrincipalName.IndexOf("\"))
 		}
 		ElseIf($MonitorSQLServerPrincipalName -like "*tcp://*")
@@ -28945,7 +28945,7 @@ Function OutputDatastores
 		Else
 		{
 			$MonitorSQLServerPrincipalNameIPAddress = Get-IPAddress $MonitorSQLServerPrincipalName
-			#add in V2.40 get hardware info for the sql server(s)
+			#add in V3.23 get hardware info for the sql server(s)
 			$SQLServerNames += $MonitorSQLServerPrincipalName
 		}
 
@@ -28954,7 +28954,7 @@ Function OutputDatastores
 			If($MonitorSQLServerMirrorName.Contains("\"))
 			{
 				$MonitorSQLServerMirrorNameIPAddress = Get-IPAddress $MonitorSQLServerMirrorName.Substring(0,$MonitorSQLServerMirrorName.IndexOf("\"))
-				#add in V2.40 get hardware info for the sql server(s)
+				#add in V3.23 get hardware info for the sql server(s)
 				$SQLServerNames += $MonitorSQLServerMirrorName.Substring(0,$MonitorSQLServerMirrorName.IndexOf("\"))
 			}
 			ElseIf($MonitorSQLServerMirrorName -like "*tcp://*")
@@ -28969,7 +28969,7 @@ Function OutputDatastores
 			Else
 			{
 				$MonitorSQLServerMirrorNameIPAddress = Get-IPAddress $MonitorSQLServerMirrorName
-				#add in V2.40 get hardware info for the sql server(s)
+				#add in V3.23 get hardware info for the sql server(s)
 				$SQLServerNames += $MonitorSQLServerMirrorName
 			}
 		}
@@ -29035,7 +29035,7 @@ Function OutputDatastores
 				If($Monitordb.MirroringPartner.Contains("\"))
 				{
 					$MonitorDBMirroringPartnerIPAddress = Get-IPAddress $Monitordb.MirroringPartner.Substring(0,$Monitordb.MirroringPartner.IndexOf("\"))
-					#add in V2.40 get hardware info for the sql server(s)
+					#add in V3.23 get hardware info for the sql server(s)
 					$SQLServerNames += $Monitordb.MirroringPartner.Substring(0,$Monitordb.MirroringPartner.IndexOf("\"))
 				}
 				ElseIf($Monitordb.MirroringPartner -like "*tcp://*")
@@ -29050,7 +29050,7 @@ Function OutputDatastores
 				Else
 				{
 					$MonitorDBMirroringPartnerIPAddress = Get-IPAddress $Monitordb.MirroringPartner
-					#add in V2.40 get hardware info for the sql server(s)
+					#add in V3.23 get hardware info for the sql server(s)
 					$SQLServerNames += $Monitordb.MirroringPartner
 				}
 				$MonitorDBMirroringPartnerInstance	= $MonitorDB.MirroringPartnerInstance
@@ -29060,7 +29060,7 @@ Function OutputDatastores
 				If($Monitordb.MirroringWitness.Contains("\"))
 				{
 					$MonitorDBMirroringWitnessIPAddress = Get-IPAddress $MonitorDB.MirroringWitness.Substring(0,$MonitorDB.MirroringWitness.IndexOf("\"))
-					#add in V2.40 get hardware info for the sql server(s)
+					#add in V3.23 get hardware info for the sql server(s)
 					$SQLServerNames += $MonitorDB.MirroringWitness.Substring(0,$MonitorDB.MirroringWitness.IndexOf("\"))
 				}
 				ElseIf($Monitordb.MirroringWitness -like "*tcp://*")
@@ -29075,7 +29075,7 @@ Function OutputDatastores
 				Else
 				{
 					$MonitorDBMirroringWitnessIPAddress = Get-IPAddress $MonitorDB.MirroringWitness
-					#add in V2.40 get hardware info for the sql server(s)
+					#add in V3.23 get hardware info for the sql server(s)
 					$SQLServerNames += $MonitorDB.MirroringWitness
 				}
 				$MonitorDBMirroringWitnessStatus	= $MonitorDB.MirroringWitnessStatus
