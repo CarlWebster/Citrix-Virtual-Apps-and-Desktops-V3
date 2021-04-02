@@ -6,6 +6,12 @@
 
 # This script is based on the 2.36 script
 
+#Version 3.25 2-Apr-2021
+#	Thanks to M. Foster for finding the following bugs:
+#	Update functions OutputConfigLogPreferences and OutputDatastores to handle configuration strings that contain "Data Source" instead of "Server"
+#	Update Function OutputDatastores to look for SQL Server names that contain "TCP://" and ":nnnn (port number)"
+#		Fixed several copy and paste errors that have been in the code for years
+
 #Version 3.24 25-Mar-2021 (20 years of Dave Ramsey)
 #	Added Computer policy
 #		Profile Management\Enable profile streaming for folders

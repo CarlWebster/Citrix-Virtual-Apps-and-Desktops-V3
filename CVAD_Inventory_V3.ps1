@@ -1023,9 +1023,9 @@
 	This script creates a Word, PDF, plain text, or HTML document.
 .NOTES
 	NAME: CVAD_Inventory_V3.ps1
-	VERSION: 3.24
+	VERSION: 3.25
 	AUTHOR: Carl Webster
-	LASTEDIT: March 25, 2021
+	LASTEDIT: April 2, 2021
 #>
 
 #endregion
@@ -1214,7 +1214,12 @@ Param(
 
 # This script is based on the 2.36 script
 #
-
+#Version 3.25 2-Apr-2021
+#	Thanks to M. Foster for finding the following bugs:
+#	Update functions OutputConfigLogPreferences and OutputDatastores to handle configuration strings that contain "Data Source" instead of "Server"
+#	Update Function OutputDatastores to look for SQL Server names that contain "TCP://" and ":nnnn (port number)"
+#		Fixed several copy and paste errors that have been in the code for years
+#
 #Version 3.24 25-Mar-2021 (20 years of Dave Ramsey)
 #	Added Computer policy
 #		Profile Management\Enable profile streaming for folders
@@ -27825,6 +27830,7 @@ Function OutputConfigLogPreferences
 					Switch ($Pair[0])
 					{
 						"Server"					{$LogSQLServerPrincipalName = $Pair[1]; Break}
+						"Data Source"				{$LogSQLServerPrincipalName = $Pair[1]; Break}
 						"Failover Partner"			{$LogSQLServerMirrorName = $Pair[1]; Break}
 						"MultiSubnetFailover"		{$LogSQLServerMirrorName = ""; Break}
 						"Database"					{$LogDatabaseName = $Pair[1]; Break}
@@ -28419,6 +28425,7 @@ Function GetDBCompatibilityLevel
 Function OutputDatastores
 {
 	#2-Mar-2017 Fix bug reported by P. Ewing
+	#2-Apr-2021 Fix bugs reported M. Foster
 	
 	#line starts with server=SQLServerName;
 	#only need what is between the = and ;
@@ -28451,6 +28458,7 @@ Function OutputDatastores
 			Switch ($Pair[0])
 			{
 				"Server"					{$ConfigSQLServerPrincipalName = $Pair[1]; Break}
+				"Data Source"				{$ConfigSQLServerPrincipalName = $Pair[1]; Break}
 				"Failover Partner"			{$ConfigSQLServerMirrorName = $Pair[1]; Break}
 				"MultiSubnetFailover"		{$ConfigSQLServerMirrorName = ""; Break}
 				"Database"					{$ConfigDatabaseName = $Pair[1]; Break}
@@ -28461,13 +28469,22 @@ Function OutputDatastores
 		If($ConfigSQLServerPrincipalName.Contains("\"))
 		{
 			$ConfigSQLServerPrincipalNameIPAddress = Get-IPAddress $ConfigSQLServerPrincipalName.Substring(0,$ConfigSQLServerPrincipalName.IndexOf("\"))
-			#add in V3.23 get hardware info for the sql server(s)
+			#add in V2.40 get hardware info for the sql server(s)
 			$SQLServerNames += $ConfigSQLServerPrincipalName.Substring(0,$ConfigSQLServerPrincipalName.IndexOf("\"))
+		}
+		ElseIf($ConfigSQLServerPrincipalName -like "*tcp://*")
+		{
+			#looking for tcp://servername.domain.tld:port
+			$x = $ConfigSQLServerPrincipalName.LastIndexOf("/") + 1 #to get past the //
+			$y = $ConfigSQLServerPrincipalName.LastIndexOf(":")
+			$len = ($y - $x)
+			$ConfigSQLServerPrincipalNameIPAddress = Get-IPAddress $ConfigSQLServerPrincipalName.Substring($x, $len)
+			$SQLServerNames += $ConfigSQLServerPrincipalName.Substring($x, $len)
 		}
 		Else
 		{
 			$ConfigSQLServerPrincipalNameIPAddress = Get-IPAddress $ConfigSQLServerPrincipalName
-			#add in V3.23 get hardware info for the sql server(s)
+			#add in V2.40 get hardware info for the sql server(s)
 			$SQLServerNames += $ConfigSQLServerPrincipalName
 		}
 
@@ -28476,13 +28493,22 @@ Function OutputDatastores
 			If($ConfigSQLServerMirrorName.Contains("\"))
 			{
 				$ConfigSQLServerMirrorNameIPAddress = Get-IPAddress $ConfigSQLServerMirrorName.Substring(0,$ConfigSQLServerMirrorName.IndexOf("\"))
-				#add in V3.23 get hardware info for the sql server(s)
+				#add in V2.40 get hardware info for the sql server(s)
 				$SQLServerNames += $ConfigSQLServerMirrorName.Substring(0,$ConfigSQLServerMirrorName.IndexOf("\"))
+			}
+			ElseIf($ConfigSQLServerMirrorName -like "*tcp://*")
+			{
+				#looking for tcp://servername.domain.tld:port
+				$x = $ConfigSQLServerMirrorName.LastIndexOf("/") + 1 #to get past the //
+				$y = $ConfigSQLServerMirrorName.LastIndexOf(":")
+				$len = ($y - $x)
+				$ConfigSQLServerMirrorNameIPAddress = Get-IPAddress $ConfigSQLServerMirrorName.Substring($x, $len)
+				$SQLServerNames += $ConfigSQLServerMirrorName.Substring($x, $len)
 			}
 			Else
 			{
 				$ConfigSQLServerMirrorNameIPAddress = Get-IPAddress $ConfigSQLServerMirrorName
-				#add in V3.23 get hardware info for the sql server(s)
+				#add in V2.40 get hardware info for the sql server(s)
 				$SQLServerNames += $ConfigSQLServerMirrorName
 			}
 		}
@@ -28548,30 +28574,47 @@ Function OutputDatastores
 				If($Configdb.MirroringPartner.Contains("\"))
 				{
 					$ConfigDBMirroringPartnerIPAddress = Get-IPAddress $Configdb.MirroringPartner.Substring(0,$Configdb.MirroringPartner.IndexOf("\"))
-					#add in V3.23 get hardware info for the sql server(s)
+					#add in V2.40 get hardware info for the sql server(s)
 					$SQLServerNames += $Configdb.MirroringPartner.Substring(0,$Configdb.MirroringPartner.IndexOf("\"))
+				}
+				ElseIf($Configdb.MirroringPartner -like "*tcp://*")
+				{
+					#looking for tcp://servername.domain.tld:port
+					$x = $Configdb.MirroringPartner.LastIndexOf("/") + 1 #to get past the //
+					$y = $Configdb.MirroringPartner.LastIndexOf(":")
+					$len = ($y - $x)
+					$ConfigDBMirroringPartnerIPAddress = Get-IPAddress $Configdb.MirroringPartner.Substring($x, $len)
+					$SQLServerNames += $Configdb.MirroringPartner.Substring($x, $len)
 				}
 				Else
 				{
 					$ConfigDBMirroringPartnerIPAddress = Get-IPAddress $Configdb.MirroringPartner
-					#add in V3.23 get hardware info for the sql server(s)
+					#add in V2.40 get hardware info for the sql server(s)
 					$SQLServerNames += $Configdb.MirroringPartner
 				}
 				$ConfigDBMirroringPartnerInstance	= $Configdb.MirroringPartnerInstance
 				$ConfigDBMirroringSafetyLevel		= $Configdb.MirroringSafetyLevel
 				$ConfigDBMirroringStatus			= $Configdb.MirroringStatus
 				$ConfigDBMirroringWitness			= $Configdb.MirroringWitness
-				$ConfigDBMirroringWitnessIPAddress	= Get-IPAddress $Configdb.MirroringWitness
-				If($Configdb.MirroringPartner.Contains("\"))
+				If($Configdb.MirroringWitness.Contains("\"))
 				{
 					$ConfigDBMirroringWitnessIPAddress = Get-IPAddress $Configdb.MirroringWitness.Substring(0,$Configdb.MirroringWitness.IndexOf("\"))
-					#add in V3.23 get hardware info for the sql server(s)
+					#add in V2.40 get hardware info for the sql server(s)
 					$SQLServerNames += $Configdb.MirroringWitness.Substring(0,$Configdb.MirroringWitness.IndexOf("\"))
+				}
+				ElseIf($Configdb.MirroringWitness -like "*tcp://*")
+				{
+					#looking for tcp://servername.domain.tld:port
+					$x = $Configdb.MirroringWitness.LastIndexOf("/") + 1 #to get past the //
+					$y = $Configdb.MirroringWitness.LastIndexOf(":")
+					$len = ($y - $x)
+					$ConfigDBMirroringWitnessIPAddress = Get-IPAddress $Configdb.MirroringWitness.Substring($x, $len)
+					$SQLServerNames += $Configdb.MirroringWitness.Substring($x, $len)
 				}
 				Else
 				{
 					$ConfigDBMirroringWitnessIPAddress = Get-IPAddress $Configdb.MirroringWitness
-					#add in V3.23 get hardware info for the sql server(s)
+					#add in V2.40 get hardware info for the sql server(s)
 					$SQLServerNames += $Configdb.MirroringWitness
 				}
 				$ConfigDBMirroringWitnessStatus		= $Configdb.MirroringWitnessStatus
@@ -28642,6 +28685,7 @@ Function OutputDatastores
 					Switch ($Pair[0])
 					{
 						"Server"					{$LogSQLServerPrincipalName = $Pair[1]; Break}
+						"Data Source"				{$LogSQLServerPrincipalName = $Pair[1]; Break}
 						"Failover Partner"			{$LogSQLServerMirrorName = $Pair[1]; Break}
 						"MultiSubnetFailover"		{$LogSQLServerMirrorName = ""; Break}
 						"Database"					{$LogDatabaseName = $Pair[1]; Break}
@@ -28654,13 +28698,22 @@ Function OutputDatastores
 		If($LogSQLServerPrincipalName.Contains("\"))
 		{
 			$LogSQLServerPrincipalNameIPAddress = Get-IPAddress $LogSQLServerPrincipalName.Substring(0,$LogSQLServerPrincipalName.IndexOf("\"))
-			#add in V3.23 get hardware info for the sql server(s)
+			#add in V2.40 get hardware info for the sql server(s)
 			$SQLServerNames += $LogSQLServerPrincipalName.Substring(0,$LogSQLServerPrincipalName.IndexOf("\"))
+		}
+		ElseIf($LogSQLServerPrincipalName -like "*tcp://*")
+		{
+			#looking for tcp://servername.domain.tld:port
+			$x = $LogSQLServerPrincipalName.LastIndexOf("/") + 1 #to get past the //
+			$y = $LogSQLServerPrincipalName.LastIndexOf(":")
+			$len = ($y - $x)
+			$LogSQLServerPrincipalNameIPAddress = Get-IPAddress $LogSQLServerPrincipalName.Substring($x, $len)
+			$SQLServerNames += $LogSQLServerPrincipalName.Substring($x, $len)
 		}
 		Else
 		{
 			$LogSQLServerPrincipalNameIPAddress = Get-IPAddress $LogSQLServerPrincipalName
-			#add in V3.23 get hardware info for the sql server(s)
+			#add in V2.40 get hardware info for the sql server(s)
 			$SQLServerNames += $LogSQLServerPrincipalName
 		}
 
@@ -28669,13 +28722,22 @@ Function OutputDatastores
 			If($LogSQLServerMirrorName.Contains("\"))
 			{
 				$LogSQLServerMirrorNameIPAddress = Get-IPAddress $LogSQLServerMirrorName.Substring(0,$LogSQLServerMirrorName.IndexOf("\"))
-				#add in V3.23 get hardware info for the sql server(s)
+				#add in V2.40 get hardware info for the sql server(s)
 				$SQLServerNames += $LogSQLServerMirrorName.Substring(0,$LogSQLServerMirrorName.IndexOf("\"))
+			}
+			ElseIf($LogSQLServerMirrorName -like "*tcp://*")
+			{
+				#looking for tcp://servername.domain.tld:port
+				$x = $LogSQLServerMirrorName.LastIndexOf("/") + 1 #to get past the //
+				$y = $LogSQLServerMirrorName.LastIndexOf(":")
+				$len = ($y - $x)
+				$LogSQLServerMirrorNameIPAddress = Get-IPAddress $LogSQLServerMirrorName.Substring($x, $len)
+				$SQLServerNames += $LogSQLServerMirrorName.Substring($x, $len)
 			}
 			Else
 			{
 				$LogSQLServerMirrorNameIPAddress = Get-IPAddress $LogSQLServerMirrorName
-				#add in V3.23 get hardware info for the sql server(s)
+				#add in V2.40 get hardware info for the sql server(s)
 				$SQLServerNames += $LogSQLServerMirrorName
 			}
 		}
@@ -28741,29 +28803,47 @@ Function OutputDatastores
 				If($Logdb.MirroringPartner.Contains("\"))
 				{
 					$LogDBMirroringPartnerIPAddress = Get-IPAddress $Logdb.MirroringPartner.Substring(0,$Logdb.MirroringPartner.IndexOf("\"))
-					#add in V3.23 get hardware info for the sql server(s)
+					#add in V2.40 get hardware info for the sql server(s)
 					$SQLServerNames += $Logdb.MirroringPartner.Substring(0,$Logdb.MirroringPartner.IndexOf("\"))
+				}
+				ElseIf($Logdb.MirroringPartner -like "*tcp://*")
+				{
+					#looking for tcp://servername.domain.tld:port
+					$x = $Logdb.MirroringPartner.LastIndexOf("/") + 1 #to get past the //
+					$y = $Logdb.MirroringPartner.LastIndexOf(":")
+					$len = ($y - $x)
+					$LogDBMirroringPartnerIPAddress = Get-IPAddress $Logdb.MirroringPartner.Substring($x, $len)
+					$SQLServerNames += $Logdb.MirroringPartner.Substring($x, $len)
 				}
 				Else
 				{
 					$LogDBMirroringPartnerIPAddress = Get-IPAddress $Logdb.MirroringPartner
-					#add in V3.23 get hardware info for the sql server(s)
+					#add in V2.40 get hardware info for the sql server(s)
 					$SQLServerNames += $Logdb.MirroringPartner
 				}
 				$LogDBMirroringPartnerInstance	= $LogDB.MirroringPartnerInstance
 				$LogDBMirroringSafetyLevel		= $LogDB.MirroringSafetyLevel
 				$LogDBMirroringStatus			= $LogDB.MirroringStatus
 				$LogDBMirroringWitness			= $LogDB.MirroringWitness
-				If($Logdb.MirroringPartner.Contains("\"))
+				If($Logdb.MirroringWitness.Contains("\"))
 				{
 					$LogDBMirroringWitnessIPAddress = Get-IPAddress $Logdb.MirroringWitness.Substring(0,$Logdb.MirroringWitness.IndexOf("\"))
-					#add in V3.23 get hardware info for the sql server(s)
+					#add in V2.40 get hardware info for the sql server(s)
 					$SQLServerNames += $Logdb.MirroringWitness.Substring(0,$Logdb.MirroringWitness.IndexOf("\"))
+				}
+				ElseIf($Logdb.MirroringWitness -like "*tcp://*")
+				{
+					#looking for tcp://servername.domain.tld:port
+					$x = $Logdb.MirroringWitness.LastIndexOf("/") + 1 #to get past the //
+					$y = $Logdb.MirroringWitness.LastIndexOf(":")
+					$len = ($y - $x)
+					$LogDBMirroringWitnessIPAddress = Get-IPAddress $Logdb.MirroringWitness.Substring($x, $len)
+					$SQLServerNames += $Logdb.MirroringWitness.Substring($x, $len)
 				}
 				Else
 				{
 					$LogDBMirroringWitnessIPAddress = Get-IPAddress $Logdb.MirroringWitness
-					#add in V3.23 get hardware info for the sql server(s)
+					#add in V2.40 get hardware info for the sql server(s)
 					$SQLServerNames += $Logdb.MirroringWitness
 				}
 				$LogDBMirroringWitnessStatus	= $LogDB.MirroringWitnessStatus
@@ -28837,6 +28917,7 @@ Function OutputDatastores
 					Switch ($Pair[0])
 					{
 						"Server"					{$MonitorSQLServerPrincipalName = $Pair[1]; Break}
+						"Data Source"				{$MonitorSQLServerPrincipalName = $Pair[1]; Break}
 						"Failover Partner"			{$MonitorSQLServerMirrorName = $Pair[1]; Break}
 						"MultiSubnetFailover"		{$MonitorSQLServerMirrorName = ""; Break}
 						"Database"					{$MonitorDatabaseName = $Pair[1]; Break}
@@ -28849,13 +28930,22 @@ Function OutputDatastores
 		If($MonitorSQLServerPrincipalName.Contains("\"))
 		{
 			$MonitorSQLServerPrincipalNameIPAddress = Get-IPAddress $MonitorSQLServerPrincipalName.Substring(0,$MonitorSQLServerPrincipalName.IndexOf("\"))
-			#add in V3.23 get hardware info for the sql server(s)
+			#add in V2.40 get hardware info for the sql server(s)
 			$SQLServerNames += $MonitorSQLServerPrincipalName.Substring(0,$MonitorSQLServerPrincipalName.IndexOf("\"))
+		}
+		ElseIf($MonitorSQLServerPrincipalName -like "*tcp://*")
+		{
+			#looking for tcp://servername.domain.tld:port
+			$x = $MonitorSQLServerPrincipalName.LastIndexOf("/") + 1 #to get past the //
+			$y = $MonitorSQLServerPrincipalName.LastIndexOf(":")
+			$len = ($y - $x)
+			$MonitorSQLServerPrincipalNameIPAddress = Get-IPAddress $MonitorSQLServerPrincipalName.Substring($x, $len)
+			$SQLServerNames += $MonitorSQLServerPrincipalName.Substring($x, $len)
 		}
 		Else
 		{
 			$MonitorSQLServerPrincipalNameIPAddress = Get-IPAddress $MonitorSQLServerPrincipalName
-			#add in V3.23 get hardware info for the sql server(s)
+			#add in V2.40 get hardware info for the sql server(s)
 			$SQLServerNames += $MonitorSQLServerPrincipalName
 		}
 
@@ -28864,13 +28954,22 @@ Function OutputDatastores
 			If($MonitorSQLServerMirrorName.Contains("\"))
 			{
 				$MonitorSQLServerMirrorNameIPAddress = Get-IPAddress $MonitorSQLServerMirrorName.Substring(0,$MonitorSQLServerMirrorName.IndexOf("\"))
-				#add in V3.23 get hardware info for the sql server(s)
+				#add in V2.40 get hardware info for the sql server(s)
 				$SQLServerNames += $MonitorSQLServerMirrorName.Substring(0,$MonitorSQLServerMirrorName.IndexOf("\"))
+			}
+			ElseIf($MonitorSQLServerMirrorName -like "*tcp://*")
+			{
+				#looking for tcp://servername.domain.tld:port
+				$x = $MonitorSQLServerMirrorName.LastIndexOf("/") + 1 #to get past the //
+				$y = $MonitorSQLServerMirrorName.LastIndexOf(":")
+				$len = ($y - $x)
+				$MonitorSQLServerMirrorNameIPAddress = Get-IPAddress $MonitorSQLServerMirrorName.Substring($x, $len)
+				$SQLServerNames += $MonitorSQLServerMirrorName.Substring($x, $len)
 			}
 			Else
 			{
 				$MonitorSQLServerMirrorNameIPAddress = Get-IPAddress $MonitorSQLServerMirrorName
-				#add in V3.23 get hardware info for the sql server(s)
+				#add in V2.40 get hardware info for the sql server(s)
 				$SQLServerNames += $MonitorSQLServerMirrorName
 			}
 		}
@@ -28936,29 +29035,47 @@ Function OutputDatastores
 				If($Monitordb.MirroringPartner.Contains("\"))
 				{
 					$MonitorDBMirroringPartnerIPAddress = Get-IPAddress $Monitordb.MirroringPartner.Substring(0,$Monitordb.MirroringPartner.IndexOf("\"))
-					#add in V3.23 get hardware info for the sql server(s)
+					#add in V2.40 get hardware info for the sql server(s)
 					$SQLServerNames += $Monitordb.MirroringPartner.Substring(0,$Monitordb.MirroringPartner.IndexOf("\"))
+				}
+				ElseIf($Monitordb.MirroringPartner -like "*tcp://*")
+				{
+					#looking for tcp://servername.domain.tld:port
+					$x = $Monitordb.MirroringPartner.LastIndexOf("/") + 1 #to get past the //
+					$y = $Monitordb.MirroringPartner.LastIndexOf(":")
+					$len = ($y - $x)
+					$MonitorDBMirroringPartnerIPAddress = Get-IPAddress $Monitordb.MirroringPartner.Substring($x, $len)
+					$SQLServerNames += $Monitordb.MirroringPartner.Substring($x, $len)
 				}
 				Else
 				{
 					$MonitorDBMirroringPartnerIPAddress = Get-IPAddress $Monitordb.MirroringPartner
-					#add in V3.23 get hardware info for the sql server(s)
+					#add in V2.40 get hardware info for the sql server(s)
 					$SQLServerNames += $Monitordb.MirroringPartner
 				}
 				$MonitorDBMirroringPartnerInstance	= $MonitorDB.MirroringPartnerInstance
 				$MonitorDBMirroringSafetyLevel		= $MonitorDB.MirroringSafetyLevel
 				$MonitorDBMirroringStatus			= $MonitorDB.MirroringStatus
 				$MonitorDBMirroringWitness			= $MonitorDB.MirroringWitness
-				If($Configdb.MirroringPartner.Contains("\"))
+				If($Monitordb.MirroringWitness.Contains("\"))
 				{
 					$MonitorDBMirroringWitnessIPAddress = Get-IPAddress $MonitorDB.MirroringWitness.Substring(0,$MonitorDB.MirroringWitness.IndexOf("\"))
-					#add in V3.23 get hardware info for the sql server(s)
+					#add in V2.40 get hardware info for the sql server(s)
 					$SQLServerNames += $MonitorDB.MirroringWitness.Substring(0,$MonitorDB.MirroringWitness.IndexOf("\"))
+				}
+				ElseIf($Monitordb.MirroringWitness -like "*tcp://*")
+				{
+					#looking for tcp://servername.domain.tld:port
+					$x = $Monitordb.MirroringWitness.LastIndexOf("/") + 1 #to get past the //
+					$y = $Monitordb.MirroringWitness.LastIndexOf(":")
+					$len = ($y - $x)
+					$MonitorDBMirroringWitnessIPAddress = Get-IPAddress $Monitordb.MirroringWitness.Substring($x, $len)
+					$SQLServerNames += $Monitordb.MirroringWitness.Substring($x, $len)
 				}
 				Else
 				{
 					$MonitorDBMirroringWitnessIPAddress = Get-IPAddress $MonitorDB.MirroringWitness
-					#add in V3.23 get hardware info for the sql server(s)
+					#add in V2.40 get hardware info for the sql server(s)
 					$SQLServerNames += $MonitorDB.MirroringWitness
 				}
 				$MonitorDBMirroringWitnessStatus	= $MonitorDB.MirroringWitnessStatus
