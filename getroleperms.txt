@@ -1,0 +1,1 @@
+get-adminpermission | select groupname,id,name | sort-object groupname,id,name | out-file roleperms.txt

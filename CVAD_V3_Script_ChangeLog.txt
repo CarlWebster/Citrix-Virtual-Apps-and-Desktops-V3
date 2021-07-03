@@ -6,6 +6,20 @@
 
 # This script is based on the 2.36 script
 
+#Version 3.27 3-Jul-2021
+#	Added Computer policy
+#		Profile Management\Advanced settings\Enable credential-based access to user stores
+#		Profile Management\Advanced settings\Replicate user stores - Paths to replicate a user store
+#		Profile Management\File system\Synchronization\Accelerate folder mirroring
+#		Profile Management\Profile container settings\Enable local caching for profile containers
+#		VDA Data Collection\VDA data collection for Performance Analytics
+#	Added delivery controller registry key HKLM\Software\Policies\Citrix\DesktopServer\DisableGetPasswordExpiryInfo
+#	Added User policy
+#		ICA\Multimedia\Browser Content Redirection Integrated Windows Authentication Support
+#		ICA\Session Limits\Disconnected session timer for Remote PC Access
+#	Added to Delivery Group details, "Allow session reconnect in maintenance mode"
+#	Updated for CVAD 2106/7.30
+
 #Version 3.26 13-Apr-2021
 #	Changed $Application.IconFromClient to $Application.IconFromClient.ToString()
 #	Changed how the Session Recording Status was obtained

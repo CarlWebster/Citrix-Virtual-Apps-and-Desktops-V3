@@ -1023,9 +1023,9 @@
 	This script creates a Word, PDF, plain text, or HTML document.
 .NOTES
 	NAME: CVAD_Inventory_V3.ps1
-	VERSION: 3.26
+	VERSION: 3.27
 	AUTHOR: Carl Webster
-	LASTEDIT: April 13, 2021
+	LASTEDIT: July 3, 2021
 #>
 
 #endregion
@@ -1213,6 +1213,20 @@ Param(
 #started updating for CVAD version 2006 on August 10, 2020
 
 # This script is based on the 2.36 script
+#
+#Version 3.27 3-Jul-2021
+#	Added Computer policy
+#		Profile Management\Advanced settings\Enable credential-based access to user stores
+#		Profile Management\Advanced settings\Replicate user stores - Paths to replicate a user store
+#		Profile Management\File system\Synchronization\Accelerate folder mirroring
+#		Profile Management\Profile container settings\Enable local caching for profile containers
+#		VDA Data Collection\VDA data collection for Performance Analytics
+#	Added delivery controller registry key HKLM\Software\Policies\Citrix\DesktopServer\DisableGetPasswordExpiryInfo
+#	Added User policy
+#		ICA\Multimedia\Browser Content Redirection Integrated Windows Authentication Support
+#		ICA\Session Limits\Disconnected session timer for Remote PC Access
+#	Added to Delivery Group details, "Allow session reconnect in maintenance mode"
+#	Updated for CVAD 2106/7.30
 #
 #Version 3.26 13-Apr-2021
 #	Changed $Application.IconFromClient to $Application.IconFromClient.ToString()
@@ -11278,6 +11292,10 @@ Function OutputDeliveryGroupDetails
 		$ScriptInformation += @{Data = "Product code"; Value = $ProductCode; }
 		$ScriptInformation += @{Data = "App Protection Key Logging Required"; Value = $Group.AppProtectionKeyLoggingRequired; }
 		$ScriptInformation += @{Data = "App Protection Screen Capture Required"; Value = $Group.AppProtectionScreenCaptureRequired; }
+		If(validObject $Group AllowReconnectInMaintenanceMode)
+		{
+			$ScriptInformation += @{Data = "Allow session reconnect in maintenance mode"; Value = $Group.AllowReconnectInMaintenanceMode.ToString(); }
+		}
 		$ScriptInformation += @{ Data = "Off Peak Buffer Size Percent"; Value = $xOffPeakBufferSizePercent; }
 		$ScriptInformation += @{ Data = "Off Peak Disconnect Timeout (Minutes)"; Value = $xOffPeakDisconnectTimeout; }
 		$ScriptInformation += @{ Data = "Off Peak Extended Disconnect Timeout (Minutes)"; Value = $xOffPeakExtendedDisconnectTimeout; }
@@ -11931,6 +11949,10 @@ Function OutputDeliveryGroupDetails
 		Line 1 "Product code`t`t`t`t`t`t: " $ProductCode
 		Line 1 "App Protection Key Logging Required`t`t`t: " $Group.AppProtectionKeyLoggingRequired
 		Line 1 "App Protection Screen Capture Required`t`t`t: " $Group.AppProtectionScreenCaptureRequired
+		If(validObject $Group AllowReconnectInMaintenanceMode)
+		{
+			Line 1 "Allow session reconnect in maintenance mode`t`t: " $Group.AllowReconnectInMaintenanceMode.ToString()
+		}
 		Line 1 "Off Peak Buffer Size Percent`t`t`t`t: " $xOffPeakBufferSizePercent
 		Line 1 "Off Peak Disconnect Timeout (Minutes)`t`t`t: " $xOffPeakDisconnectTimeout
 		Line 1 "Off Peak Extended Disconnect Timeout (Minutes)`t`t: " $xOffPeakExtendedDisconnectTimeout
@@ -12569,6 +12591,10 @@ Function OutputDeliveryGroupDetails
 		$rowdata += @(,('Product code',($global:htmlsb),$ProductCode,$htmlwhite))
 		$rowdata += @(,("App Protection Key Logging Required",($global:htmlsb),$Group.AppProtectionKeyLoggingRequired.ToString(),$htmlwhite))
 		$rowdata += @(,("App Protection Screen Capture Required",($global:htmlsb),$Group.AppProtectionScreenCaptureRequired.ToString(),$htmlwhite))
+		If(validObject $Group AllowReconnectInMaintenanceMode)
+		{
+			$rowdata += @(,("Allow session reconnect in maintenance mode",($global:htmlsb),$Group.AllowReconnectInMaintenanceMode.ToString(),$htmlwhite))
+		}
 		$rowdata += @(,( "Off Peak Buffer Size Percent",($global:htmlsb),$xOffPeakBufferSizePercent.ToString(),$htmlwhite))
 		$rowdata += @(,( "Off Peak Disconnect Timeout (Minutes)",($global:htmlsb),$xOffPeakDisconnectTimeout.ToString(),$htmlwhite))
 		$rowdata += @(,( "Off Peak Extended Disconnect Timeout (Minutes)",($global:htmlsb),$xOffPeakExtendedDisconnectTimeout.ToString(),$htmlwhite))
@@ -18409,6 +18435,27 @@ Function ProcessCitrixPolicies
 							$tmp = $Null
 						}
 					}
+					If((validStateProp $Setting WebBrowserRedirectionIwaSupport State ) -and ($Setting.WebBrowserRedirectionIwaSupport.State -ne "NotConfigured"))
+					{
+						$txt = "ICA\Multimedia\Browser Content Redirection Integrated Windows Authentication Support"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.WebBrowserRedirectionIwaSupport.State;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.WebBrowserRedirectionIwaSupport.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.WebBrowserRedirectionIwaSupport.State
+						}
+					}
 					If((validStateProp $Setting WebBrowserRedirectionProxy State ) -and ($Setting.WebBrowserRedirectionProxy.State -ne "NotConfigured"))
 					{
 						$txt = "ICA\Multimedia\Browser Content Redirection Proxy Configuration"
@@ -20681,6 +20728,27 @@ Function ProcessCitrixPolicies
 							OutputPolicySetting $txt $Setting.SessionDisconnectTimer.State 
 						}
 					}
+					If((validStateProp $Setting EnableRemotePCDisconnectTimer State ) -and ($Setting.EnableRemotePCDisconnectTimer.State -ne "NotConfigured"))
+					{
+						$txt = "ICA\Session Limits\Disconnected session timer for Remote PC Access"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.EnableRemotePCDisconnectTimer.State;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.EnableRemotePCDisconnectTimer.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.EnableRemotePCDisconnectTimer.State 
+						}
+					}
 					If((validStateProp $Setting SessionDisconnectTimerInterval State ) -and ($Setting.SessionDisconnectTimerInterval.State -ne "NotConfigured"))
 					{
 						$txt = "ICA\Session Limits\Disconnected session timer interval (minutes)"
@@ -21181,137 +21249,6 @@ Function ProcessCitrixPolicies
 						{
 							OutputPolicySetting $txt $tmp 
 						}
-						$tmp = $Null
-					}
-
-					Write-Verbose "$(Get-Date -Format G): `t`t`tICA\Bidirectional Content Redirection"
-					If((validStateProp $Setting AllowURLRedirection State ) -and ($Setting.AllowURLRedirection.State -ne "NotConfigured"))
-					{
-						$txt = "ICA\Bidirectional Content Redirection\Allow Bidirectional Content Redirection"
-						If($MSWord -or $PDF)
-						{
-							$SettingsWordTable += @{
-							Text = $txt;
-							Value = $Setting.AllowURLRedirection.State;
-							}
-						}
-						If($HTML)
-						{
-							$rowdata += @(,(
-							$txt,$htmlbold,
-							$Setting.AllowURLRedirection.State,$htmlwhite))
-						}
-						If($Text)
-						{
-							OutputPolicySetting $txt $Setting.AllowURLRedirection.State 
-						}
-					}
-					If((validStateProp $Setting AllowedClientURLs State ) -and ($Setting.AllowedClientURLs.State -ne "NotConfigured"))
-					{
-						$txt = "ICA\Bidirectional Content Redirection\Allowed URLs to be redirected to Client"
-						$array = $Setting.AllowedClientURLs.Value.Split(';')
-						$tmp = $array[0]
-						If($MSWord -or $PDF)
-						{
-							$SettingsWordTable += @{
-							Text = $txt;
-							Value = $tmp;
-							}
-						}
-						If($HTML)
-						{
-							$rowdata += @(,(
-							$txt,$htmlbold,
-							$tmp,$htmlwhite))
-						}
-						If($Text)
-						{
-							OutputPolicySetting $txt $tmp 
-						}
-
-						$txt = ""
-						$cnt = -1
-						ForEach($element in $array)
-						{
-							$cnt++
-							
-							If($cnt -ne 0)
-							{
-								$tmp = "$($element) "
-								If($MSWord -or $PDF)
-								{
-									$SettingsWordTable += @{
-									Text = "";
-									Value = $tmp;
-									}
-								}
-								If($HTML)
-								{
-									$rowdata += @(,(
-									"",$htmlbold,
-									$tmp,$htmlwhite))
-								}
-								If($Text)
-								{
-									OutputPolicySetting "" $tmp
-								}
-							}
-						}
-						$array = $Null
-						$tmp = $Null
-					}
-					If((validStateProp $Setting AllowedVDAURLs State ) -and ($Setting.AllowedVDAURLs.State -ne "NotConfigured"))
-					{
-						$txt = "ICA\Bidirectional Content Redirection\Allowed URLs to be redirected to VDA"
-						$array = $Setting.AllowedVDAURLs.Value.Split(';')
-						$tmp = $array[0]
-						If($MSWord -or $PDF)
-						{
-							$SettingsWordTable += @{
-							Text = $txt;
-							Value = $tmp;
-							}
-						}
-						If($HTML)
-						{
-							$rowdata += @(,(
-							$txt,$htmlbold,
-							$tmp,$htmlwhite))
-						}
-						If($Text)
-						{
-							OutputPolicySetting $txt $tmp 
-						}
-
-						$txt = ""
-						$cnt = -1
-						ForEach($element in $array)
-						{
-							$cnt++
-							
-							If($cnt -ne 0)
-							{
-								$tmp = "$($element) "
-								If($MSWord -or $PDF)
-								{
-									$SettingsWordTable += @{
-									Text = "";
-									Value = $tmp;
-									}
-								}
-								If($HTML)
-								{
-									$rowdata += @(,(
-									"",$htmlbold,
-									$tmp,$htmlwhite))
-								}
-								If($Text)
-								{
-									OutputPolicySetting "" $tmp
-								}
-							}
-						}
-						$array = $Null
 						$tmp = $Null
 					}
 
@@ -22053,6 +21990,7 @@ Function ProcessCitrixPolicies
 							OutputPolicySetting $txt $Setting.PSForFoldersEnabled.State
 						}
 					}
+
 					Write-Verbose "$(Get-Date -Format G): `t`t`tProfile Management\Advanced settings"
 					If((validStateProp $Setting CEIPEnabled State ) -and ($Setting.CEIPEnabled.State -ne "NotConfigured"))
 					{
@@ -22094,6 +22032,27 @@ Function ProcessCitrixPolicies
 						If($Text)
 						{
 							OutputPolicySetting $txt $Setting.DisableDynamicConfig.State
+						}
+					}
+					If((validStateProp $Setting CredBasedAccessEnabled State ) -and ($Setting.CredBasedAccessEnabled.State -ne "NotConfigured"))
+					{
+						$txt = "Profile Management\Advanced settings\Enable credential-based access to user stores"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.CredBasedAccessEnabled.State;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.CredBasedAccessEnabled.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.CredBasedAccessEnabled.State
 						}
 					}
 					If((validStateProp $Setting FSLogixProfileContainerSupport State ) -and ($Setting.FSLogixProfileContainerSupport.State -ne "NotConfigured"))
@@ -22220,6 +22179,89 @@ Function ProcessCitrixPolicies
 						If($Text)
 						{
 							OutputPolicySetting $txt $Setting.ProcessCookieFiles.State
+						}
+					}
+					If((validStateProp $Setting MultiSiteReplication_Part State ) -and ($Setting.MultiSiteReplication_Part.State -ne "NotConfigured"))
+					{
+						$txt = "Profile Management\Advanced settings\Replicate user stores - Paths to replicate a user store"
+						If(validStateProp $Setting MultiSiteReplication_Part Values )
+						{
+							$tmpArray = $Setting.MultiSiteReplication_Part.Values
+							$tmp = ""
+							$cnt = 0
+							ForEach($Thing in $TmpArray)
+							{
+								If($Null -eq $Thing)
+								{
+									$Thing = ''
+								}
+								$cnt++
+								$tmp = "$($Thing) "
+								If($cnt -eq 1)
+								{
+									If($MSWord -or $PDF)
+									{
+										$SettingsWordTable += @{
+										Text = $txt;
+										Value = $tmp;
+										}
+									}
+									If($HTML)
+									{
+										$rowdata += @(,(
+										$txt,$htmlbold,
+										$tmp,$htmlwhite))
+									}
+									If($Text)
+									{
+										OutputPolicySetting $txt $tmp
+									}
+								}
+								Else
+								{
+									If($MSWord -or $PDF)
+									{
+										$SettingsWordTable += @{
+										Text = "";
+										Value = $tmp;
+										}
+									}
+									If($HTML)
+									{
+										$rowdata += @(,(
+										"",$htmlbold,
+										$tmp,$htmlwhite))
+									}
+									If($Text)
+									{
+										OutputPolicySetting "" $tmp
+									}
+								}
+								$txt = ""
+							}
+							$TmpArray = $Null
+							$tmp = $Null
+						}
+						Else
+						{
+							$tmp = "No Paths to replicate a user store were found"
+							If($MSWord -or $PDF)
+							{
+								$SettingsWordTable += @{
+								Text = $txt;
+								Value = $tmp;
+								}
+							}
+							If($HTML)
+							{
+								$rowdata += @(,(
+								$txt,$htmlbold,
+								$tmp,$htmlwhite))
+							}
+							If($Text)
+							{
+								OutputPolicySetting $txt $tmp
+							}
 						}
 					}
 
@@ -23745,6 +23787,27 @@ Function ProcessCitrixPolicies
 					}
 
 					Write-Verbose "$(Get-Date -Format G): `t`t`tProfile Management\File system\Synchronization"
+					If((validStateProp $Setting AccelerateFolderMirroring State ) -and ($Setting.AccelerateFolderMirroring.State -ne "NotConfigured"))
+					{
+						$txt = "Profile Management\File system\Synchronization\Accelerate folder mirroring"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.AccelerateFolderMirroring.State;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.AccelerateFolderMirroring.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.AccelerateFolderMirroring.State 
+						}
+					}
 					If((validStateProp $Setting SyncDirList_Part State ) -and ($Setting.SyncDirList_Part.State -ne "NotConfigured"))
 					{
 						$txt = "Profile Management\File system\Synchronization\Directories to synchronize"
@@ -25468,6 +25531,26 @@ Function ProcessCitrixPolicies
 					}
 
 					Write-Verbose "$(Get-Date -Format G): `t`t`tProfile Management\Profile container settings"
+					If((validStateProp $Setting ProfileContainerLocalCache State ) -and ($Setting.ProfileContainerLocalCache.State -ne "NotConfigured"))
+					{
+						$txt = "Profile Management\Profile container settings\Enable local caching for profile containers"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.ProfileContainerLocalCache.State;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.ProfileContainerLocalCache.State,$htmlwhite))
+						}
+						If($Text)
+						{ProfileContainerLocalCacheLogLevel_RegistryDifference.State
+						}
+					}
 					If((validStateProp $Setting ProfileContainerExclusionListDir_Part State ) -and ($Setting.ProfileContainerExclusionListDir_Part.State -ne "NotConfigured"))
 					{
 						$txt = "Profile Management\Profile container settings\Folders to exclude in profile container"
@@ -26824,6 +26907,30 @@ Function ProcessCitrixPolicies
 						If($Text)
 						{
 							OutputPolicySetting $txt $UPLSize 
+						}
+					}
+
+					Write-Verbose "$(Get-Date -Format G): `t`t`tVDA Data Collection"
+					If((validStateProp $Setting VdcPolicyEnable State ) -and ($Setting.VdcPolicyEnable.State -ne "NotConfigured"))
+					{
+						$txt = "VDA Data Collection\VDA data collection for Performance Analytics"
+						If($MSWord -or $PDF)
+						{
+							$WordTableRowHash = @{
+							Text = $txt;
+							Value = $Setting.VdcPolicyEnable.Value;
+							}
+							$SettingsWordTable += $WordTableRowHash;
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.VdcPolicyEnable.Value,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.VdcPolicyEnable.Value 
 						}
 					}
 
@@ -32129,6 +32236,7 @@ Function GetControllerRegistryKeys
 	#ControllerSettings
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "ControllerStartupRetryPeriodLimitMs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "ControllerStartupRetryPeriodStartMaxMs" $ComputerName
+	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "DisableGetPasswordExpiryInfo" $ComputerName # added in 2106
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "MinThreadPoolThreads" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "ControllerStartupRetryPeriodLimitMs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "ControllerStartupRetryPeriodStartMaxMs" $ComputerName
@@ -35237,6 +35345,7 @@ Function ProcessScriptSetup
 			$CVADSiteVersionReal = "Unknown"
 			Switch ($CVADSiteVersion)
 			{
+				"7.30"	{$CVADSiteVersionReal = "CVAD 2106"; Break}
 				"7.29"	{$CVADSiteVersionReal = "CVAD 2103"; Break}
 				"7.28"	{$CVADSiteVersionReal = "CVAD 2012"; Break}
 				"7.27"	{$CVADSiteVersionReal = "CVAD 2009"; Break}
@@ -35471,6 +35580,7 @@ Function ProcessScriptSetup
 	$Script:CVADSiteVersionReal = "Unknown"
 	Switch ($Script:CVADSiteVersion)
 	{
+		"7.30"	{$Script:CVADSiteVersionReal = "CVAD 2106"; Break}
 		"7.29"	{$Script:CVADSiteVersionReal = "CVAD 2103"; Break}
 		"7.28"	{$Script:CVADSiteVersionReal = "CVAD 2012"; Break}
 		"7.27"	{$Script:CVADSiteVersionReal = "CVAD 2009"; Break}
