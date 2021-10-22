@@ -1025,7 +1025,7 @@
 	NAME: CVAD_Inventory_V3.ps1
 	VERSION: 3.29
 	AUTHOR: Carl Webster
-	LASTEDIT: October 21, 2021
+	LASTEDIT: October 22, 2021
 #>
 
 #endregion
@@ -1214,7 +1214,7 @@ Param(
 
 # This script is based on the 2.36 script
 #
-#Version 3.29
+#Version 3.29 22-Oct-2021
 #	Added Broker Registry Keys:
 #		HKLM:\Software\Policies\Citrix\DesktopServer\AppProtectionAuthorizationCheckPeriodMin
 #		HKLM:\Software\Policies\Citrix\DesktopServer\AutoTagRuleIntervalsTimeSecs
