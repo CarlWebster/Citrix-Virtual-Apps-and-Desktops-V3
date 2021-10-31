@@ -1025,7 +1025,7 @@
 	NAME: CVAD_Inventory_V3.ps1
 	VERSION: 3.29
 	AUTHOR: Carl Webster
-	LASTEDIT: October 22, 2021
+	LASTEDIT: October 31, 2021
 #>
 
 #endregion
@@ -1214,7 +1214,7 @@ Param(
 
 # This script is based on the 2.36 script
 #
-#Version 3.29 22-Oct-2021
+#Version 3.29 31-Oct-2021
 #	Added Broker Registry Keys:
 #		HKLM:\Software\Policies\Citrix\DesktopServer\AppProtectionAuthorizationCheckPeriodMin
 #		HKLM:\Software\Policies\Citrix\DesktopServer\AutoTagRuleIntervalsTimeSecs
@@ -1308,10 +1308,13 @@ Param(
 #		HKLM:\Software\Citrix\DesktopServer\UseForwardedHeaderForSFAddress
 #		HKLM:\Software\Citrix\DesktopServer\XmlAuthHeaderTimeoutMs
 #		HKLM:\Software\Citrix\DesktopServer\XmlUserLookupTimeoutMs
+#	Added support for Minimum Catalog Level 2106 (L7_30)
 #	Added User policy
 #		ICA\Audio\Adaptive audio
 #	In Function GetControllerRegistryKeys, put the registry keys in the order supplied by Citrix
 #	In Function GetVDARegistryKeys, sorted the VDA registry key paths in alpha order
+#	In Function ProcessMachineCatalogs:
+#		Fixed the wrong variable name used to get MetadataMap.Keys data for Word/PDF and Text output
 #	Updated for CVAD 2109/7.31
 #	Updated the help text
 #	Updated the ReadMe file
@@ -6717,6 +6720,7 @@ Function OutputMachines
 			"L7_9"	{$xVDAVersion = "7.9 (or newer)"; Break}
 			"L7_20"	{$xVDAVersion = "1811 (or newer)"; Break}
 			"L7_25"	{$xVDAVersion = "2003 (or newer)"; Break}
+			"L7_30"	{$xVDAVersion = "2106 (or newer)"; Break}
 			Default {$xVDAVersion = "Unable to determine VDA version: $($Catalog.MinimumFunctionalLevel)"; Break}
 		}
 
@@ -6783,7 +6787,8 @@ Function OutputMachines
 					
 					If(($Catalog.MinimumFunctionalLevel -eq "L7_9" -or 
 					    $Catalog.MinimumFunctionalLevel -eq "L7_20" -or 
-						$Catalog.MinimumFunctionalLevel -eq "L7_25") -and 
+						$Catalog.MinimumFunctionalLevel -eq "L7_25" -or
+						$Catalog.MinimumFunctionalLevel -eq "L7_30") -and 
 					(($xAllocationType -eq "Random") -or 
 					($xAllocationType -eq "Permanent" -and $xPersistType -eq "Discard" )))
 					{
@@ -6793,7 +6798,8 @@ Function OutputMachines
 					
 					If(($Catalog.MinimumFunctionalLevel -eq "L7_9" -or 
 					    $Catalog.MinimumFunctionalLevel -eq "L7_20" -or 
-						$Catalog.MinimumFunctionalLevel -eq "L7_25") -and 
+						$Catalog.MinimumFunctionalLevel -eq "L7_25" -or
+						$Catalog.MinimumFunctionalLevel -eq "L7_30") -and 
 					($xAllocationType -eq "Permanent" -and $xPersistType -eq "On local disk" ) -and 
 					((Get-ConfigEnabledFeature @CVADParams1) -contains "DedicatedFullDiskClone"))
 					{
@@ -6912,7 +6918,8 @@ Function OutputMachines
 			
 				If(($Catalog.MinimumFunctionalLevel -eq "L7_9" -or 
 					$Catalog.MinimumFunctionalLevel -eq "L7_20" -or 
-					$Catalog.MinimumFunctionalLevel -eq "L7_25") -and 
+					$Catalog.MinimumFunctionalLevel -eq "L7_25" -or
+					$Catalog.MinimumFunctionalLevel -eq "L7_30") -and 
 				(($xAllocationType -eq "Random") -or 
 				($xAllocationType -eq "Permanent" -and $xPersistType -eq "Discard" )))
 				{
@@ -6922,7 +6929,8 @@ Function OutputMachines
 
 				If(($Catalog.MinimumFunctionalLevel -eq "L7_9" -or 
 					$Catalog.MinimumFunctionalLevel -eq "L7_20" -or 
-					$Catalog.MinimumFunctionalLevel -eq "L7_25") -and 
+					$Catalog.MinimumFunctionalLevel -eq "L7_25" -or
+					$Catalog.MinimumFunctionalLevel -eq "L7_30") -and 
 				($xAllocationType -eq "Permanent" -and $xPersistType -eq "On local disk" ) -and 
 				((Get-ConfigEnabledFeature @CVADParams1) -contains "DedicatedFullDiskClone"))
 				{
@@ -7144,7 +7152,7 @@ Function OutputMachines
 				}
 			}
 			
-			If($SessionSupport -eq "MultiSession")
+			If($Catalog.SessionSupport -eq "MultiSession")
 			{
 				$itemKeys = $Catalog.MetadataMap.Keys
 
@@ -7232,7 +7240,8 @@ Function OutputMachines
 				
 				If(($Catalog.MinimumFunctionalLevel -eq "L7_9" -or 
 					$Catalog.MinimumFunctionalLevel -eq "L7_20" -or 
-					$Catalog.MinimumFunctionalLevel -eq "L7_25") -and 
+					$Catalog.MinimumFunctionalLevel -eq "L7_25" -or
+					$Catalog.MinimumFunctionalLevel -eq "L7_30") -and 
 				(($xAllocationType -eq "Random") -or 
 				($xAllocationType -eq "Permanent" -and $xPersistType -eq "Discard" )))
 				{
@@ -7242,7 +7251,8 @@ Function OutputMachines
 
 				If(($Catalog.MinimumFunctionalLevel -eq "L7_9" -or 
 					$Catalog.MinimumFunctionalLevel -eq "L7_20" -or 
-					$Catalog.MinimumFunctionalLevel -eq "L7_25") -and 
+					$Catalog.MinimumFunctionalLevel -eq "L7_25" -or
+					$Catalog.MinimumFunctionalLevel -eq "L7_30") -and 
 				($xAllocationType -eq "Permanent" -and $xPersistType -eq "On local disk" ) -and 
 				((Get-ConfigEnabledFeature @CVADParams1) -contains "DedicatedFullDiskClone"))
 				{
@@ -7448,7 +7458,7 @@ Function OutputMachines
 				}
 			}
 
-			If($SessionSupport -eq "MultiSession")
+			If($Catalog.SessionSupport -eq "MultiSession")
 			{
 				$itemKeys = $Catalog.MetadataMap.Keys
 
@@ -7522,7 +7532,8 @@ Function OutputMachines
 				
 				If(($Catalog.MinimumFunctionalLevel -eq "L7_9" -or 
 					$Catalog.MinimumFunctionalLevel -eq "L7_20" -or 
-					$Catalog.MinimumFunctionalLevel -eq "L7_25") -and 
+					$Catalog.MinimumFunctionalLevel -eq "L7_25" -or
+					$Catalog.MinimumFunctionalLevel -eq "L7_30") -and 
 				(($xAllocationType -eq "Random") -or 
 				($xAllocationType -eq "Permanent" -and $xPersistType -eq "Discard" )))
 				{
@@ -7532,7 +7543,8 @@ Function OutputMachines
 
 				If(($Catalog.MinimumFunctionalLevel -eq "L7_9" -or 
 					$Catalog.MinimumFunctionalLevel -eq "L7_20" -or 
-					$Catalog.MinimumFunctionalLevel -eq "L7_25") -and 
+					$Catalog.MinimumFunctionalLevel -eq "L7_25" -or
+					$Catalog.MinimumFunctionalLevel -eq "L7_30") -and 
 				($xAllocationType -eq "Permanent" -and $xPersistType -eq "On local disk" ) -and 
 				((Get-ConfigEnabledFeature @CVADParams1) -contains "DedicatedFullDiskClone"))
 				{
@@ -10740,6 +10752,7 @@ Function OutputDeliveryGroupDetails
 		"L7_9"	{$xVDAVersion = "7.9 (or newer)"; Break}
 		"L7_20"	{$xVDAVersion = "1811 (or newer)"; Break}
 		"L7_25"	{$xVDAVersion = "2003 (or newer)"; Break}
+		"L7_30"	{$xVDAVersion = "2106 (or newer)"; Break}
 		Default {$xVDAVersion = "Unable to determine VDA version: $($Group.MinimumFunctionalLevel)"; Break}
 	}
 	
@@ -28972,6 +28985,7 @@ Function OutputSiteSettings
 		"L7_9"	{$xVDAVersion = "7.9 (or newer)"; Break}
 		"L7_20"	{$xVDAVersion = "1811 (or newer)"; Break}
 		"L7_25"	{$xVDAVersion = "2003 (or newer)"; Break}
+		"L7_30"	{$xVDAVersion = "2106 (or newer)"; Break}
 		Default {$xVDAVersion = "Unable to determine VDA version: $($Script:CVADSite1.DefaultMinimumFunctionalLevel)"; Break}
 	}
 

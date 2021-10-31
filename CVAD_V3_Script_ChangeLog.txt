@@ -6,7 +6,7 @@
 
 # This script is based on the 2.36 script
 
-#Version 3.29 22-Oct-2021
+#Version 3.29 31-Oct-2021
 #	Added Broker Registry Keys:
 #		HKLM:\Software\Policies\Citrix\DesktopServer\AppProtectionAuthorizationCheckPeriodMin
 #		HKLM:\Software\Policies\Citrix\DesktopServer\AutoTagRuleIntervalsTimeSecs
@@ -100,10 +100,13 @@
 #		HKLM:\Software\Citrix\DesktopServer\UseForwardedHeaderForSFAddress
 #		HKLM:\Software\Citrix\DesktopServer\XmlAuthHeaderTimeoutMs
 #		HKLM:\Software\Citrix\DesktopServer\XmlUserLookupTimeoutMs
+#	Added support for Minimum Catalog Level 2106 (L7_30)
 #	Added User policy
 #		ICA\Audio\Adaptive audio
 #	In Function GetControllerRegistryKeys, put the registry keys in the order supplied by Citrix
 #	In Function GetVDARegistryKeys, sorted the VDA registry key paths in alpha order
+#	In Function ProcessMachineCatalogs:
+#		Fixed the wrong variable name used to get MetadataMap.Keys data for Word/PDF and Text output
 #	Updated for CVAD 2109/7.31
 #	Updated the help text
 #	Updated the ReadMe file
