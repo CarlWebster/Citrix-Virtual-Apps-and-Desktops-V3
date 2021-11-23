@@ -305,8 +305,8 @@
 .PARAMETER AddDateTime
 	Adds a date timestamp to the end of the file name.
 	The timestamp is in the format of yyyy-MM-dd_HHmm.
-	June 1, 2021 at 6PM is 2021-06-01_1800.
-	Output filename will be ReportName_2021-06-01_1800.docx (or.pdf).
+	June 1, 2022 at 6PM is 2022-06-01_1800.
+	Output filename will be ReportName_2022-06-01_1800.docx (or.pdf).
 	This parameter is disabled by default.
 	This parameter has an alias of ADT.
 .PARAMETER CSV
@@ -341,6 +341,26 @@
 	
 	This parameter is disabled by default.
 	This parameter has an alias of SI.
+.PARAMETER ReportFooter
+	Outputs a footer section at the end of the report.
+
+	This parameter has an alias of RF.
+	
+	Report Footer
+		Report information:
+			Created with: <Script Name> - Release Date: <Script Release Date>
+			Script version: <Script Version>
+			Started on <Date Time in Local Format>
+			Elapsed time: nn days, nn hours, nn minutes, nn.nn seconds
+			Ran from domain <Domain Name> by user <Username>
+			Ran from the folder <Folder Name>
+
+	Script Name and Script Release date are script-specific variables.
+	Start Date Time in Local Format is a script variable.
+	Elapsed time is a calculated value.
+	Domain Name is $env:USERDNSDOMAIN.
+	Username is $env:USERNAME.
+	Folder Name is a script variable.
 .PARAMETER MSWord
 	SaveAs DOCX file
 	This parameter is disabled by default.
@@ -601,18 +621,18 @@
 	Creates an HTML report with full details on Administrator Scopes and Roles.
 	The computer running the script for the AdminAddress.
 .EXAMPLE
-	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -Logging -StartDate 09/01/2021 -EndDate 
-	09/30/2021	
+	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -Logging -StartDate 09/01/2022 -EndDate 
+	09/30/2022	
 	
-	Creates an HTML report with Configuration Logging details for the dates 09/01/2021 
-	through 09/30/2021.
+	Creates an HTML report with Configuration Logging details for the dates 09/01/2022 
+	through 09/30/2022.
 	The computer running the script for the AdminAddress.
 .EXAMPLE
-	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -Logging -StartDate "09/01/2021 10:00:00" 
-	-EndDate "09/01/2021 14:00:00" -MSWord
+	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -Logging -StartDate "09/01/2022 10:00:00" 
+	-EndDate "09/01/2022 14:00:00" -MSWord
 	
 	Creates a Microsoft Word report with Configuration Logging details for the time range 
-	09/01/2021 10:00:00AM through 09/01/2021 02:00:00PM.
+	09/01/2022 10:00:00AM through 09/01/2022 02:00:00PM.
 	
 	Narrowing the report down to seconds does not work. Seconds must be either 00 or 59.
 	
@@ -721,8 +741,8 @@
 	Creates an HTML report.
 	Adds a date time stamp to the end of the file name.
 	The timestamp is in the format of yyyy-MM-dd_HHmm.
-	June 1, 2021 at 6PM is 2021-06-01_1800.
-	Output filename will be CVADSiteName_2021-06-01_1800.docx
+	June 1, 2022 at 6PM is 2022-06-01_1800.
+	Output filename will be CVADSiteName_2022-06-01_1800.docx
 	The computer running the script for the AdminAddress.
 .EXAMPLE
 	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -PDF -AddDateTime
@@ -740,8 +760,8 @@
 
 	Adds a date time stamp to the end of the file name.
 	The timestamp is in the format of yyyy-MM-dd_HHmm.
-	June 1, 2021 at 6PM is 2021-06-01_1800.
-	Output filename will be CVADSiteName_2021-06-01_1800.pdf
+	June 1, 2022 at 6PM is 2022-06-01_1800.
+	Output filename will be CVADSiteName_2022-06-01_1800.pdf
 	The computer running the script for the AdminAddress.
 .EXAMPLE
 	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -Hardware
@@ -1023,9 +1043,9 @@
 	This script creates a Word, PDF, plain text, or HTML document.
 .NOTES
 	NAME: CVAD_Inventory_V3.ps1
-	VERSION: 3.29
+	VERSION: 3.30
 	AUTHOR: Carl Webster
-	LASTEDIT: October 31, 2021
+	LASTEDIT: November 22, 2021
 #>
 
 #endregion
@@ -1146,6 +1166,10 @@ Param(
 	[Alias("SI")]
 	[Switch]$ScriptInfo=$False,
 	
+	[parameter(Mandatory=$False)] 
+	[Alias("RF")]
+	[Switch]$ReportFooter=$False,
+
 	[parameter(ParameterSetName="WordPDF",Mandatory=$False)] 
 	[Switch]$MSWord=$False,
 
@@ -1214,6 +1238,37 @@ Param(
 
 # This script is based on the 2.36 script
 #
+#Version 3.30 23-Nov-2021
+#	Added Function OutputReportFooter
+#	Added Parameter ReportFooter
+#		Outputs a footer section at the end of the report.
+#		Report Footer
+#			Report information:
+#				Created with: <Script Name> - Release Date: <Script Release Date>
+#				Script version: <Script Version>
+#				Started on <Date Time in Local Format>
+#				Elapsed time: nn days, nn hours, nn minutes, nn.nn seconds
+#				Ran from domain <Domain Name> by user <Username>
+#				Ran from the folder <Folder Name>
+#	Fixed a logic error in Function ProcessPolicySummary
+#		Instead of getting both Computer and User policies at one time, get them separately
+#	In Function AbortScript, add test for the winword process and terminate it if it is running
+#	In Functions AbortScript and SaveandCloseDocumentandShutdownWord, add code from Guy Leech to test for the "Id" property before using it
+#	Removed the requirement for the Citrix.GroupPolicy.Commands.psm1 module file (Thanks to Guy Leech for the help)
+#		Added the following functions from the module to the script and cleaned up the Citrix code
+#			CreateDictionary
+#			CreateObject
+#			FilterString
+#			Get-CitrixGroupPolicy
+#			Get-CitrixGroupPolicyConfiguration
+#			Get-CitrixGroupPolicyFilter
+#	Reworked the use of LocalFarmGPO PSDrive to prevent multiple creations and deletions
+#	Updated for CVAD 2109/7.31 and CVAD 2112/7.32
+#	Updated Functions SaveandCloseTextDocument and SaveandCloseHTMLDocument to add a "Report Complete" line
+#	Updated Functions ShowScriptOptions and ProcessScriptEnd to add $ReportFooter
+#	Updated the help text
+#	Updated the ReadMe file
+
 #Version 3.29 31-Oct-2021
 #	Added Broker Registry Keys:
 #		HKLM:\Software\Policies\Citrix\DesktopServer\AppProtectionAuthorizationCheckPeriodMin
@@ -1687,6 +1742,12 @@ Set-StrictMode -Version Latest
 $PSDefaultParameterValues = @{"*:Verbose"=$True}
 $SaveEAPreference = $ErrorActionPreference
 $ErrorActionPreference = 'SilentlyContinue'
+
+#stuff for report footer
+$script:MyVersion           = '3.30'
+$Script:ScriptName          = "CVAD_Inventory_V3.ps1"
+$tmpdate                    = [datetime] "11/23/2021"
+$Script:ReleaseDate         = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($Null -eq $HTML)
 {
@@ -3779,7 +3840,7 @@ Function ValidateCoverPage
 
 Function CheckWordPrereq
 {
-	If((Test-Path  REGISTRY::HKEY_CLASSES_ROOT\Word.Application) -eq $False)
+	If((Test-Path REGISTRY::HKEY_CLASSES_ROOT\Word.Application) -eq $False)
 	{
 		$ErrorActionPreference = $SaveEAPreference
 		
@@ -5709,18 +5770,17 @@ Function SaveandCloseDocumentandShutdownWord
 	[gc]::collect() 
 	[gc]::WaitForPendingFinalizers()
 	
-	#is the winword process still running? kill it
+	#is the winword Process still running? kill it
 
 	#find out our session (usually "1" except on TS/RDC or Citrix)
 	$SessionID = (Get-Process -PID $PID).SessionId
 
-	#Find out if winword runsning in our session
-	$wordprocess = $Null
-	$wordprocess = ((Get-Process 'WinWord' -ea 0) | Where-Object {$_.SessionId -eq $SessionID}).Id
-	If($null -ne $wordprocess -and $wordprocess -gt 0)
+	#Find out if winword running in our session
+	$wordprocess = ((Get-Process 'WinWord' -ea 0) | Where-Object {$_.SessionId -eq $SessionID}) | Select-Object -Property Id 
+	If( $wordprocess -and $wordprocess.Id -gt 0)
 	{
-		Write-Verbose "$(Get-Date -Format G): WinWord process is still running. Attempting to stop WinWord process # $($wordprocess)"
-		Stop-Process $wordprocess -EA 0
+		Write-Verbose "$(Get-Date -Format G): WinWord Process is still running. Attempting to stop WinWord Process # $($wordprocess.Id)"
+		Stop-Process $wordprocess.Id -EA 0
 	}
 }
 
@@ -5759,12 +5819,16 @@ Function SetupHTML
 Function SaveandCloseTextDocument
 {
 	Write-Verbose "$(Get-Date -Format G): Saving Text file"
+	Line 0 ""
+	Line 0 "Report Complete"
 	Write-Output $global:Output.ToString() | Out-File $Script:TextFileName 4>$Null
 }
 
 Function SaveandCloseHTMLDocument
 {
 	Write-Verbose "$(Get-Date -Format G): Saving HTML file"
+	WriteHTMLLine 0 0 ""
+	WriteHTMLLine 0 0 "Report Complete"
 	Out-File -FilePath $Script:HTMLFileName -Append -InputObject "<p></p></body></html>" 4>$Null
 }
 
@@ -5787,6 +5851,70 @@ Function SetFileNames
 		SetupHTML
 	}
 	ShowScriptOptions
+}
+
+Function OutputReportFooter
+{
+	<#
+	Report Footer
+		Report information:
+			Created with: <Script Name> - Release Date: <Script Release Date>
+			Script version: <Script Version>
+			Started on <Date Time in Local Format>
+			Elapsed time: nn days, nn hours, nn minutes, nn.nn seconds
+			Ran from domain <Domain Name> by user <Username>
+			Ran from the folder <Folder Name>
+
+	Script Name and Script Release date are script-specific variables.
+	Script version is a script variable.
+	Start Date Time in Local Format is a script variable.
+	Domain Name is $env:USERDNSDOMAIN.
+	Username is $env:USERNAME.
+	Folder Name is a script variable.
+	#>
+
+	$runtime = $(Get-Date) - $Script:StartTime
+	$Str = [string]::format("{0} days, {1} hours, {2} minutes, {3}.{4} seconds",
+		$runtime.Days,
+		$runtime.Hours,
+		$runtime.Minutes,
+		$runtime.Seconds,
+		$runtime.Milliseconds)
+
+	If($MSWORD -or $PDF)
+	{
+		$Script:selection.InsertNewPage()
+		WriteWordLine 1 0 "Report Footer"
+		WriteWordLine 2 0 "Report Information:"
+		WriteWordLine 0 1 "Created with: $Script:ScriptName - Release Date: $Script:ReleaseDate"
+		WriteWordLine 0 1 "Script version: $Script:MyVersion"
+		WriteWordLine 0 1 "Started on $Script:StartTime"
+		WriteWordLine 0 1 "Elapsed time: $Str"
+		WriteWordLine 0 1 "Ran from domain $env:USERDNSDOMAIN by user $env:USERNAME"
+		WriteWordLine 0 1 "Ran from the folder $Script:pwdpath"
+	}
+	If($Text)
+	{
+		Line 0 "///  Report Footer  \\\"
+		Line 1 "Report Information:"
+		Line 2 "Created with: $Script:ScriptName - Release Date: $Script:ReleaseDate"
+		Line 2 "Script version: $Script:MyVersion"
+		Line 2 "Started on $Script:StartTime"
+		Line 2 "Elapsed time: $Str"
+		Line 2 "Ran from domain $env:USERDNSDOMAIN by user $env:USERNAME"
+		Line 2 "Ran from the folder $Script:pwdpath"
+	}
+	If($HTML)
+	{
+		WriteHTMLLine 1 0 "///&nbsp;&nbsp;Report Footer&nbsp;&nbsp;\\\"
+		WriteHTMLLine 2 0 "Report Information:"
+		WriteHTMLLine 0 1 "Created with: $Script:ScriptName - Release Date: $Script:ReleaseDate"
+		WriteHTMLLine 0 1 "Script version: $Script:MyVersion"
+		WriteHTMLLine 0 1 "Started on $Script:StartTime"
+		WriteHTMLLine 0 1 "Elapsed time: $Str"
+		WriteHTMLLine 0 1 "Ran from domain $env:USERDNSDOMAIN by user $env:USERNAME"
+		WriteHTMLLine 0 1 "Ran from the folder $Script:pwdpath"
+	}
 }
 
 Function ProcessDocumentOutput
@@ -5935,6 +6063,7 @@ Function ShowScriptOptions
 	Write-Verbose "$(Get-Date -Format G): NoADPolicies       : $($NoADPolicies)"
 	Write-Verbose "$(Get-Date -Format G): NoPolicies         : $($NoPolicies)"
 	Write-Verbose "$(Get-Date -Format G): Policies           : $($Policies)"
+	Write-Verbose "$(Get-Date -Format G): Report Footer      : $ReportFooter"
 	Write-Verbose "$(Get-Date -Format G): Save As PDF        : $($PDF)"
 	Write-Verbose "$(Get-Date -Format G): Save As HTML       : $($HTML)"
 	Write-Verbose "$(Get-Date -Format G): Save As TEXT       : $($TEXT)"
@@ -5970,16 +6099,33 @@ Function AbortScript
 {
 	If($MSWord -or $PDF)
 	{
-		$Script:Word.quit()
 		Write-Verbose "$(Get-Date -Format G): System Cleanup"
-		[System.Runtime.Interopservices.Marshal]::ReleaseComObject($Script:Word) | Out-Null
 		If(Test-Path variable:global:word)
 		{
+			$Script:Word.quit()
+			[System.Runtime.Interopservices.Marshal]::ReleaseComObject($Script:Word) | Out-Null
 			Remove-Variable -Name word -Scope Global 4>$Null
 		}
 	}
 	[gc]::collect() 
 	[gc]::WaitForPendingFinalizers()
+
+	If($MSWord -or $PDF)
+	{
+		#is the winword Process still running? kill it
+
+		#find out our session (usually "1" except on TS/RDC or Citrix)
+		$SessionID = (Get-Process -PID $PID).SessionId
+
+		#Find out if winword running in our session
+		$wordprocess = ((Get-Process 'WinWord' -ea 0) | Where-Object {$_.SessionId -eq $SessionID}) | Select-Object -Property Id 
+		If( $wordprocess -and $wordprocess.Id -gt 0)
+		{
+			Write-Verbose "$(Get-Date -Format G): WinWord Process is still running. Attempting to stop WinWord Process # $($wordprocess.Id)"
+			Stop-Process $wordprocess.Id -EA 0
+		}
+	}
+	
 	Write-Verbose "$(Get-Date -Format G): Script has been aborted"
 	$ErrorActionPreference = $SaveEAPreference
 	Exit
@@ -14910,6 +15056,205 @@ Function ProcessApplicationGroupDetails
 #endregion
 
 #region policy functions
+Function CreateDictionary
+{
+	#taken from citrix.grouppolicy.commands.psm1 and cleaned up
+
+    Return New-Object "System.Collections.Generic.Dictionary``2[System.String,System.Object]"
+}
+
+Function CreateObject
+{
+    Param([System.Collections.IDictionary]$props, [string]$name)
+	#taken from citrix.grouppolicy.commands.psm1 and cleaned up
+
+    $obj = New-Object PSObject
+    ForEach ($prop in $props.Keys)
+    {
+        $obj | Add-Member NoteProperty -Name $prop -Value $props.$prop
+    }
+    if ($name)
+    {
+        $obj | Add-Member ScriptMethod -Name "ToString" -Value $executioncontext.invokecommand.NewScriptBlock('"{0}"' -f $name) -Force
+    }
+    Return $obj
+}
+
+Function FilterString
+{
+    Param([string] $value, [string[]] $wildcards)
+	#taken from citrix.grouppolicy.commands.psm1 and cleaned up
+
+    $wildcards | Where-Object { $value -like $_ }
+}
+
+Function Get-CitrixGroupPolicy
+{
+	[CmdletBinding()]
+	Param(
+		[Parameter(Position=0, ValueFromPipelineByPropertyName=$True)]
+		[string[]] $PolicyName = "*",
+		[Parameter(Position=1, ValueFromPipelineByPropertyName=$True)]
+		[string] [ValidateSet("Computer", "User", $Null)] $Type,
+		[Parameter()]
+		[string] $DriveName = "LocalFarmGPO"
+	)
+	#taken from citrix.grouppolicy.commands.psm1, renamed, and cleaned up
+
+	Process
+	{
+		$types = If(!$Type) { @("Computer", "User") } Else { @($Type) }
+
+		ForEach($polType in $types)
+		{
+			$pols = @(Get-ChildItem "$($DriveName):\$polType" | Where-Object { FilterString $_.Name $PolicyName })
+
+			If($Pols.Count -eq 0)
+			{
+				If($PolicyName -eq "*")
+				{
+					Write-Error "
+		`n`n
+	FATAL ERROR.
+	The $polType node is missing for the PSDrive named $DriveName. Try immediately rerunning the script.
+		`n`n
+	Script cannot Continue.
+		`n`n
+		"
+					AbortScript
+				}
+				Else
+				{
+					Write-Error "
+		`n`n
+	FATAL ERROR.
+	For the policy named $PolicyName, the $polType node is missing for the PSDrive named $DriveName. Try immediately rerunning the script.
+		`n`n
+	Script cannot Continue.
+		`n`n
+		"
+					AbortScript
+				}
+			}
+			
+			ForEach($pol in $pols)
+			{
+				$props             = CreateDictionary
+				$props.PolicyName  = $pol.Name
+				$props.Type        = $poltype
+				$props.Description = $pol.Description
+				$props.Enabled     = $pol.Enabled
+				$props.Priority    = $pol.Priority
+				CreateObject $props $pol.Name
+			}
+		}
+	}
+}
+
+Function Get-CitrixGroupPolicyConfiguration
+{
+	[CmdletBinding()]
+	Param(
+		[Parameter(Position=0, ValueFromPipelineByPropertyName=$True)]
+		[String[]] $PolicyName = "*",
+		[Parameter(Position=1, ValueFromPipelineByPropertyName=$True)]
+		[ValidateSet("Computer", "User", $Null)] [String] $Type,
+		[Parameter()]
+		[Switch] $ConfiguredOnly,
+		[Parameter()]
+		[string] $DriveName = "LocalFarmGPO"
+	)
+	#taken from citrix.grouppolicy.commands.psm1, renamed, and cleaned up
+
+	Process
+	{
+		$types = If(!$Type) { @("Computer", "User") } Else { @($Type) }
+
+		ForEach($poltype in $types)
+		{
+			$pols = @(Get-ChildItem "$($DriveName):\$poltype" | Where-Object { FilterString $_.Name $PolicyName })
+			ForEach($pol in $pols)
+			{
+				$props = CreateDictionary
+				$props.PolicyName = $pol.Name
+				$props.Type = $poltype
+
+				ForEach($setting in @(Get-ChildItem "$($DriveName):\$poltype\$($pol.Name)\Settings" -Recurse | `
+					Where-Object { $_.PSObject.Properties[ 'State' ] -and  $Null -ne $_.State }))
+				{
+					If(!$ConfiguredOnly -or $setting.State -ne "NotConfigured")
+					{
+						$setname = $setting.PSChildName
+						$config = CreateDictionary
+						$config.State = $setting.State.ToString()
+						If( $setting.PSObject.Properties[ 'Values' ] )
+						{
+							If($Null -ne $setting.Values) { $config.Values = ([array]($setting.Values)) }
+						}
+						If( $setting.PSObject.Properties[ 'Value' ] )
+						{
+							If($Null -ne $setting.Value) { $config.Value = ([string]($setting.Value)) }
+						}
+						$config.Path = $setting.PSPath.Substring($setting.PSPath.IndexOf("\Settings\")+10)
+						$props.$setname = CreateObject $config
+					}
+				}
+				CreateObject $props $pol.Name
+			}
+		}
+	}
+}
+
+Function Get-CitrixGroupPolicyFilter
+{
+	[CmdletBinding()]
+	Param(
+		[Parameter(Position=0, ValueFromPipelineByPropertyName=$True)]
+		[String[]] $PolicyName = "*",
+		[Parameter(Position=1, ValueFromPipelineByPropertyName=$True)]
+		[ValidateSet("Computer", "User", $Null)] [String] $Type,
+		[Parameter(Position=2, ValueFromPipelineByPropertyName=$True)]
+		[String[]] $FilterName = "*",
+		[Parameter(Position=3, ValueFromPipelineByPropertyName=$True)]
+		[string] $FilterType = "*",
+		[Parameter()]
+		[string] $DriveName = "LocalFarmGPO"
+	)
+	#taken from citrix.grouppolicy.commands.psm1, renamed, and cleaned up
+
+	Process
+	{
+		$types = If(!$Type) { @("Computer", "User") } Else { @($Type) }
+
+		ForEach($poltype in $types)
+		{
+			$pols = @(Get-ChildItem "$($DriveName):\$poltype" | Where-Object { ($_.Name -ne "Unfiltered") -and (FilterString $_.Name $PolicyName) })
+			ForEach($pol in $pols)
+			{
+				ForEach($filter in @(Get-ChildItem "$($DriveName):\$poltype\$($pol.Name)\Filters" -Recurse |
+					Where-Object { ($_.PSObject.Properties[ 'FilterType' ] -and  $Null -ne $_.FilterType) -and (FilterString $_.Name $FilterName) -and (FilterString $_.FilterType $FilterType)}))
+				{
+					$props             = CreateDictionary
+					$props.PolicyName  = $pol.Name
+					$props.Type        = $poltype
+					$props.FilterName  = $filter.Name
+					$props.FilterType  = $filter.FilterType
+					$props.Enabled     = $filter.Enabled
+					$props.Mode        = [string]($filter.Mode)
+					$props.FilterValue = $filter.FilterValue
+					If($filter.FilterType -eq "AccessControl")
+					{
+						$props.ConnectionType    = $filter.ConnectionType
+						$props.AccessGatewayFarm = $filter.AccessGatewayFarm
+						$props.AccessCondition   = $filter.AccessCondition
+					}
+					CreateObject $props $filter.Name
+				}
+			}
+		}
+	}
+}
+
 Function ProcessPolicies
 {
 	$txt = "Policies"
@@ -14941,44 +15286,26 @@ Function ProcessPolicies
 	
 	If($Policies)
 	{
-	
-		Write-Verbose "$(Get-Date -Format G): `tDoes localfarmgpo PSDrive already exist?"
-		If(Test-Path localfarmgpo:)
+		If(Test-Path LocalFarmGPO: 4>$Null)
 		{
-			Write-Verbose "$(Get-Date -Format G): `tRemoving the current localfarmgpo PSDrive"
-			Remove-PSDrive localfarmgpo -EA 0 4>$Null
-		}
-		
-		Write-Verbose "$(Get-Date -Format G): Creating localfarmgpo PSDrive for Computer policies"
-		New-PSDrive localfarmgpo -psprovider citrixgrouppolicy -root \ -controller $AdminAddress -Scope Global *>$Null
-		
-		#using Citrix policy stuff and new-psdrive breaks transcript logging so restart transcript logging
-		TranscriptLogging
-		If(Test-Path localfarmgpo:)
-		{
-			ProcessCitrixPolicies "localfarmgpo" "Computer" ""
+			ProcessCitrixPolicies "LocalFarmGPO" "Computer" ""
 			Write-Verbose "$(Get-Date -Format G): Finished Processing Citrix Site Computer Policies"
 			Write-Verbose "$(Get-Date -Format G): "
 		}
 		Else
 		{
-			Write-Warning "Unable to create the LocalFarmGPO PSDrive on the CVAD Controller $($AdminAddress)"
+			Write-Warning "The LocalFarmGPO PSDrive does not exist (1)"
 		}
 
-		Write-Verbose "$(Get-Date -Format G): Creating localfarmgpo PSDrive for User policies"
-		New-PSDrive localfarmgpo -psprovider citrixgrouppolicy -root \ -controller $AdminAddress -Scope Global *>$Null
-		
-		#using Citrix policy stuff and new-psdrive breaks transcript logging so restart transcript logging
-		TranscriptLogging
-		If(Test-Path localfarmgpo:)
+		If(Test-Path LocalFarmGPO: 4>$Null)
 		{
-			ProcessCitrixPolicies "localfarmgpo" "User" ""
+			ProcessCitrixPolicies "LocalFarmGPO" "User" ""
 			Write-Verbose "$(Get-Date -Format G): Finished Processing Citrix Site User Policies"
 			Write-Verbose "$(Get-Date -Format G): "
 		}
 		Else
 		{
-			Write-Warning "Unable to create the LocalFarmGPO PSDrive on the CVAD Controller $($AdminAddress)"
+			Write-Warning "The LocalFarmGPO PSDrive does not exist (2)"
 		}
 		
 		If($NoADPolicies)
@@ -15058,22 +15385,14 @@ Function ProcessPolicies
 
 Function ProcessPolicySummary
 {
-	Write-Verbose "$(Get-Date -Format G): `tDoes localfarmgpo PSDrive already exist?"
 	If(Test-Path localfarmgpo:)
 	{
-		Write-Verbose "$(Get-Date -Format G): `tRemoving the current localfarmgpo PSDrive"
-		Remove-PSDrive localfarmgpo -EA 0 4>$Null
-	}
-	Write-Verbose "$(Get-Date -Format G): `tRetrieving Site Policies"
-	Write-Verbose "$(Get-Date -Format G): `t`tCreating localfarmgpo PSDrive"
-	New-PSDrive localfarmgpo -psprovider citrixgrouppolicy -root \ -controller $AdminAddress -Scope Global *>$Null
+		$HDXPolicies = @()
+		$HDXPolicies += Get-CitrixGroupPolicy -DriveName LocalFarmGPO -PolicyName "*" -Type "Computer" -EA 0 `
+		| Select-Object PolicyName, Type, Description, Enabled, Priority `
+		| Sort-Object Type, Priority
 		
-	#using Citrix policy stuff and new-psdrive breaks transcript logging so restart transcript logging
-	TranscriptLogging
-
-	If(Test-Path localfarmgpo:)
-	{
-		$HDXPolicies = Get-CtxGroupPolicy -DriveName localfarmgpo -EA 0 `
+		$HDXPolicies += Get-CitrixGroupPolicy -DriveName LocalFarmGPO -PolicyName "*" -Type "User" -EA 0 `
 		| Select-Object PolicyName, Type, Description, Enabled, Priority `
 		| Sort-Object Type, Priority
 		
@@ -15081,7 +15400,7 @@ Function ProcessPolicySummary
 	}
 	Else
 	{
-		Write-Warning "Unable to create the LocalFarmGPO PSDrive on the CVAD Controller $($AdminAddress)"
+		Write-Warning "The LocalFarmGPO PSDrive does not exist (3)"
 	}
 	
 	If($NoADPolicies)
@@ -15113,7 +15432,7 @@ Function ProcessPolicySummary
 					Write-Verbose "$(Get-Date -Format G): `tProcessing Citrix AD Policy $($CtxGPO)"
 				
 					Write-Verbose "$(Get-Date -Format G): `tRetrieving AD Policy $($CtxGPO)"
-					$HDXPolicies = Get-CtxGroupPolicy -DriveName ADGpoDrv -EA 0 `
+					$HDXPolicies = Get-CitrixGroupPolicy -DriveName ADGpoDrv -EA 0 `
 					| Select-Object PolicyName, Type, Description, Enabled, Priority `
 					| Sort-Object Type, Priority
 			
@@ -15303,7 +15622,7 @@ Function ProcessCitrixPolicies
 
 	Write-Verbose "$(Get-Date -Format G): `tRetrieving all $($xPolicyType) policy names"
 
-	$CtxPolicies = Get-CtxGroupPolicy -Type $xPolicyType `
+	$CtxPolicies = Get-CitrixGroupPolicy -Type $xPolicyType `
 	-DriveName $xDriveName -EA 0 `
 	| Select-Object PolicyName, Type, Description, Enabled, Priority `
 	| Sort-Object Priority
@@ -15407,7 +15726,7 @@ Function ProcessCitrixPolicies
 			}
 
 			Write-Verbose "$(Get-Date -Format G): `t`tRetrieving all filters"
-			$filters = Get-CtxGroupPolicyFilter -PolicyName $Policy.PolicyName `
+			$filters = Get-CitrixGroupPolicyFilter -PolicyName $Policy.PolicyName `
 			-Type $xPolicyType `
 			-DriveName $xDriveName -EA 0 `
 			| Sort-Object FilterType, FilterName -Unique
@@ -15596,7 +15915,7 @@ Function ProcessCitrixPolicies
 			}
 			
 			Write-Verbose "$(Get-Date -Format G): `t`tRetrieving all policy settings"
-			$Settings = Get-CtxGroupPolicyConfiguration -PolicyName $Policy.PolicyName `
+			$Settings = Get-CitrixGroupPolicyConfiguration -PolicyName $Policy.PolicyName `
 			-Type $Policy.Type `
 			-DriveName $xDriveName -EA 0
 				
@@ -28239,8 +28558,12 @@ Function ProcessCitrixPolicies
 	}
 	
 	$CtxPolicies = $Null
-	Write-Verbose "$(Get-Date -Format G): `tRemoving $($xDriveName) PSDrive"
-	Remove-PSDrive $xDriveName -EA 0 4>$Null
+	
+	If($xDriveName -ne "LocalFarmGPO")
+	{
+		Write-Verbose "$(Get-Date -Format G): `tRemoving $($xDriveName) PSDrive"
+		Remove-PSDrive -Name $xDriveName -EA 0 4>$Null
+	}
 	Write-Verbose "$(Get-Date -Format G): "
 }
 
@@ -36087,6 +36410,7 @@ Function ProcessScriptSetup
 			$CVADSiteVersionReal = "Unknown"
 			Switch ($CVADSiteVersion)
 			{
+				"7.32"	{$CVADSiteVersionReal = "CVAD 2112"; Break}
 				"7.31"	{$CVADSiteVersionReal = "CVAD 2109"; Break}
 				"7.30"	{$CVADSiteVersionReal = "CVAD 2106"; Break}
 				"7.29"	{$CVADSiteVersionReal = "CVAD 2103"; Break}
@@ -36184,76 +36508,50 @@ Function ProcessScriptSetup
 		}
 	}
 
-	$Script:DoPolicies = $True
-	If($NoPolicies -or $Policies -eq $False)
-	{
-		$Script:DoPolicies = $False
-	}
-
+	$Script:DoPolicies = $False
+	
 	If($Policies -eq $True)
 	{
-		If(Test-Path "$([Environment]::GetFolderPath( [Environment+SpecialFolder]::System))\WindowsPowerShell\v1.0\Modules\Citrix.GroupPolicy.Commands\Citrix.GroupPolicy.Commands.psm1")
-		{
-			Write-Verbose "Importing module: $([Environment]::GetFolderPath( [Environment+SpecialFolder]::System))\WindowsPowerShell\v1.0\Modules\Citrix.GroupPolicy.Commands\Citrix.GroupPolicy.Commands.psm1"
+		$Script:DoPolicies = $True
 
-			Import-Module "$([Environment]::GetFolderPath( [Environment+SpecialFolder]::System))\WindowsPowerShell\v1.0\Modules\Citrix.GroupPolicy.Commands\Citrix.GroupPolicy.Commands.psm1" 4>$Null
-			If(!$?)
-			{
-				Write-Warning "
-		`n
-		Citrix Group Policy module not loaded:
-		$([Environment]::GetFolderPath( [Environment+SpecialFolder]::System))\WindowsPowerShell\v1.0\Modules\Citrix.GroupPolicy.Commands\Citrix.GroupPolicy.Commands.psm1 could not be loaded 
-		`n
-		Please see the Prerequisites section in the ReadMe file https://carlwebster.sharefile.com/d-s8e431271460494c9
-		`n
-		Because the Policies parameter was used, Policies will not be processed.
-		"
-				Write-Verbose "$(Get-Date -Format G): "
-				$Script:DoPolicies = $False
-			}
+		#Create the LocalFarmGPO PSDrive only once
+		Write-Verbose "$(Get-Date -Format G): `tDoes LocalFarmGPO PSDrive already exist?"
+		If(Test-Path LocalFarmGPO: 4>$Null)
+		{
+			Write-Verbose "$(Get-Date -Format G): `t`tRemoving the current LocalFarmGPO PSDrive"
+			Remove-PSDrive -Name LocalFarmGPO -EA 0 4>$Null
+		}
+		
+		Write-Verbose "$(Get-Date -Format G): `t`tCreating LocalFarmGPO PSDrive for Studio-based policies"
+		New-PSDrive -Name LocalFarmGPO `
+		-psprovider citrixgrouppolicy `
+		-root \ `
+		-controller $AdminAddress `
+		-Scope Global *>$Null
+
+		#using Citrix policy stuff and new-psdrive breaks transcript logging so restart transcript logging
+		TranscriptLogging
+
+		If(Test-Path LocalFarmGPO: 4>$Null)
+		{
+			Write-Verbose "$(Get-Date -Format G): `t`t`tLocalFarmGPO PSDrive is ready for use"
 		}
 		Else
 		{
-			If(Test-Path "$([Environment]::GetFolderPath( [Environment+SpecialFolder]::ProgramFiles))\Citrix\Telemetry Service\TelemetryModule\Citrix.GroupPolicy.Commands.psm1")
-			{
-				Write-Verbose "Importing module: $([Environment]::GetFolderPath( [Environment+SpecialFolder]::ProgramFiles))\Citrix\Telemetry Service\TelemetryModule\Citrix.GroupPolicy.Commands.psm1"
-
-				Import-Module "$([Environment]::GetFolderPath( [Environment+SpecialFolder]::ProgramFiles))\Citrix\Telemetry Service\TelemetryModule\Citrix.GroupPolicy.Commands.psm1" 4>$Null
-				
-				If(!$?)
-				{
-					Write-Warning "
-		`n
-		Citrix Group Policy module not loaded:
-		$([Environment]::GetFolderPath( [Environment+SpecialFolder]::ProgramFiles))\Citrix\Telemetry Service\TelemetryModule\Citrix.GroupPolicy.Commands.psm1 could not be loaded 
-		`n
-		Please see the Prerequisites section in the ReadMe file https://carlwebster.sharefile.com/d-s8e431271460494c9
-		`n
-		Because the Policies parameter was used, Policies will not be processed.
+			$ErrorActionPreference = $SaveEAPreference
+			Write-Error "
+	`n`n
+LocalFarmGPO PSDrive does not exist (0). Try immediately rerunning the script.
+	`n`n
+New-PSDrive failed: $($error[ 0 ].ToString())
+	`n`n
+Script cannot continue
+	`n`n
 		"
-					Write-Verbose "$(Get-Date -Format G): "
-					$Script:DoPolicies = $False
-				}
-			}
-			Else
-			{
-				Write-Warning "
-		`n
-		Neither Citrix Group Policy module was found:
-		$([Environment]::GetFolderPath( [Environment+SpecialFolder]::System))\WindowsPowerShell\v1.0\Modules\Citrix.GroupPolicy.Commands.psm1
-		or
-		$([Environment]::GetFolderPath( [Environment+SpecialFolder]::ProgramFiles))\Citrix\Telemetry Service\TelemetryModule\Citrix.GroupPolicy.Commands.psm1
-		`n
-		Please see the Prerequisites section in the ReadMe file https://carlwebster.sharefile.com/d-s8e431271460494c9
-		`n
-		Because the Policies parameter was used, Policies will not be processed.
-		"
-				Write-Verbose "$(Get-Date -Format G): "
-				$Script:DoPolicies = $False
-			}
+			AbortScript
 		}
 	}
-	
+
 	If($Policies -eq $False -and $NoPolicies -eq $False -and $NoADPolicies -eq $False)
 	{
 		#script defaults, so don't process policies
@@ -36323,6 +36621,7 @@ Function ProcessScriptSetup
 	$Script:CVADSiteVersionReal = "Unknown"
 	Switch ($Script:CVADSiteVersion)
 	{
+		"7.32"	{$Script:CVADSiteVersionReal = "CVAD 2112"; Break}
 		"7.31"	{$Script:CVADSiteVersionReal = "CVAD 2109"; Break}
 		"7.30"	{$Script:CVADSiteVersionReal = "CVAD 2106"; Break}
 		"7.29"	{$Script:CVADSiteVersionReal = "CVAD 2103"; Break}
@@ -36533,6 +36832,7 @@ Function ProcessScriptEnd
 		Out-File -FilePath $SIFile -Append -InputObject "NoADPolicies       : $($NoADPolicies)" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "NoPolicies         : $($NoPolicies)" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "Policies           : $($Policies)" 4>$Null
+		Out-File -FilePath $SIFile -Append -InputObject "Report Footer      : $ReportFooter" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "Save As HTML       : $($HTML)" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "Save As PDF        : $($PDF)" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "Save As TEXT       : $($TEXT)" 4>$Null
@@ -37495,6 +37795,11 @@ Write-Verbose "$(Get-Date -Format G): Finishing up document"
 $AbstractTitle = "Citrix CVAD $($Script:CVADSiteVersion) Inventory"
 $SubjectTitle = "CVAD $($Script:CVADSiteVersion) Site Inventory"
 UpdateDocumentProperties $AbstractTitle $SubjectTitle
+
+If($ReportFooter)
+{
+	OutputReportFooter
+}
 
 ProcessDocumentOutput
 
