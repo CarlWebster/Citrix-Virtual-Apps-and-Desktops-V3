@@ -6,6 +6,22 @@
 
 # This script is based on the 2.36 script
 
+#Version 3.31 24-Dec-2021
+#	Added Broker Registry Keys:
+#		HKLM:\Software\Policies\Citrix\DesktopServer\LaunchCheckFaultStates
+#		HKLM:\Software\Policies\Citrix\DesktopServer\PhantomRegistrationSecs
+#		HKLM:\Software\Citrix\DesktopServer\LaunchCheckFaultStates
+#		HKLM:\Software\Citrix\DesktopServer\PhantomRegistrationSecs
+#	Added Computer policy
+#		HDX Analytics\HDX Insight for SD-WAN
+#		ICA\Multi-Stream Connections\Multi-Stream virtual channel stream assignment
+#			Drag and Drop - Stream 1
+#		Profile Management\Advanced settings\Customize storage path for VHDX files
+#	Added User policy
+#		ICA\Graphics\Screen sharing
+#	Fixed some HTML formatting issues
+#	Updated the ReadMe file
+
 #Version 3.30 23-Nov-2021
 #	Added Function OutputReportFooter
 #	Added Parameter ReportFooter

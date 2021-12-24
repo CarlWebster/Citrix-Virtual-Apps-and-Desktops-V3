@@ -1,12 +1,12 @@
 add-pssnapin *citrix*
 import-module citrix.grouppolicy.commands
 
-new-psdrive localfarmgpo -psprovider citrixgrouppolicy -root \ -controller cvad2109 -Scope Global
+new-psdrive localfarmgpo -psprovider citrixgrouppolicy -root \ -controller cvad2112 -Scope Global
 get-ctxgrouppolicyconfiguration -drive localfarmgpo  "unfiltered" | out-string –width 300 | out-file .\gpo.txt
 
 
 add-pssnapin *citrix*
 import-module citrix.grouppolicy.commands
-New-PSDrive -Name ADGpoDrv -PSProvider CitrixGroupPolicy -Root \ -DomainGpo "All cvad2109" -Scope Global
-get-ctxgrouppolicyconfiguration -drive adgpodrv "All CVAD2109 User" | out-string –width 300 | out-file .\gpo.txt
+New-PSDrive -Name ADGpoDrv -PSProvider CitrixGroupPolicy -Root \ -DomainGpo "All cvad2112" -Scope Global
+get-ctxgrouppolicyconfiguration -drive adgpodrv "All CVAD2112 User" | out-string –width 300 | out-file .\gpo.txt
 
