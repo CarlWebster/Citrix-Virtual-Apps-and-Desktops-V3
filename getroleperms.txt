@@ -1,1 +1,1 @@
-get-adminpermission -adminaddress cvad2109 | select groupname,id,name | sort-object groupname,id,name | out-file roleperms.txt
+get-adminpermission -adminaddress cvad2112 | select groupname,id,name | sort-object groupname,id,name | out-file roleperms.txt
