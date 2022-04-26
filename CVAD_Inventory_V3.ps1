@@ -1043,9 +1043,9 @@
 	This script creates a Word, PDF, plain text, or HTML document.
 .NOTES
 	NAME: CVAD_Inventory_V3.ps1
-	VERSION: 3.33
+	VERSION: 3.34
 	AUTHOR: Carl Webster
-	LASTEDIT: March 27, 2022
+	LASTEDIT: April 26, 2022
 #>
 
 #endregion
@@ -1239,6 +1239,11 @@ Param(
 # This script is based on the 2.36 script
 #
 
+#Version 3.34 26-Apr-2022
+#	Fixed text output for hardware inventory
+#	General code cleanup
+#	In Function OutputNicItem, fixed several issues with DHCP data
+#
 #Version 3.33 27-Mar-2022
 #	Added Broker Registry Key:
 #		HKLM:\Software\Policies\Citrix\DesktopServer\SaaSLicenseComponentCheckPeriodHours
@@ -1842,9 +1847,9 @@ $SaveEAPreference = $ErrorActionPreference
 $ErrorActionPreference = 'SilentlyContinue'
 
 #stuff for report footer
-$script:MyVersion           = '3.33'
+$script:MyVersion           = '3.34'
 $Script:ScriptName          = "CVAD_Inventory_V3.ps1"
-$tmpdate                    = [datetime] "03/27/2022"
+$tmpdate                    = [datetime] "04/26/2022"
 $Script:ReleaseDate         = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($Null -eq $HTML)
@@ -2212,12 +2217,12 @@ If($MSWord -or $PDF)
 	[int]$wdSeekMainDocument      = 0
 	[int]$wdSeekPrimaryFooter     = 4
 	[int]$wdStory                 = 6
-	[int]$wdColorBlack            = 0
-	[int]$wdColorGray05           = 15987699 
+	#[int]$wdColorBlack            = 0
+	#[int]$wdColorGray05           = 15987699 
 	[int]$wdColorGray15           = 14277081
-	[int]$wdColorRed              = 255
+	#[int]$wdColorRed              = 255
 	[int]$wdColorWhite            = 16777215
-	[int]$wdColorYellow           = 65535
+	#[int]$wdColorYellow           = 65535
 	[int]$wdWord2007              = 12
 	[int]$wdWord2010              = 14
 	[int]$wdWord2013              = 15
@@ -2257,7 +2262,7 @@ If($MSWord -or $PDF)
 	[int]$wdStyleHeading4         = -5
 	[int]$wdStyleNoSpacing        = -158
 	[int]$wdTableGrid             = -155
-	[int]$wdTableLightListAccent3 = -206
+	#[int]$wdTableLightListAccent3 = -206
 
 	[int]$wdLineStyleNone       = 0
 	[int]$wdLineStyleSingle     = 1
@@ -2367,8 +2372,8 @@ Function GetComputerWMIInfo
 	}
 	If($Text)
 	{
-		Line 3 "Computer Information: $($RemoteComputerName)"
-		Line 4 "General Computer"
+		Line 1 "Computer Information: $($RemoteComputerName)"
+		Line 2 "General Computer"
 	}
 	If($HTML)
 	{
@@ -2423,8 +2428,8 @@ Function GetComputerWMIInfo
 		}
 		If($Text)
 		{
-			Line 5 "Get-CimInstance win32_computersystem failed for $($RemoteComputerName)"
-			Line 5 ""
+			Line 1 "Get-CimInstance win32_computersystem failed for $($RemoteComputerName)"
+			Line 1 ""
 		}
 		If($HTML)
 		{
@@ -2440,7 +2445,7 @@ Function GetComputerWMIInfo
 		}
 		If($Text)
 		{
-			Line 5 "No results Returned for Computer information"
+			Line 1 "No results Returned for Computer information"
 		}
 		If($HTML)
 		{
@@ -2457,7 +2462,7 @@ Function GetComputerWMIInfo
 	}
 	If($Text)
 	{
-		Line 4 "Drive(s)"
+		Line 2 "Drive(s)"
 	}
 	If($HTML)
 	{
@@ -2505,7 +2510,7 @@ Function GetComputerWMIInfo
 		}
 		If($Text)
 		{
-			Line 5 "Get-CimInstance Win32_LogicalDisk failed for $($RemoteComputerName)"
+			Line 1 "Get-CimInstance Win32_LogicalDisk failed for $($RemoteComputerName)"
 		}
 		If($HTML)
 		{
@@ -2521,7 +2526,7 @@ Function GetComputerWMIInfo
 		}
 		If($Text)
 		{
-			Line 5 "No results Returned for Drive information"
+			Line 1 "No results Returned for Drive information"
 		}
 		If($HTML)
 		{
@@ -2538,7 +2543,7 @@ Function GetComputerWMIInfo
 	}
 	If($Text)
 	{
-		Line 4 "Processor(s)"
+		Line 2 "Processor(s)"
 	}
 	If($HTML)
 	{
@@ -2582,7 +2587,7 @@ Function GetComputerWMIInfo
 		}
 		If($Text)
 		{
-			Line 5 "Get-CimInstance win32_Processor failed for $($RemoteComputerName)"
+			Line 1 "Get-CimInstance win32_Processor failed for $($RemoteComputerName)"
 		}
 		If($HTML)
 		{
@@ -2598,7 +2603,7 @@ Function GetComputerWMIInfo
 		}
 		If($Text)
 		{
-			Line 5 "No results Returned for Processor information"
+			Line 1 "No results Returned for Processor information"
 		}
 		If($HTML)
 		{
@@ -2615,7 +2620,7 @@ Function GetComputerWMIInfo
 	}
 	If($Text)
 	{
-		Line 4 "Network Interface(s)"
+		Line 2 "Network Interface(s)"
 	}
 	If($HTML)
 	{
@@ -2691,7 +2696,7 @@ Function GetComputerWMIInfo
 					}
 					If($Text)
 					{
-						Line 5 "Error retrieving NIC information"
+						Line 1 "Error retrieving NIC information"
 					}
 					If($HTML)
 					{
@@ -2707,7 +2712,7 @@ Function GetComputerWMIInfo
 					}
 					If($Text)
 					{
-						Line 4 "No results Returned for NIC information"
+						Line 1 "No results Returned for NIC information"
 					}
 					If($HTML)
 					{
@@ -2728,7 +2733,7 @@ Function GetComputerWMIInfo
 		}
 		If($Text)
 		{
-			Line 5 "Error retrieving NIC configuration information"
+			Line 1 "Error retrieving NIC configuration information"
 		}
 		If($HTML)
 		{
@@ -2744,7 +2749,7 @@ Function GetComputerWMIInfo
 		}
 		If($Text)
 		{
-			Line 5 "No results Returned for NIC configuration information"
+			Line 1 "No results Returned for NIC configuration information"
 		}
 		If($HTML)
 		{
@@ -2829,15 +2834,15 @@ Function OutputComputerItem
 	}
 	If($Text)
 	{
-		Line 5 "Manufacturer`t`t`t: " $Item.manufacturer
-		Line 5 "Model`t`t`t`t: " $Item.model
-		Line 5 "Domain`t`t`t`t: " $Item.domain
-		Line 5 "Operating System`t`t: " $OS
-		Line 5 "Power Plan`t`t`t: " $PowerPlan
-		Line 5 "Total Ram`t`t`t: $($Item.totalphysicalram) GB"
-		Line 5 "Physical Processors (sockets)`t: " $Item.NumberOfProcessors
-		Line 5 "Logical Processors (cores w/HT)`t: " $Item.NumberOfLogicalProcessors
-		Line 5 ""
+		Line 3 "Manufacturer`t`t`t: " $Item.manufacturer
+		Line 3 "Model`t`t`t`t: " $Item.model
+		Line 3 "Domain`t`t`t`t: " $Item.domain
+		Line 3 "Operating System`t`t: " $OS
+		Line 3 "Power Plan`t`t`t: " $PowerPlan
+		Line 3 "Total Ram`t`t`t: $($Item.totalphysicalram) GB"
+		Line 3 "Physical Processors (sockets)`t: " $Item.NumberOfProcessors
+		Line 3 "Logical Processors (cores w/HT)`t: " $Item.NumberOfLogicalProcessors
+		Line 3 ""
 	}
 	If($HTML)
 	{
@@ -2933,27 +2938,27 @@ Function OutputDriveItem
 	}
 	If($Text)
 	{
-		Line 5 "Caption`t`t: " $drive.caption
-		Line 5 "Size`t`t: $($drive.drivesize) GB"
+		Line 3 "Caption`t`t: " $drive.caption
+		Line 3 "Size`t`t: $($drive.drivesize) GB"
 		If(![String]::IsNullOrEmpty($drive.filesystem))
 		{
-			Line 5 "File System`t: " $drive.filesystem
+			Line 3 "File System`t: " $drive.filesystem
 		}
-		Line 5 "Free Space`t: $($drive.drivefreespace) GB"
+		Line 3 "Free Space`t: $($drive.drivefreespace) GB"
 		If(![String]::IsNullOrEmpty($drive.volumename))
 		{
-			Line 5 "Volume Name`t: " $drive.volumename
+			Line 3 "Volume Name`t: " $drive.volumename
 		}
 		If(![String]::IsNullOrEmpty($drive.volumedirty))
 		{
-			Line 5 "Volume is Dirty`t: " $xVolumeDirty
+			Line 3 "Volume is Dirty`t: " $xVolumeDirty
 		}
 		If(![String]::IsNullOrEmpty($drive.volumeserialnumber))
 		{
-			Line 5 "Volume Serial #`t: " $drive.volumeserialnumber
+			Line 3 "Volume Serial #`t: " $drive.volumeserialnumber
 		}
-		Line 5 "Drive Type`t: " $xDriveType
-		Line 5 ""
+		Line 3 "Drive Type`t: " $xDriveType
+		Line 3 ""
 	}
 	If($HTML)
 	{
@@ -3058,27 +3063,27 @@ Function OutputProcessorItem
 	}
 	If($Text)
 	{
-		Line 5 "Name`t`t`t`t: " $processor.name
-		Line 5 "Description`t`t`t: " $processor.description
-		Line 5 "Max Clock Speed`t`t`t: $($processor.maxclockspeed) MHz"
+		Line 3 "Name`t`t`t`t: " $processor.name
+		Line 3 "Description`t`t`t: " $processor.description
+		Line 3 "Max Clock Speed`t`t`t: $($processor.maxclockspeed) MHz"
 		If($processor.l2cachesize -gt 0)
 		{
-			Line 5 "L2 Cache Size`t`t`t: $($processor.l2cachesize) KB"
+			Line 3 "L2 Cache Size`t`t`t: $($processor.l2cachesize) KB"
 		}
 		If($processor.l3cachesize -gt 0)
 		{
-			Line 5 "L3 Cache Size`t`t`t: $($processor.l3cachesize) KB"
+			Line 3 "L3 Cache Size`t`t`t: $($processor.l3cachesize) KB"
 		}
 		If($processor.numberofcores -gt 0)
 		{
-			Line 5 "# of Cores`t`t`t: " $processor.numberofcores
+			Line 3 "# of Cores`t`t`t: " $processor.numberofcores
 		}
 		If($processor.numberoflogicalprocessors -gt 0)
 		{
-			Line 5 "# of Logical Procs (cores w/HT)`t: " $processor.numberoflogicalprocessors
+			Line 3 "# of Logical Procs (cores w/HT)`t: " $processor.numberoflogicalprocessors
 		}
-		Line 5 "Availability`t`t`t: " $xAvailability
-		Line 5 ""
+		Line 3 "Availability`t`t`t: " $xAvailability
+		Line 3 ""
 	}
 	If($HTML)
 	{
@@ -3256,6 +3261,20 @@ Function OutputNicItem
 		$xwinsenablelmhostslookup = "No"
 	}
 
+	If($nic.dhcpenabled)
+	{
+		$DHCPLeaseObtainedDate = $nic.dhcpleaseobtained.ToLocalTime()
+		If($nic.DHCPLeaseExpires -lt $nic.DHCPLeaseObtained)
+		{
+			#Could be an Azure DHCP Lease
+			$DHCPLeaseExpiresDate = (Get-Date).AddSeconds([UInt32]::MaxValue).ToLocalTime()
+		}
+		Else
+		{
+			$DHCPLeaseExpiresDate = $nic.DHCPLeaseExpires.ToLocalTime()
+		}
+	}
+		
 	If($MSWORD -or $PDF)
 	{
 		$NicInformation = New-Object System.Collections.ArrayList
@@ -3297,12 +3316,14 @@ Function OutputNicItem
 		}
 		If($nic.dhcpenabled)
 		{
-			$DHCPLeaseObtainedDate = $nic.ConvertToDateTime($nic.dhcpleaseobtained)
-			$DHCPLeaseExpiresDate = $nic.ConvertToDateTime($nic.dhcpleaseexpires)
-			$NicInformation.Add(@{ Data = "DHCP Enabled"; Value = $Nic.dhcpenabled; }) > $Null
+			$NicInformation.Add(@{ Data = "DHCP Enabled"; Value = $Nic.dhcpenabled.ToString(); }) > $Null
 			$NicInformation.Add(@{ Data = "DHCP Lease Obtained"; Value = $dhcpleaseobtaineddate; }) > $Null
 			$NicInformation.Add(@{ Data = "DHCP Lease Expires"; Value = $dhcpleaseexpiresdate; }) > $Null
 			$NicInformation.Add(@{ Data = "DHCP Server"; Value = $Nic.dhcpserver; }) > $Null
+		}
+		Else
+		{
+			$NicInformation.Add(@{ Data = "DHCP Enabled"; Value = $Nic.dhcpenabled.ToString(); }) > $Null
 		}
 		If(![String]::IsNullOrEmpty($nic.dnsdomain))
 		{
@@ -3374,102 +3395,100 @@ Function OutputNicItem
 	}
 	If($Text)
 	{
-		Line 5 "Name`t`t`t: " $ThisNic.Name
+		Line 3 "Name`t`t`t: " $ThisNic.Name
 		If($ThisNic.Name -ne $nic.description)
 		{
-			Line 5 "Description`t`t: " $nic.description
+			Line 3 "Description`t`t: " $nic.description
 		}
-		Line 5 "Connection ID`t`t: " $ThisNic.NetConnectionID
+		Line 3 "Connection ID`t`t: " $ThisNic.NetConnectionID
 		If(validObject $Nic Manufacturer)
 		{
-			Line 5 "Manufacturer`t`t: " $Nic.manufacturer
+			Line 3 "Manufacturer`t`t: " $Nic.manufacturer
 		}
-		Line 5 "Availability`t`t: " $xAvailability
-		Line 5 "Allow computer to turn "
-		Line 5 "off device to save power: " $PowerSaving
-		Line 5 "Physical Address`t: " $nic.macaddress
-		Line 5 "Receive Side Scaling`t: " $RSSEnabled
-		Line 5 "IP Address`t`t: " $xIPAddress[0]
+		Line 3 "Availability`t`t: " $xAvailability
+		Line 3 "Allow computer to turn "
+		Line 3 "off device to save power: " $PowerSaving
+		Line 3 "Physical Address`t: " $nic.macaddress
+		Line 3 "Receive Side Scaling`t: " $RSSEnabled
+		Line 3 "IP Address`t`t: " $xIPAddress[0]
 		$cnt = -1
 		ForEach($tmp in $xIPAddress)
 		{
 			$cnt++
 			If($cnt -gt 0)
 			{
-				Line 8 "  " $tmp
+				Line 6 "  " $tmp
 			}
 		}
-		Line 5 "Default Gateway`t`t: " $Nic.Defaultipgateway
-		Line 5 "Subnet Mask`t`t: " $xIPSubnet[0]
+		Line 3 "Default Gateway`t`t: " $Nic.Defaultipgateway
+		Line 3 "Subnet Mask`t`t: " $xIPSubnet[0]
 		$cnt = -1
 		ForEach($tmp in $xIPSubnet)
 		{
 			$cnt++
 			If($cnt -gt 0)
 			{
-				Line 8 "  " $tmp
+				Line 6 "  " $tmp
 			}
 		}
 		If($nic.dhcpenabled)
 		{
-			$DHCPLeaseObtainedDate = $nic.ConvertToDateTime($nic.dhcpleaseobtained)
-			$DHCPLeaseExpiresDate = $nic.ConvertToDateTime($nic.dhcpleaseexpires)
-			Line 5 "DHCP Enabled`t`t: " $nic.dhcpenabled
-			Line 5 "DHCP Lease Obtained`t: " $dhcpleaseobtaineddate
-			Line 5 "DHCP Lease Expires`t: " $dhcpleaseexpiresdate
-			Line 5 "DHCP Server`t`t:" $nic.dhcpserver
+			Line 3 "DHCP Enabled`t`t: " $nic.dhcpenabled.ToString()
+			Line 3 "DHCP Lease Obtained`t: " $dhcpleaseobtaineddate
+			Line 3 "DHCP Lease Expires`t: " $dhcpleaseexpiresdate
+			Line 3 "DHCP Server`t`t:" $nic.dhcpserver
 		}
-		If(![String]::IsNullOrEmpty($nic.dnsdomain))
+		Else
 		{
-			Line 5 "DNS Domain`t`t: " $nic.dnsdomain
+			Line 3 "DHCP Enabled`t`t: " $nic.dhcpenabled.ToString()
 		}
 		If($Null -ne $nic.dnsdomainsuffixsearchorder -and $nic.dnsdomainsuffixsearchorder.length -gt 0)
 		{
 			[int]$x = 1
-			Line 5 "DNS Search Suffixes`t: " $xnicdnsdomainsuffixsearchorder[0]
+			Line 3 "DNS Search Suffixes`t: " $xnicdnsdomainsuffixsearchorder[0]
 			$cnt = -1
 			ForEach($tmp in $xnicdnsdomainsuffixsearchorder)
 			{
 				$cnt++
 				If($cnt -gt 0)
 				{
-					Line 8 "  " $tmp
+					Line 6 "  " $tmp
 				}
 			}
 		}
-		Line 5 "DNS WINS Enabled`t: " $xdnsenabledforwinsresolution
+		Line 3 "DNS WINS Enabled`t: " $xdnsenabledforwinsresolution
 		If($Null -ne $nic.dnsserversearchorder -and $nic.dnsserversearchorder.length -gt 0)
 		{
 			[int]$x = 1
-			Line 5 "DNS Servers`t`t: " $xnicdnsserversearchorder[0]
+			Line 3 "DNS Servers`t`t: " $xnicdnsserversearchorder[0]
 			$cnt = -1
 			ForEach($tmp in $xnicdnsserversearchorder)
 			{
 				$cnt++
 				If($cnt -gt 0)
 				{
-					Line 8 "  " $tmp
+					Line 6 "  " $tmp
 				}
 			}
 		}
-		Line 5 "NetBIOS Setting`t`t: " $xTcpipNetbiosOptions
-		Line 5 "WINS:"
-		Line 6 "Enabled LMHosts`t: " $xwinsenablelmhostslookup
+		Line 3 "NetBIOS Setting`t`t: " $xTcpipNetbiosOptions
+		Line 3 "WINS:"
+		Line 4 "Enabled LMHosts`t: " $xwinsenablelmhostslookup
 		If(![String]::IsNullOrEmpty($nic.winshostlookupfile))
 		{
-			Line 6 "Host Lookup File`t: " $nic.winshostlookupfile
+			Line 4 "Host Lookup File`t: " $nic.winshostlookupfile
 		}
 		If(![String]::IsNullOrEmpty($nic.winsprimaryserver))
 		{
-			Line 6 "Primary Server`t: " $nic.winsprimaryserver
+			Line 4 "Primary Server`t: " $nic.winsprimaryserver
 		}
 		If(![String]::IsNullOrEmpty($nic.winssecondaryserver))
 		{
-			Line 6 "Secondary Server`t: " $nic.winssecondaryserver
+			Line 4 "Secondary Server`t: " $nic.winssecondaryserver
 		}
 		If(![String]::IsNullOrEmpty($nic.winsscopeid))
 		{
-			Line 6 "Scope ID`t`t: " $nic.winsscopeid
+			Line 4 "Scope ID`t`t: " $nic.winsscopeid
 		}
 		Line 0 ""
 	}
@@ -3513,12 +3532,14 @@ Function OutputNicItem
 		}
 		If($nic.dhcpenabled)
 		{
-			$DHCPLeaseObtainedDate = $nic.ConvertToDateTime($nic.dhcpleaseobtained)
-			$DHCPLeaseExpiresDate = $nic.ConvertToDateTime($nic.dhcpleaseexpires)
-			$rowdata += @(,('DHCP Enabled',($global:htmlsb),$Nic.dhcpenabled,$htmlwhite))
+			$rowdata += @(,('DHCP Enabled',($global:htmlsb),$Nic.dhcpenabled.ToString(),$htmlwhite))
 			$rowdata += @(,('DHCP Lease Obtained',($global:htmlsb),$dhcpleaseobtaineddate,$htmlwhite))
 			$rowdata += @(,('DHCP Lease Expires',($global:htmlsb),$dhcpleaseexpiresdate,$htmlwhite))
 			$rowdata += @(,('DHCP Server',($global:htmlsb),$Nic.dhcpserver,$htmlwhite))
+		}
+		Else
+		{
+			$rowdata += @(,('DHCP Enabled',($global:htmlsb),$Nic.dhcpenabled.ToString(),$htmlwhite))
 		}
 		If(![String]::IsNullOrEmpty($nic.dnsdomain))
 		{
@@ -7089,16 +7110,6 @@ Function OutputMachines
 			}
 		}
 
-		$SessionSupport = "Single-session OS"
-		If($Catalog.SessionSupport -eq "SingleSession")
-		{
-			$SessionSupport = "Single-session OS"
-		}
-		Else
-		{
-			$SessionSupport = "Multi-session OS"
-		}
-		
 		If($MSWord -or $PDF)
 		{
 			$Selection.InsertNewPage()

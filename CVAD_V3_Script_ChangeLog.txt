@@ -6,6 +6,11 @@
 
 # This script is based on the 2.36 script
 
+#Version 3.34 26-Apr-2022
+#	Fixed text output for hardware inventory
+#	General code cleanup
+#	In Function OutputNicItem, fixed several issues with DHCP data
+
 #Version 3.33 27-Mar-2022
 #	Added Broker Registry Key:
 #		HKLM:\Software\Policies\Citrix\DesktopServer\SaaSLicenseComponentCheckPeriodHours
