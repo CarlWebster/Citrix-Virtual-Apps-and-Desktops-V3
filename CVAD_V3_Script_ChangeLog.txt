@@ -6,6 +6,136 @@
 
 # This script is based on the 2.36 script
 
+#Version 3.35 16-Jul-2022
+#	Added Broker Registry Key:
+#		HKLM:\Software\Policies\Citrix\DesktopServer\MaxCompletedActionsToPurge
+#			Type: int
+#			Default: 700
+#			Info: Minimum=100
+#			Summary: Maximum completed power actions to purge in a single batch. 
+#					 This limit avoids timeouts/failures if for some reason huge numbers of actions have accumulated that need to be deleted.
+#
+#			         The default value allows for about 2 million actions to be purged per day if needed (700 every 30 seconds).
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\ParallelPowerStateReadMaxThreads
+#			Type: int
+#			Default: 5
+#			Info: Minimum=0, Maximum=100
+#			Summary: Maximum number of threads to use when reading multiple machine states from the HCL in parallel. 
+#					 Note: (1) Value does not apply to HCL plugins that support bulk power state operations (e.g. Azure). 
+#					 (2) For Cloud, value is capped at 1 as the RemoteHCL does not support multiple concurrent operations, 
+#					 thus there's no advantage in using multiple threads. (3) A value of zero forces use of a simple loop 
+#					 for all such operations. This puts all machine state reads and database writes into a single thread. 
+#					 This uses the minimum resources but at the expense of throughput, and delayed database updates.
+#	Added Computer policy
+#		ICA\Printing\Universal Print Server\Universal Print Server web service (HTTP/SOAP) connect timeout (Seconds)
+#		ICA\Printing\Universal Print Server\Universal Print Server web service (HTTP/SOAP) receive timeout (Seconds)
+#		ICA\Printing\Universal Print Server\Universal Print Server web service (HTTP/SOAP) send timeout (Seconds)
+#		Profile Management\Advanced settings\Automatically reattach VHDX disks in sessions
+#		Profile Management\Advanced settings\Enable asynchronous processing for user Group Policy on logon
+#		Profile Management\Advanced settings\Enable concurrent session support for Outlook search data roaming
+#		Profile Management\Advanced settings\Enable concurrent session support for Outlook search data roaming [two different settings with the same name]
+#	Added User policy
+#		ICA\Server Limits\Disconnected session timer - Multi-session
+#		ICA\Server Limits\Disconnected session timer interval (minutes) - Multi-session
+#		ICA\USB Devices\Allow existing USB devices to be automatically connected
+#		ICA\USB Devices\Allow newly arrived USB devices to be automatically connected
+#		ICA\USB devices\USB device redirection rules (Version 2)
+#	Added VDA Registry Key:
+#		HKLM:\Software\Citrix\Citrix Virtual Desktop Agent\ShellBridge
+#		https://docs.citrix.com/en-us/citrix-virtual-apps-desktops/whats-new/fixed-issues.html#vda-for-single-session-os
+#	Fixed bug reported by James Rankin where in Function OutputDatastores I didn't check for SQLServerName,TCPPortNumber
+#		https://support.citrix.com/article/CTX234610/how-to-configure-xendesktop-to-use-custom-sql-port
+#		For example, to to [sic] add custom port to the connection strings, then set the $ServerName variable to "DBServername\Instance,CustomPortNumber".
+#		Also fixed a bug where if unable to connect to the SQL server, that error was not handled and many variables were then not defined
+#	In Function GetRolePermissions:
+#		Added new permissions
+#			ApplicationGroup_CreateFolder
+#			ApplicationGroup_EditFolder
+#			ApplicationGroup_MoveFolder
+#			ApplicationGroup_RemoveFolder
+#			AutoTagRule_Create
+#			AutoTagRule_Delete
+#			AutoTagRule_Edit	
+#			AutoTagRule_Read
+#			VdaUpgrade_CatalogManage
+#			VdaUpgrade_MachineManage
+#	In Function OutputMachines, fix the headings and output for Text
+#		Added error check to verify that the variables $TempDiskCacheSize and $TempMemoryCacheSize exist before using them
+#		Added the catalog's custom properties for the Provisioning Scheme
+#			Custom Properties For Azure
+#				DedicatedHostGroupId
+#				DiskEncryptionSetId
+#				EnableIntuneEnroll
+#				IdentityDiskStorageType
+#				InitialPageFileSizeInMB
+#				LicenseType
+#				MachinesPerStorageAccount
+#				MaxPageFileSizeInMB
+#				OsType
+#				PageFileDiskDriveLetter
+#				PersistOsDisk
+#				PersistVm
+#				PersistWBC
+#				ResourceGroups
+#				SchemaVersion
+#				SharedImageGalleryReplicaMaximum
+#				SharedImageGalleryReplicaRatio
+#				SharedImageGalleryStorageAccountType (not documented but found in testing)
+#				StorageAccountsPerResourceGroup
+#				StorageAccountType
+#				StorageType
+#				UseEphemeralOsDisk
+#				UseManagedDisks
+#				UseSharedImageGallery
+#				UseTempDiskForWBC
+#				WBCDiskStorageType
+#				Zones
+#
+#			Custom Properties For Aws
+#				AwsCaptureInstanceProperties
+#				AwsOperationalResourcesTagging
+#
+#			Custom Properties For Gcp
+#				CatalogZones
+#				CryptoKeyId
+#				IdentityDiskStorageType
+#				PersistOsDisk
+#				PersistWBC
+#				StorageType
+#				WBCDiskStorageType
+#
+#		Added Image History for the catalog's Provisioning Scheme
+#			Provisioning Scheme Name
+#			Date
+#			Master Image VM
+#			Master Image Note
+#			Functional Level
+#			Image Status
+#	In Function OutputSiteSettings, add the following items:
+#		Bypass Authentication for Cached Resources
+#			Allows client to display cached resources without authentication
+#		Credential Forwarding to Cloud Allowed
+#			The indicator that whether the Connector is allowed to forward user credentials to cloud
+#		Default Reuse Machines Without Shutdown In Outage
+#			The default ReuseMachinesWithoutShutdownInOutage used for new desktop groups when no explicit value is provided
+#		Delete Resource Leases on Logoff
+#			Forces client to delete all leases on explicit logoff
+#		Resource Lease Validity Period in Days
+#			Validity period for a lease
+#		Resource Leasing Enabled
+#			Enables lease syncing on client
+#		Telemetry Headless Launch Enabled
+#			Enables client to perform headless telemetry launches
+#		Telemetry Launch Minimum Time Interval in Minutes
+#			Configures minimum time interval (in minutes) between headless telemetry launches
+#		Telemetry Launch Shadow Delay in Minutes
+#			Configures delay (in minutes) between ICA-HDX launch and headless telemetry launch
+#		removed "Is Secondary Broker", as that is an internal Citrix setting
+#	Updated Function GetDBCompatibilityLevel to support SQL Server 2022
+#	Updated the help text
+#	Updated the ReadMe file
+
 #Version 3.34 26-Apr-2022
 #	Fixed text output for hardware inventory
 #	General code cleanup

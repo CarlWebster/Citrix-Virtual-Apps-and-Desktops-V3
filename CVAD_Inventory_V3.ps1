@@ -12,7 +12,7 @@
 	
 	This script requires at least PowerShell version 5.
 
-	Default output is now HTML.
+	The default output is now HTML.
 	
 	You do NOT have to run this script on a Controller. This script was developed and run 
 	from a Windows 10 VM.
@@ -94,7 +94,7 @@
 	This parameter has an alias of AA.
 .PARAMETER HTML
 	Creates an HTML file with an.html extension.
-	This parameter is set True if no other output format is selected.
+	This parameter is set to True if no other output format is selected.
 .PARAMETER Text
 	Creates a formatted text file with a.txt extension.
 	This parameter is disabled by default.
@@ -305,8 +305,8 @@
 .PARAMETER AddDateTime
 	Adds a date timestamp to the end of the file name.
 	The timestamp is in the format of yyyy-MM-dd_HHmm.
-	June 1, 2022 at 6PM is 2022-06-01_1800.
-	Output filename will be ReportName_2022-06-01_1800.docx (or.pdf).
+	June 1, 2022, at 6PM is 2022-06-01_1800.
+	The output filename will be ReportName_2022-06-01_1800.docx (or.pdf).
 	This parameter is disabled by default.
 	This parameter has an alias of ADT.
 .PARAMETER CSV
@@ -504,7 +504,7 @@
 
 	Carl Webster for the Company Name.
 	Sideline for the Cover Page format.
-	Administrator for the User Name.
+	Administrator for the Username.
 	Creates a Microsoft Word report.
 	The computer running the script for the AdminAddress.
 .EXAMPLE
@@ -524,7 +524,7 @@
 
 	Carl Webster for the Company Name.
 	Sideline for the Cover Page format.
-	Administrator for the User Name.
+	Administrator for the Username.
 	The computer running the script for the AdminAddress.
 .EXAMPLE
 	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -Text
@@ -563,7 +563,7 @@
 
 	Carl Webster for the Company Name.
 	Sideline for the Cover Page format.
-	Administrator for the User Name.
+	Administrator for the Username.
 	The computer running the script for the AdminAddress.
 .EXAMPLE
 	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -DeliveryGroupsUtilization -PDF
@@ -580,7 +580,7 @@
 
 	Carl Webster for the Company Name.
 	Sideline for the Cover Page format.
-	Administrator for the User Name.
+	Administrator for the Username.
 	The computer running the script for the AdminAddress.
 .EXAMPLE
 	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -DeliveryGroups -MachineCatalogs
@@ -644,7 +644,7 @@
 
 	Carl Webster for the Company Name.
 	Sideline for the Cover Page format.
-	Administrator for the User Name.
+	Administrator for the Username.
 	The computer running the script for the AdminAddress.
 .EXAMPLE
 	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -Hosting
@@ -687,7 +687,7 @@
 
 	Carl Webster for the Company Name.
 	Sideline for the Cover Page format.
-	Administrator for the User Name.
+	Administrator for the Username.
 	The computer running the script for the AdminAddress.
 .EXAMPLE
 	PS C:\PSScript.\CVAD_Inventory_V3.ps1 -MSWord -CompanyName "Carl Webster 
@@ -697,7 +697,7 @@
 	Uses:
 		Carl Webster Consulting for the Company Name.
 		Mod for the Cover Page format.
-		Carl Webster for the User Name.
+		Carl Webster for the Username.
 		Controller named DDC01 for the AdminAddress.
 .EXAMPLE
 	PS C:\PSScript.\CVAD_Inventory_V3.ps1 -CN "Carl Webster Consulting" -CP "Mod" 
@@ -707,7 +707,7 @@
 	Uses:
 		Carl Webster Consulting for the Company Name (alias CN).
 		Mod for the Cover Page format (alias CP).
-		Carl Webster for the User Name (alias UN).
+		Carl Webster for the Username (alias UN).
 		The computer running the script for the AdminAddress.
 .EXAMPLE
 	PS C:\PSScript.\CVAD_Inventory_V3.ps1 -MSWord -CompanyName "Sherlock Holmes 
@@ -718,7 +718,7 @@
 	Uses:
 		Sherlock Holmes Consulting for the Company Name.
 		Exposure for the Cover Page format.
-		Dr. Watson for the User Name.
+		Dr. Watson for the Username.
 		221B Baker Street, London, England for the Company Address.
 		+44 1753 276600 for the Company Fax.
 		+44 1753 276200 for the Company Phone.
@@ -732,7 +732,7 @@
 	Uses:
 		Sherlock Holmes Consulting for the Company Name.
 		Facet for the Cover Page format.
-		Dr. Watson for the User Name.
+		Dr. Watson for the Username.
 		SuperSleuth@SherlockHolmes.com for the Company Email.
 		The computer running the script for the AdminAddress.
 .EXAMPLE
@@ -741,8 +741,8 @@
 	Creates an HTML report.
 	Adds a date time stamp to the end of the file name.
 	The timestamp is in the format of yyyy-MM-dd_HHmm.
-	June 1, 2022 at 6PM is 2022-06-01_1800.
-	Output filename will be CVADSiteName_2022-06-01_1800.docx
+	June 1, 2022, at 6PM is 2022-06-01_1800.
+	The output filename will be CVADSiteName_2022-06-01_1800.docx
 	The computer running the script for the AdminAddress.
 .EXAMPLE
 	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -PDF -AddDateTime
@@ -756,12 +756,12 @@
 
 	Carl Webster for the Company Name.
 	Sideline for the Cover Page format.
-	Administrator for the User Name.
+	Administrator for the Username.
 
 	Adds a date time stamp to the end of the file name.
 	The timestamp is in the format of yyyy-MM-dd_HHmm.
-	June 1, 2022 at 6PM is 2022-06-01_1800.
-	Output filename will be CVADSiteName_2022-06-01_1800.pdf
+	June 1, 2022, at 6PM is 2022-06-01_1800.
+	The output filename will be CVADSiteName_2022-06-01_1800.pdf
 	The computer running the script for the AdminAddress.
 .EXAMPLE
 	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -Hardware
@@ -845,7 +845,7 @@
 
 	Carl Webster for the Company Name.
 	Sideline for the Cover Page format.
-	Administrator for the User Name.
+	Administrator for the Username.
 	
 	Set the following parameter values:
 		Administrators      = True
@@ -923,7 +923,7 @@
 
 	Carl Webster for the Company Name.
 	Sideline for the Cover Page format.
-	Administrator for the User Name.
+	Administrator for the Username.
 	
 	Set the following parameter values:
 		Administrators      = True
@@ -1239,7 +1239,7 @@ Param(
 # This script is based on the 2.36 script
 #
 
-#Version 3.35
+#Version 3.35 16-Jul-2022
 #	Added Broker Registry Key:
 #		HKLM:\Software\Policies\Citrix\DesktopServer\MaxCompletedActionsToPurge
 #			Type: int
@@ -1259,7 +1259,7 @@ Param(
 #					 (2) For Cloud, value is capped at 1 as the RemoteHCL does not support multiple concurrent operations, 
 #					 thus there's no advantage in using multiple threads. (3) A value of zero forces use of a simple loop 
 #					 for all such operations. This puts all machine state reads and database writes into a single thread. 
-#					 This uses the minumum resources but at the expense of throughput, and delayed database updates.
+#					 This uses the minimum resources but at the expense of throughput, and delayed database updates.
 #	Added Computer policy
 #		ICA\Printing\Universal Print Server\Universal Print Server web service (HTTP/SOAP) connect timeout (Seconds)
 #		ICA\Printing\Universal Print Server\Universal Print Server web service (HTTP/SOAP) receive timeout (Seconds)
@@ -1279,8 +1279,20 @@ Param(
 #		https://docs.citrix.com/en-us/citrix-virtual-apps-desktops/whats-new/fixed-issues.html#vda-for-single-session-os
 #	Fixed bug reported by James Rankin where in Function OutputDatastores I didn't check for SQLServerName,TCPPortNumber
 #		https://support.citrix.com/article/CTX234610/how-to-configure-xendesktop-to-use-custom-sql-port
-#		For example, to to add custom port to the connection strings, then set the $ServerName variable to "DBServername\Instance,CustomPortNumber".
+#		For example, to to [sic] add custom port to the connection strings, then set the $ServerName variable to "DBServername\Instance,CustomPortNumber".
 #		Also fixed a bug where if unable to connect to the SQL server, that error was not handled and many variables were then not defined
+#	In Function GetRolePermissions:
+#		Added new permissions
+#			ApplicationGroup_CreateFolder
+#			ApplicationGroup_EditFolder
+#			ApplicationGroup_MoveFolder
+#			ApplicationGroup_RemoveFolder
+#			AutoTagRule_Create
+#			AutoTagRule_Delete
+#			AutoTagRule_Edit	
+#			AutoTagRule_Read
+#			VdaUpgrade_CatalogManage
+#			VdaUpgrade_MachineManage
 #	In Function OutputMachines, fix the headings and output for Text
 #		Added error check to verify that the variables $TempDiskCacheSize and $TempMemoryCacheSize exist before using them
 #		Added the catalog's custom properties for the Provisioning Scheme
@@ -1353,6 +1365,9 @@ Param(
 #		Telemetry Launch Shadow Delay in Minutes
 #			Configures delay (in minutes) between ICA-HDX launch and headless telemetry launch
 #		removed "Is Secondary Broker", as that is an internal Citrix setting
+#	Updated Function GetDBCompatibilityLevel to support SQL Server 2022
+#	Updated the help text
+#	Updated the ReadMe file
 #
 #Version 3.34 26-Apr-2022
 #	Fixed text output for hardware inventory
@@ -1964,7 +1979,7 @@ $ErrorActionPreference = 'SilentlyContinue'
 #stuff for report footer
 $script:MyVersion           = '3.35'
 $Script:ScriptName          = "CVAD_Inventory_V3.ps1"
-$tmpdate                    = [datetime] "07/05/2022"
+$tmpdate                    = [datetime] "07/16/2022"
 $Script:ReleaseDate         = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($Null -eq $HTML)
@@ -6333,7 +6348,7 @@ Function ShowScriptOptions
 	Write-Verbose "$(Get-Date -Format G): Title              : $($Script:Title)"
 	Write-Verbose "$(Get-Date -Format G): To                 : $($To)"
 	Write-Verbose "$(Get-Date -Format G): Use SSL            : $($UseSSL)"
-	Write-Verbose "$(Get-Date -Format G): User Name          : $($UserName)"
+	Write-Verbose "$(Get-Date -Format G): Username           : $($UserName)"
 	Write-Verbose "$(Get-Date -Format G): VDA Registry Keys  : $($VDARegistryKeys)"
 	Write-Verbose "$(Get-Date -Format G): CVAD Version       : $($Script:CVADSiteVersion)"
 	Write-Verbose "$(Get-Date -Format G): "
@@ -30690,6 +30705,7 @@ Function GetSQLVersion
 Function GetDBCompatibilityLevel
 {
 	Param([string]$DBCompat, [object]$SQLsrv)
+	#9-Jul-2022 add support for SQL Server 2022
 
 	$Major = $SQLsrv.VersionMajor
 	
@@ -30697,6 +30713,7 @@ Function GetDBCompatibilityLevel
 		https://www.spiria.com/en/blog/web-applications/understanding-sql-server-compatibility-levels
 		
 		Database Compatibility Level	Description
+		160								SQL Server 2022
 		150								SQL Server 2019
 		140								SQL Server 2017
 		130								SQL Server 2016	
@@ -30710,6 +30727,7 @@ Function GetDBCompatibilityLevel
 	$tmp = ""
 	Switch($DBCompat)
 	{
+		"160"			{$tmp = "SQL Server 2022"; Break}
 		"150"			{$tmp = "SQL Server 2019"; Break}
 		"140"			{$tmp = "SQL Server 2017"; Break}
 		"130"			{$tmp = "SQL Server 2016"; Break}
@@ -30732,7 +30750,11 @@ Function GetDBCompatibilityLevel
 	#now do a specific test for Azure SQL
 	#https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-database-transact-sql-compatibility-level?view=sql-server-2017
 	
-	If($Major -eq 12 -and (($DBCompat -eq 130 -or $DBCompat -eq "Version130") -or ($DBCompat -eq 140 -or $DBCompat -eq "Version140") -or ($DBCompat -eq 150 -or $DBCompat -eq "Version150")))
+	If($Major -eq 12 -and `
+	(($DBCompat -eq 130 -or $DBCompat -eq "Version130") -or `
+	($DBCompat -eq 140 -or $DBCompat -eq "Version140") -or `
+	($DBCompat -eq 150 -or $DBCompat -eq "Version150") -or `
+	($DBCompat -eq 160 -or $DBCompat -eq "Version160")))
 	{
 		$tmp = "Azure SQL Database"
 	}
@@ -33797,10 +33819,14 @@ Function GetRolePermissions
 			"ApplicationGroup_ChangeTags"								{$Results.Add("Change Tags on Application Group", "Application Groups")}
 			"ApplicationGroup_ChangeUserAssignment"						{$Results.Add("Edit User Assignment on Application Group", "Application Groups")}
 			"ApplicationGroup_Create"									{$Results.Add("Create Application Group", "Application Groups")}
+			"ApplicationGroup_CreateFolder"								{$Results.Add("Create Application Group Folder", "Application Groups")}
 			"ApplicationGroup_Delete"									{$Results.Add("Delete Application Group", "Application Groups")}
+			"ApplicationGroup_EditFolder"								{$Results.Add("Edit Application Group Folder", "Application Groups")}
 			"ApplicationGroup_EditProperties"							{$Results.Add("Edit Application Group Properties", "Application Groups")}
+			"ApplicationGroup_MoveFolder"								{$Results.Add("Move Application Group Folder", "Application Groups")}
 			"ApplicationGroup_Read"										{$Results.Add("View Application Groups", "Application Groups")}
 			"ApplicationGroup_RemoveApplication"						{$Results.Add("Remove Application from Application Group", "Application Groups")}
+			"ApplicationGroup_RemoveFolder"								{$Results.Add("Remove Application Group Folder", "Application Groups")}
 			"ApplicationGroup_RemoveFromDesktopGroup"					{$Results.Add("Remove Delivery Group from Application Group", "Application Groups")}
 			"ApplicationGroup_RemoveScope"								{$Results.Add("Remove Application Group from Scope", "Application Groups")}
 			
@@ -33939,6 +33965,10 @@ Function GetRolePermissions
 			"Catalog_SessionManagement"									{$Results.Add("Perform session management on machines via Machine Catalog membership", "Machine Catalogs")}
 			"Catalog_UpdateMasterImage"									{$Results.Add("Perform Machine update", "Machine Catalogs")}
 
+			"AutoTagRule_Create"										{$Results.Add("Create AutoTagRule", "Other permissions")}
+			"AutoTagRule_Delete"										{$Results.Add("Delete AutoTagRule", "Other permissions")}
+			"AutoTagRule_Edit"											{$Results.Add("Edit AutoTagRule", "Other permissions")}
+			"AutoTagRule_Read"											{$Results.Add("Read AutoTagRule", "Other permissions")}
 			"Configuration_Read"										{$Results.Add("Read Site Configuration (Configuration_Read)", "Other permissions")}
 			"Configuration_Write"										{$Results.Add("Update Site Configuration (Configuration_Write)", "Other permissions")}
 			"EnvTest"													{$Results.Add("Run environment tests", "Other permissions")}
@@ -33951,6 +33981,8 @@ Function GetRolePermissions
 			"Tag_Edit"													{$Results.Add("Edit tags", "Other permissions")}
 			"Tag_Read"													{$Results.Add("Read tags", "Other permissions")}
 			"Trust_ServiceKeys"											{$Results.Add("Manage Trust Service Keys", "Other permissions")}
+			"VdaUpgrade_CatalogManage"									{$Results.Add("Manage VDA Upgrade Catalog Schedules", "Other permissions")}
+			"VdaUpgrade_MachineManage"									{$Results.Add("Manage VDA Upgrade Machine Schedules", "Other permissions")}
 
 			"Policies_Manage"											{$Results.Add("Manage Policies", "Policies")}
 			"Policies_Read"												{$Results.Add("View Policies", "Policies")}
@@ -38135,7 +38167,7 @@ Function ProcessScriptEnd
 		Out-File -FilePath $SIFile -Append -InputObject "Use SSL            : $($UseSSL)" 4>$Null
 		If($MSWORD -or $PDF)
 		{
-			Out-File -FilePath $SIFile -Append -InputObject "User Name          : $($UserName)" 4>$Null
+			Out-File -FilePath $SIFile -Append -InputObject "Username           : $($UserName)" 4>$Null
 		}
 		Out-File -FilePath $SIFile -Append -InputObject "VDA Registry Keys  : $($VDARegistryKeys)" 4>$Null
 		Out-File -FilePath $SIFile -Append -InputObject "CVAD Version       : $($Script:CVADSiteVersion)" 4>$Null
