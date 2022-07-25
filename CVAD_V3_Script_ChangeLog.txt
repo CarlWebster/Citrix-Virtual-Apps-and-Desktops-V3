@@ -6,6 +6,9 @@
 
 # This script is based on the 2.36 script
 
+#Version 3.36 25-Jul-2022
+#	Added support for Minimum Catalog Level 2206 (L7_34)
+
 #Version 3.35 16-Jul-2022
 #	Added Broker Registry Key:
 #		HKLM:\Software\Policies\Citrix\DesktopServer\MaxCompletedActionsToPurge
