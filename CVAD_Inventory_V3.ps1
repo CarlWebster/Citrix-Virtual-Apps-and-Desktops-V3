@@ -280,7 +280,7 @@
 	This parameter is disabled by default.
 	This parameter has an alias of VRK.
 .PARAMETER Section
-	Processes a specific section of the report.
+	Processes one or more sections of the report.
 	Valid options are:
 		Admins (Administrators)
 		Apps (Applications and Application Group Details)
@@ -296,7 +296,10 @@
 		StoreFront
 		Zones
 		All
+
 	This parameter defaults to All sections.
+	
+	Multiple sections are separated by a comma. -Section catalogs, groups
 	
 	Notes:
 	Using Logging will force the Logging Switch to True.
@@ -793,6 +796,12 @@
 	Processes only the Delivery Groups section of the report with no Delivery Group details.
 	The computer running the script for the AdminAddress.
 .EXAMPLE
+	PS C:\PSScript > .\CVAD_Inventory_V3.ps1 -Section Config, Licensing -HTML 
+
+	Creates an HTML report.
+
+	The report includes only the Configuration and Licensing sections.
+.EXAMPLE
 	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -BrokerRegistryKeys
 	
 	Creates an HTML report.
@@ -1043,9 +1052,9 @@
 	This script creates a Word, PDF, plain text, or HTML document.
 .NOTES
 	NAME: CVAD_Inventory_V3.ps1
-	VERSION: 3.36
+	VERSION: 3.37
 	AUTHOR: Carl Webster
-	LASTEDIT: July 25, 2022
+	LASTEDIT: September 22, 2022
 #>
 
 #endregion
@@ -1144,7 +1153,7 @@ Param(
 	[ValidateSet('All', 'Admins', 'Apps', 'AppV', 'Catalogs', 'Config', 'Controllers', 
 	'Groups', 'Hosting', 'Licensing', 'Logging', 'Policies', 'StoreFront', 'Zones')]
 	[parameter(Mandatory=$False)] 
-	[string]$Section="All",
+	[String[]] $Section = 'All',
 	
 	[parameter(Mandatory=$False)] 
 	[Alias("ADT")]
@@ -1239,6 +1248,12 @@ Param(
 # This script is based on the 2.36 script
 #
 
+#Version 3.37 22-Sep-2022
+#	Updated Function ProcessScriptSetup to support multiple Section items
+#	Updated the script to allow the Section parameter to support multiple items
+#	Updated the help text
+#	Updated the ReadMe file
+#
 #Version 3.36 25-Jul-2022
 #	Added support for Minimum Catalog Level 2206 (L7_34)
 #
@@ -1976,14 +1991,14 @@ Set-StrictMode -Version Latest
 
 #force  on
 $PSDefaultParameterValues = @{"*:Verbose"=$True}
-$SaveEAPreference = $ErrorActionPreference
-$ErrorActionPreference = 'SilentlyContinue'
+$SaveEAPreference         = $ErrorActionPreference
+$ErrorActionPreference    = 'SilentlyContinue'
 
 #stuff for report footer
-$script:MyVersion           = '3.36'
-$Script:ScriptName          = "CVAD_Inventory_V3.ps1"
-$tmpdate                    = [datetime] "07/25/2022"
-$Script:ReleaseDate         = $tmpdate.ToUniversalTime().ToShortDateString()
+$script:MyVersion   = '3.37'
+$Script:ScriptName  = "CVAD_Inventory_V3.ps1"
+$tmpdate            = [datetime] "09/20/2022"
+$Script:ReleaseDate = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($Null -eq $HTML)
 {
@@ -2163,22 +2178,23 @@ If($NoPolicies -and $Section -eq "Policies")
 }
 
 $ValidSection = $False
+#3.37 remove the Break statements since there can now be multiple sections entered
 Switch ($Section)
 {
-	"Admins"		{$ValidSection = $True; Break}
-	"Apps"			{$ValidSection = $True; Break}
-	"AppV"			{$ValidSection = $True; Break}
-	"Catalogs"		{$ValidSection = $True; Break}
-	"Config"		{$ValidSection = $True; Break}
-	"Controllers"	{$ValidSection = $True; Break}
-	"Groups"		{$ValidSection = $True; Break}
-	"Hosting"		{$ValidSection = $True; Break}
-	"Licensing"		{$ValidSection = $True; Break}
-	"Logging"		{$ValidSection = $True; $Logging = $True; Break}	#force $logging true if the config logging section is specified
-	"Policies"		{$ValidSection = $True; $Policies = $True; Break} #force $policies true if the policies section is specified
-	"StoreFront"	{$ValidSection = $True; Break}
-	"Zones"			{$ValidSection = $True; Break}
-	"All"			{$ValidSection = $True; Break}
+	"Admins"		{$ValidSection = $True}
+	"Apps"			{$ValidSection = $True}
+	"AppV"			{$ValidSection = $True}
+	"Catalogs"		{$ValidSection = $True}
+	"Config"		{$ValidSection = $True}
+	"Controllers"	{$ValidSection = $True}
+	"Groups"		{$ValidSection = $True}
+	"Hosting"		{$ValidSection = $True}
+	"Licensing"		{$ValidSection = $True}
+	"Logging"		{$ValidSection = $True; $Logging = $True}	#force $logging true if the config logging section is specified
+	"Policies"		{$ValidSection = $True; $Policies = $True} #force $policies true if the policies section is specified
+	"StoreFront"	{$ValidSection = $True}
+	"Zones"			{$ValidSection = $True}
+	"All"			{$ValidSection = $True}
 }
 
 If($ValidSection -eq $False)
@@ -38040,23 +38056,55 @@ Script cannot continue
 	}
 	
 	[string]$Script:CVADSiteName = $Script:CVADSite2.SiteName
-	Switch ($Section)
+
+	#3.37 update to support multiple section items
+	If($Section.Count -eq 1 -and $Section -eq "All")
 	{
-		"Admins"		{[string]$Script:Title = "Inventory Report for the $($Script:CVADSiteName) Site (Administrators Only)"; Break}
-		"Apps"			{[string]$Script:Title = "Inventory Report for the $($Script:CVADSiteName) Site (Applications Only)"; Break}
-		"AppV"			{[string]$Script:Title = "Inventory Report for the $($Script:CVADSiteName) Site (App-V Only"; Break}
-		"Catalogs"		{[string]$Script:Title = "Inventory Report for the $($Script:CVADSiteName) Site (Machine Catalogs Only)"; Break}
-		"Config"		{[string]$Script:Title = "Inventory Report for the $($Script:CVADSiteName) Site (Configuration Only)"; Break}
-		"Controllers"	{[string]$Script:Title = "Inventory Report for the $($Script:CVADSiteName) Site (Controllers Only)"; Break}
-		"Groups" 		{[string]$Script:Title = "Inventory Report for the $($Script:CVADSiteName) Site (Delivery Groups Only)"; Break}
-		"Hosting"		{[string]$Script:Title = "Inventory Report for the $($Script:CVADSiteName) Site (Hosting Only)"; Break}
-		"Licensing"		{[string]$Script:Title = "Inventory Report for the $($Script:CVADSiteName) Site (Licensing Only)"; Break}
-		"Logging"		{[string]$Script:Title = "Inventory Report for the $($Script:CVADSiteName) Site (Configuration Logging Only"; Break}
-		"Policies"		{[string]$Script:Title = "Inventory Report for the $($Script:CVADSiteName) Site (Policies Only)"; Break}
-		"StoreFront"	{[string]$Script:Title = "Inventory Report for the $($Script:CVADSiteName) Site (StoreFront Only)"; Break}
-		"Zones"			{[string]$Script:Title = "Inventory Report for the $($Script:CVADSiteName) Site (Zones Only)"; Break}
-		"All"			{[string]$Script:Title = "Inventory Report for the $($Script:CVADSiteName) Site"; Break}
+		[string]$Script:Title = "Inventory Report for the $($Script:CVADSiteName) Site"
 	}
+	ElseIf($Section.Count -eq 1)
+	{
+		Switch ($Section)
+		{
+			"Admins"		{[string]$Script:Title = "Inventory Report for the $($Script:CVADSiteName) Site (Administrators Only)"; Break}
+			"Apps"			{[string]$Script:Title = "Inventory Report for the $($Script:CVADSiteName) Site (Applications Only)"; Break}
+			"AppV"			{[string]$Script:Title = "Inventory Report for the $($Script:CVADSiteName) Site (App-V Only"; Break}
+			"Catalogs"		{[string]$Script:Title = "Inventory Report for the $($Script:CVADSiteName) Site (Machine Catalogs Only)"; Break}
+			"Config"		{[string]$Script:Title = "Inventory Report for the $($Script:CVADSiteName) Site (Configuration Only)"; Break}
+			"Controllers"	{[string]$Script:Title = "Inventory Report for the $($Script:CVADSiteName) Site (Controllers Only)"; Break}
+			"Groups" 		{[string]$Script:Title = "Inventory Report for the $($Script:CVADSiteName) Site (Delivery Groups Only)"; Break}
+			"Hosting"		{[string]$Script:Title = "Inventory Report for the $($Script:CVADSiteName) Site (Hosting Only)"; Break}
+			"Licensing"		{[string]$Script:Title = "Inventory Report for the $($Script:CVADSiteName) Site (Licensing Only)"; Break}
+			"Logging"		{[string]$Script:Title = "Inventory Report for the $($Script:CVADSiteName) Site (Configuration Logging Only"; Break}
+			"Policies"		{[string]$Script:Title = "Inventory Report for the $($Script:CVADSiteName) Site (Policies Only)"; Break}
+			"StoreFront"	{[string]$Script:Title = "Inventory Report for the $($Script:CVADSiteName) Site (StoreFront Only)"; Break}
+			"Zones"			{[string]$Script:Title = "Inventory Report for the $($Script:CVADSiteName) Site (Zones Only)"; Break}
+			Default			{[string]$Script:Title = "Inventory Report for the $($Script:CCSiteName) Site (Missing a section title for $Section"; Break}
+		}
+	}
+	ElseIf($Section.Count -gt 1)
+	{
+		[string]$Script:Title = "Inventory Report for the $($Script:CVADSiteName) Site ("
+		Switch ($Section)
+		{
+			"Admins"		{[string]$Script:Title += "Administrators "}
+			"Apps"			{[string]$Script:Title += "Applications "}
+			"AppV"			{[string]$Script:Title += "App-V Only"}
+			"Catalogs"		{[string]$Script:Title += "Machine Catalogs "}
+			"Config"		{[string]$Script:Title += "Configuration "}
+			"Controllers"	{[string]$Script:Title += "Controllers "}
+			"Groups" 		{[string]$Script:Title += "Delivery Groups "}
+			"Hosting"		{[string]$Script:Title += "Hosting "}
+			"Licensing"		{[string]$Script:Title += "Licensing "}
+			"Logging"		{[string]$Script:Title += "Configuration Logging "}
+			"Policies"		{[string]$Script:Title += "Policies "}
+			"StoreFront"	{[string]$Script:Title += "StoreFront "}
+			"Zones"			{[string]$Script:Title += "Zones "}
+			Default			{[string]$Script:Title += "Missing a section title for $Section"}
+		}
+		[string]$Script:Title = $Script:Title.Substring(0,$Script:Title.LastIndexOf(" ")-1)+")"
+	}
+
 	Write-Verbose "$(Get-Date -Format G): Initial Site data has been gathered"
 	
 	#added 25-Jun-2017 with a lot of help from Michael B. Smith
