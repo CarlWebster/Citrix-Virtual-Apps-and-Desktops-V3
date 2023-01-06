@@ -1052,9 +1052,9 @@
 	This script creates a Word, PDF, plain text, or HTML document.
 .NOTES
 	NAME: CVAD_Inventory_V3.ps1
-	VERSION: 3.38
+	VERSION: 3.39
 	AUTHOR: Carl Webster
-	LASTEDIT: October 2, 2022
+	LASTEDIT: January 6, 2023
 #>
 
 #endregion
@@ -1248,6 +1248,36 @@ Param(
 # This script is based on the 2.36 script
 #
 
+#Version 3.39 6-Jan-2023
+#	Added to Function OutputMachines, the Catalog's reboot schedule if one exists
+#		https://docs.citrix.com/en-us/citrix-virtual-apps-desktops/install-configure/machine-catalogs-manage.html#update-the-catalog
+#	For Provisioning Custom Properties, added two Azure properties I hadn't noticed before:
+#		https://developer-docs.citrix.com/projects/citrix-virtual-apps-desktops-sdk/en/latest/MachineCreation/about_Prov_CustomProperties/
+#		PageFileDiskDriveLetterOverride
+#		StorageTypeAtShutdown
+#	In Function GetRolePermissions:
+#		Added new permissions
+#			AppLib_PackageDiscovery_Create
+#			AppLib_PackageDiscoveryProfile_Create
+#			AppLib_PackageDiscoveryProfile_Remove
+#			DesktopGroup_CreateFolder
+#			DesktopGroup_EditFolder
+#			DesktopGroup_MoveFolder
+#			DesktopGroup_RemoveFolder
+#			Catalog_CreateFolder
+#			Catalog_EditFolder
+#			Catalog_MoveFolder
+#			Catalog_RemoveFolder
+#			PolicySets_AddScope
+#           PolicySets_Manage
+#           PolicySets_Read
+#           PolicySets_RemoveScope
+#           Setting_Edit
+#			Setting_Read
+#	In Function OutputMachineDetails, fixed the missing $WillShutdownAfterUseReason variable
+#	In Function OutputMachines, fixed the misplaced code for image history and additional data
+#	Updated for CVAD 2209/7.35 and CVAD 2212/7.36
+#
 #Version 3.38 2-Oct-2022
 #	Added Computer policy
 #		Profile Management\Advanced settings\Maximum number of VHDX disks for storing Outlook OST files
@@ -2009,9 +2039,9 @@ $SaveEAPreference         = $ErrorActionPreference
 $ErrorActionPreference    = 'SilentlyContinue'
 
 #stuff for report footer
-$script:MyVersion   = '3.38'
+$script:MyVersion   = '3.39'
 $Script:ScriptName  = "CVAD_Inventory_V3.ps1"
-$tmpdate            = [datetime] "10/02/2022"
+$tmpdate            = [datetime] "01/06/2022"
 $Script:ReleaseDate = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($Null -eq $HTML)
@@ -6737,7 +6767,7 @@ Function GetAdmins
 		"ApplicationGroup" {
 			$scopes = $Null
 
-			$permissions = Get-AdminPermission @CCParams2 | `
+			$permissions = Get-AdminPermission @CVADParams2 | `
 			Where-Object { $_.MetadataMap["Citrix_ObjectType"] -eq "ApplicationGroup"} | `
 			Select-Object -ExpandProperty Id
 
@@ -8223,6 +8253,7 @@ Function OutputMachines
 					MaxPageFileSizeInMB
 					OsType
 					PageFileDiskDriveLetter
+					PageFileDiskDriveLetterOverride $new in 2212
 					PersistOsDisk
 					PersistVm
 					PersistWBC
@@ -8234,6 +8265,7 @@ Function OutputMachines
 					StorageAccountsPerResourceGroup
 					StorageAccountType
 					StorageType
+					StorageTypeAtShutdown #new in 2212
 					UseEphemeralOsDisk
 					UseManagedDisks
 					UseSharedImageGallery
@@ -8255,7 +8287,7 @@ Function OutputMachines
 					WBCDiskStorageType
 			#>
 			
-			$ProvScheme = Get-ProvScheme -ProvisioningSchemeUid $Catalog.ProvisioningSchemeID @CCParams2
+			$ProvScheme = Get-ProvScheme -ProvisioningSchemeUid $Catalog.ProvisioningSchemeID @CVADParams2
 			
 			If(!$? -or $Null -eq $ProvScheme)
 			{
@@ -8391,7 +8423,7 @@ Function OutputMachines
 								-ProvisioningSchemeUid $Catalog.ProvisioningSchemeID `
 								-ShowAll `
 								-SortBy 'provisioningschemename,date' `
-								@CCParams2
+								@CVADParams2
 				
 				If($? -and $Null -eq $ImageHistory)
 				{
@@ -8494,6 +8526,139 @@ Function OutputMachines
 							FormatHTMLTable $msg -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths -tablewidth "700"
 							WriteHTMLLine 0 0 ""
 						}
+
+						<#
+						ProvisioningSchemeName : JCW-OnPrem-Win10
+						Date                   : 10/5/2021 10:36:59 AM
+						MasterImageVM          : XDHyp:\HostingUnits\WebstersLab\CVD-CC-BUILD-05102021-1718.vm\CVD-CC-BUILD-05102021-1732.snapshot
+						MasterImageNote        :
+						FunctionalLevel        : L7_30
+						ImageStatus            : Current
+						#>
+						
+						#Additional Data - added in 3.35
+						Write-Verbose "$(Get-Date -Format G): `t`t`tAdding catalog additional data (if any)"
+						
+						#The AdditionalData property is a hashtable and is neither null nor empty. 
+						#If there is nothing in the hashtable, the count value is 0
+						try
+						{
+							If(Test-Path $Image.MasterImageVM 4>$Null)
+							{
+								$TmpData = Get-Item $Image.MasterImageVM -ea 0 4>$Null
+
+								If($? -and (validObject $TmpData AdditionalData))
+								{
+									$AdditionalData = $TmpData.AdditionalData
+								}
+								Else
+								{
+									$AdditionalData = @{}
+								}
+							}
+							Else
+							{
+								$AdditionalData = @{}
+							}
+						}
+						
+						catch
+						{
+							$AdditionalData = @{}
+						}
+						
+						If($AdditionalData.Count -eq 0)
+						{
+							#There is no additional data, so nothing to do
+						}
+						ElseIf($AdditionalData.Count -gt 0)
+						{
+							If($MSWord -or $PDF)
+							{
+								WriteWordLine 4 0 "Additional Data"
+								$AdditionalDataWordTable = @()
+							}
+							If($Text)
+							{
+								Line 1 "Additional Data"
+
+								Line 2 'Additional Property Name                  Value                    '
+								Line 2 '==================================================================='
+								#       ServiceOfferingWithTemporaryDiskSizeInMbSS1234567890123456789012345
+								#       1234567890123456789012345678901234567890
+							}
+							If($HTML)
+							{
+								WriteHTMLLine 4 0 "Additional Data"
+								$rowdata = @()
+							}
+
+							ForEach($Item in $AdditionalData.Keys)
+							{
+								If($MSWord -or $PDF)
+								{
+									$AdditionalDataWordTable += @{ 
+										PropertyName  = $Item;
+										PropertyValue = $AdditionalData.$Item;
+									}
+								}
+								If($Text)
+								{
+									Line 2 ( "{0,-40}  {1,-25}" -f $Item, $AdditionalData.$Item )
+								}
+								If($HTML)
+								{
+									$rowdata += @(,(
+										$Item,$htmlwhite,
+										$AdditionalData.$Item,$htmlwhite)
+									)
+								}
+							}
+							
+							If($MSWord -or $PDF)
+							{
+								If($AdditionalDataWordTable.Count -eq 0)
+								{
+									$AdditionalDataWordTable += @{ 
+										PropertyName  = "None found";
+										PropertyValue = "";
+									}
+								}
+								
+								$Table = AddWordTable -Hashtable $AdditionalDataWordTable `
+								-Columns PropertyName, PropertyValue `
+								-Headers "Additional Property Name", "Value" `
+								-Format $wdTableGrid `
+								-AutoFit $wdAutoFitContent;
+
+								SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+								$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+								FindWordDocumentEnd
+								$Table = $Null
+								WriteWordLine 0 0 ""
+							}
+							If($Text)
+							{
+								Line 0 ""
+							}
+							If($HTML)
+							{
+								$columnHeaders = @(
+									'Additional Property Name',($global:htmlsb),
+									'Value',($global:htmlsb)
+								)
+
+								$msg = ""
+								FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders
+								WriteHTMLLine 0 0 ""
+							}
+						}
+						Else
+						{
+							#Could not retrieve additional data, so nothing to do
+						}
 					}
 				}
 				Else
@@ -8501,112 +8666,74 @@ Function OutputMachines
 					$txt = "Unable to retrieve Image History for Machine Catalog $($Catalog.CatalogName) Provisioning Scheme $($Catalog.ProvisioningSchemeID)"
 					OutputWarning $txt
 				}
-				
-				<#
-				ProvisioningSchemeName : JCW-OnPrem-Win10
-				Date                   : 10/5/2021 10:36:59 AM
-				MasterImageVM          : XDHyp:\HostingUnits\WebstersLab\CVD-CC-BUILD-05102021-1718.vm\CVD-CC-BUILD-05102021-1732.snapshot
-				MasterImageNote        :
-				FunctionalLevel        : L7_30
-				ImageStatus            : Current
-				#>
-				
-				#Additional Data - added in 3.35
-				Write-Verbose "$(Get-Date -Format G): `t`t`tAdding catalog additional data (if any)"
-				
-				#The AdditionalData property is a hashtable and is neither null nor empty. 
-				#If there is nothing in the hashtable, the count value is 0
-				try
+			}
+			Else
+			{
+				#oops shouldn't be here
+			}
+		}
+		
+		#added in 3.39
+		#is there a reboot schedule configured for this catalog
+		#new for 2212
+		If($Script:CVADSiteVersion -ge "7.36")
+		{
+			#to prevent the "Get-BrokerCatalogRebootSchedule : Object does not exist" error
+			#get all the reboot schedules
+			
+			$CatalogRebootSchedules = Get-BrokerCatalogRebootSchedule @CVADParams1
+			
+			If($? -and $Null -ne $CatalogRebootSchedules)
+			{
+				#see if the $CatalogRebootSchedules object contains this catalog's Uid
+				If($CatalogRebootSchedules.CatalogUid -Contains $Catalog.Uid)
 				{
-					If(Test-Path $Image.MasterImageVM 4>$Null)
-					{
-						$TmpData = Get-Item $Image.MasterImageVM -ea 0 4>$Null
-
-						If($? -and (validObject $TmpData AdditionalData))
-						{
-							$AdditionalData = $TmpData.AdditionalData
-						}
-						Else
-						{
-							$AdditionalData = @{}
-						}
-					}
-					Else
-					{
-						$AdditionalData = @{}
-					}
-				}
-				
-				catch
-				{
-					$AdditionalData = @{}
-				}
-				
-				If($AdditionalData.Count -eq 0)
-				{
-					#There is no additional data, so nothing to do
-				}
-				ElseIf($AdditionalData.Count -gt 0)
-				{
-					If($MSWord -or $PDF)
-					{
-						WriteWordLine 4 0 "Additional Data"
-						$AdditionalDataWordTable = @()
-					}
-					If($Text)
-					{
-						Line 1 "Additional Data"
-
-						Line 2 'Additional Property Name                  Value                    '
-						Line 2 '==================================================================='
-						#       ServiceOfferingWithTemporaryDiskSizeInMbSS1234567890123456789012345
-						#       1234567890123456789012345678901234567890
-					}
-					If($HTML)
-					{
-						WriteHTMLLine 4 0 "Additional Data"
-						$rowdata = @()
-					}
-
-					ForEach($Item in $AdditionalData.Keys)
-					{
-						If($MSWord -or $PDF)
-						{
-							$AdditionalDataWordTable += @{ 
-								PropertyName  = $Item;
-								PropertyValue = $AdditionalData.$Item;
-							}
-						}
-						If($Text)
-						{
-							Line 2 ( "{0,-40}  {1,-25}" -f $Item, $AdditionalData.$Item )
-						}
-						If($HTML)
-						{
-							$rowdata += @(,(
-								$Item,$htmlwhite,
-								$AdditionalData.$Item,$htmlwhite)
-							)
-						}
-					}
+					$CatalogRebootSchedule = $CatalogRebootSchedules | Where-Object {$_.CatalogUid -eq $Catalog.Uid}
+					<#
+						Active                : False
+						CatalogName           : Win10 Random
+						CatalogUid            : 1
+						Description           :
+						Enabled               : True
+						MaxOvertimeStartMins  : 0
+						Name                  : Update reboot
+						RebootDuration        : 240 [minutes]
+						StartDate             : 2022-02-03
+						StartTime             : 01:00:00
+						Uid                   : 1
+						WarningDuration       : 10 [minutes]
+						WarningMessage        : Save your work
+						WarningRepeatInterval : 0 [minutes]
+						WarningTitle          : WARNING: Reboot pending
+					#>
 					
 					If($MSWord -or $PDF)
 					{
-						If($AdditionalDataWordTable.Count -eq 0)
-						{
-							$AdditionalDataWordTable += @{ 
-								PropertyName  = "None found";
-								PropertyValue = "";
-							}
-						}
-						
-						$Table = AddWordTable -Hashtable $AdditionalDataWordTable `
-						-Columns PropertyName, PropertyValue `
-						-Headers "Additional Property Name", "Value" `
+						WriteWordLine 4 0 "Catalog Reboot Schedule"
+						[System.Collections.Hashtable[]] $CatalogInformation = @()
+						$CatalogInformation += @{Data = "Reboot schedule name"; Value = $CatalogRebootSchedule.Name; }
+						$CatalogInformation += @{Data = "Description"; Value = $CatalogRebootSchedule.Description; }
+						$CatalogInformation += @{Data = "Active"; Value = $CatalogRebootSchedule.Active.ToString(); }
+						$CatalogInformation += @{Data = "Enabled"; Value = $CatalogRebootSchedule.Enabled.ToString(); }
+						$CatalogInformation += @{Data = "Max Overtime Start Minutes"; Value = $CatalogRebootSchedule.MaxOvertimeStartMins.ToString(); }
+						$CatalogInformation += @{Data = "Reboot duration in Minutes"; Value = $CatalogRebootSchedule.RebootDuration.ToString(); }
+						$CatalogInformation += @{Data = "Start Date"; Value = $CatalogRebootSchedule.StartDate.ToString(); }
+						$CatalogInformation += @{Data = "Start Time"; Value = $CatalogRebootSchedule.StartTime.ToString(); }
+						$CatalogInformation += @{Data = "Warning Duration in Minutes"; Value = $CatalogRebootSchedule.WarningDuration.ToString(); }
+						$CatalogInformation += @{Data = "Warning Message"; Value = $CatalogRebootSchedule.WarningMessage; }
+						$CatalogInformation += @{Data = "Warning Repeat Interval in Minutes"; Value = $CatalogRebootSchedule.WarningRepeatInterval.ToString(); }
+						$CatalogInformation += @{Data = "Warning Title"; Value = $CatalogRebootSchedule.WarningTitle; }
+				
+						$Table = AddWordTable -Hashtable $CatalogInformation `
+						-Columns Data,Value `
+						-List `
 						-Format $wdTableGrid `
-						-AutoFit $wdAutoFitContent;
+						-AutoFit $wdAutoFitFixed;
 
-						SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+						SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+						$Table.Columns.Item(1).Width = 225;
+						$Table.Columns.Item(2).Width = 275;
 
 						$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
 
@@ -8616,28 +8743,45 @@ Function OutputMachines
 					}
 					If($Text)
 					{
+						Line 1 "Catalog Reboot Schedule"
+						Line 2 "Reboot schedule name`t`t`t: " $CatalogRebootSchedule.Name
+						Line 2 "Description`t`t`t`t: " $CatalogRebootSchedule.Description
+						Line 2 "Active`t`t`t`t`t: " $CatalogRebootSchedule.Active.ToString()
+						Line 2 "Enabled`t`t`t`t`t: " $CatalogRebootSchedule.Enabled.ToString()
+						Line 2 "Max Overtime Start Minutes`t`t: " $CatalogRebootSchedule.MaxOvertimeStartMins.ToString()
+						Line 2 "Reboot duration in Minutes`t`t: " $CatalogRebootSchedule.RebootDuration.ToString()
+						Line 2 "Start Date`t`t`t`t: " $CatalogRebootSchedule.StartDate.ToString()
+						Line 2 "Start Time`t`t`t`t: " $CatalogRebootSchedule.StartTime.ToString()
+						Line 2 "Warning Duration in Minutes`t`t: " $CatalogRebootSchedule.WarningDuration.ToString()
+						Line 2 "Warning Message`t`t`t`t: " $CatalogRebootSchedule.WarningMessage
+						Line 2 "Warning Repeat Interval in Minutes`t: " $CatalogRebootSchedule.WarningRepeatInterval.ToString()
+						Line 2 "Warning Title`t`t`t`t: " $CatalogRebootSchedule.WarningTitle
 						Line 0 ""
 					}
 					If($HTML)
 					{
-						$columnHeaders = @(
-							'Additional Property Name',($global:htmlsb),
-							'Value',($global:htmlsb)
-						)
+						WriteHTMLLine 4 0 "Catalog Reboot Schedule"
+						$rowdata = @()
+						$columnHeaders = @("Description",($global:htmlsb),$Catalog.Description,$htmlwhite)
+						$rowdata += @(,( "Reboot schedule name",($global:htmlsb), $CatalogRebootSchedule.Name,$htmlwhite))
+						$rowdata += @(,( "Description",($global:htmlsb), $CatalogRebootSchedule.Description,$htmlwhite))
+						$rowdata += @(,( "Active",($global:htmlsb), $CatalogRebootSchedule.Active.ToString(),$htmlwhite))
+						$rowdata += @(,( "Enabled",($global:htmlsb), $CatalogRebootSchedule.Enabled.ToString(),$htmlwhite))
+						$rowdata += @(,( "Max Overtime Start Minutes",($global:htmlsb), $CatalogRebootSchedule.MaxOvertimeStartMins.ToString(),$htmlwhite))
+						$rowdata += @(,( "Reboot duration in Minutes",($global:htmlsb), $CatalogRebootSchedule.RebootDuration.ToString(),$htmlwhite))
+						$rowdata += @(,( "Start Date",($global:htmlsb), $CatalogRebootSchedule.StartDate.ToString(),$htmlwhite))
+						$rowdata += @(,( "Start Time",($global:htmlsb), $CatalogRebootSchedule.StartTime.ToString(),$htmlwhite))
+						$rowdata += @(,( "Warning Duration in Minutes",($global:htmlsb), $CatalogRebootSchedule.WarningDuration.ToString(),$htmlwhite))
+						$rowdata += @(,( "Warning Message",($global:htmlsb), $CatalogRebootSchedule.WarningMessage,$htmlwhite))
+						$rowdata += @(,( "Warning Repeat Interval in Minutes",($global:htmlsb), $CatalogRebootSchedule.WarningRepeatInterval.ToString(),$htmlwhite))
+						$rowdata += @(,( "Warning Title",($global:htmlsb), $CatalogRebootSchedule.WarningTitle,$htmlwhite))
 
 						$msg = ""
-						FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders
+						$columnWidths = @("200","500")
+						FormatHTMLTable $msg -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths -tablewidth "700"
 						WriteHTMLLine 0 0 ""
 					}
 				}
-				Else
-				{
-					#Could not retrieve additional data, so nothing to do
-				}
-			}
-			Else
-			{
-				#oops shouldn't be here
 			}
 		}
 
@@ -9221,6 +9365,16 @@ Function OutputMachineDetails
 		$xWillShutdownAfterUse = "No"
 	}
 
+	#added in 3.39 to fix the missing $WillShutdownAfterUseReason variable
+	Switch($Machine.WillShutdownAfterUseReason)
+	{
+		"None"						{$WillShutdownAfterUseReason = "Machine will not shutdown after use"; Break}
+		"ResetDiskImage"			{$WillShutdownAfterUseReason = "Machine will shutdown after use to reset its disk image"; Break}
+		"ScheduledNaturalReboot"	{$WillShutdownAfterUseReason = "Machine will shutdown after use as part of the scheduled natural reboot process"; Break}
+		"OnDemandNaturalReboot"		{$WillShutdownAfterUseReason = "Machine will shutdown after use as part of an on-demand natural reboot process."; Break}
+		Default						{$WillShutdownAfterUseReason = "Unable to determine the value of WillShutdownAfterUseReason: $($Machine.WillShutdownAfterUseReason)"; Break}
+	}
+	
 	$xSessionSmartAccessTags = @()
 	ForEach($value in $Machine.SessionSmartAccessTags)
 	{
@@ -34197,6 +34351,9 @@ Function GetRolePermissions
 			"AppLib_AddPackage"											{$Results.Add("Add App-V Application Libraries and Packages", "App-V")}
 			"AppLib_IsolationGroup_Create"								{$Results.Add("Create App-V Isolation Group", "App-V")}
 			"AppLib_IsolationGroup_Remove"								{$Results.Add("Remove App-V Isolation Groups", "App-V")}
+			"AppLib_PackageDiscovery_Create"							{$Results.Add("Create Application Package Discovery Sessions", "App-V")} #new in 2212
+			"AppLib_PackageDiscoveryProfile_Create"						{$Results.Add("Create Application Package Discovery Profiles", "App-V")} #new in 2212
+			"AppLib_PackageDiscoveryProfile_Remove"						{$Results.Add("Remove Application Package Discovery Profiles", "App-V")} #new in 2212
 			"AppLib_Read"												{$Results.Add("Read App-V Application Libraries and Packages", "App-V")}
 			"AppLib_RemoveApplication"									{$Results.Add("Remove App-V applications", "App-V")}
 			"AppLib_RemovePackage"										{$Results.Add("Remove App-V Application Libraries and Packages", "App-V")}
@@ -34230,15 +34387,19 @@ Function GetRolePermissions
 			"DesktopGroup_ChangeTags"									{$Results.Add("Edit Delivery Group tags", "Delivery Groups")}
 			"DesktopGroup_ChangeUserAssignment"							{$Results.Add("Change users assigned to a desktop", "Delivery Groups")}
 			"DesktopGroup_Create"										{$Results.Add("Create Delivery Group", "Delivery Groups")}
+			"DesktopGroup_CreateFolder"									{$Results.Add("Create Delivery Group Folder", "Delivery Groups")} #new in 2212
 			"DesktopGroup_Delete"										{$Results.Add("Delete Delivery Group", "Delivery Groups")}
+			"DesktopGroup_EditFolder"									{$Results.Add("Edit Delivery Group Folder", "Delivery Groups")} #new in 2212
 			"DesktopGroup_EditProperties"								{$Results.Add("Edit Delivery Group Properties", "Delivery Groups")}
 			"DesktopGroup_Machine_ChangeTags"							{$Results.Add("Edit Delivery Group machine tags", "Delivery Groups")}
+			"DesktopGroup_MoveFolder"									{$Results.Add("Move Delivery Group Folder", "Delivery Groups")} #new in 2212
 			"DesktopGroup_PowerOperations_RDS"							{$Results.Add("Perform power operations on Windows Server machines via Delivery Group membership", "Delivery Groups")}
 			"DesktopGroup_PowerOperations_VDI"							{$Results.Add("Perform power operations on Windows Desktop machines via Delivery Group membership", "Delivery Groups")}
 			"DesktopGroup_Read"											{$Results.Add("View Delivery Groups", "Delivery Groups")}
 			"DesktopGroup_RemoveApplication"							{$Results.Add("Remove Application from Delivery Group", "Delivery Groups")}
 			"DesktopGroup_RemoveApplicationGroup"						{$Results.Add("Remove Application Group from Delivery Group", "Delivery Groups")}
 			"DesktopGroup_RemoveDesktop"								{$Results.Add("Remove Desktop from Delivery Group", "Delivery Groups")}
+			"DesktopGroup_RemoveFolder"									{$Results.Add("Remove Delivery Group Folder", "Delivery Groups")} #new in 2212
 			"DesktopGroup_RemoveScope"									{$Results.Add("Remove Delivery Group from Scope", "Delivery Groups")}
 			"DesktopGroup_SessionManagement"							{$Results.Add("Perform session management on machines via Delivery Group membership", "Delivery Groups")}
 			"Machine_ChangeTagsBase"									{$Results.Add("Edit machine tags", "Delivery Groups")}
@@ -34316,13 +34477,17 @@ Function GetRolePermissions
 			"Catalog_ChangeUserAssignment"								{$Results.Add("Change users assigned to a machine", "Machine Catalogs")}
 			"Catalog_ConsumeMachines"									{$Results.Add("Allow machines to be consumed by a Delivery Group", "Machine Catalogs")}
 			"Catalog_Create"											{$Results.Add("Create Machine Catalog", "Machine Catalogs")}
+			"Catalog_CreateFolder"										{$Results.Add("Create Machine Catalog Folder", "Machine Catalogs")} #new in 2212
 			"Catalog_Delete"											{$Results.Add("Delete Machine Catalog", "Machine Catalogs")}
+			"Catalog_EditFolder"										{$Results.Add("Edit Machine Catalog Folder", "Machine Catalogs")} #new in 2212
 			"Catalog_EditProperties"									{$Results.Add("Edit Machine Catalog Properties", "Machine Catalogs")}
 			"Catalog_Manage_ChangeTags"									{$Results.Add("Edit Catalog machine tags", "Machine Catalogs")}
 			"Catalog_ManageAccounts"									{$Results.Add("Manage Active Directory Accounts", "Machine Catalogs")}
+			"Catalog_MoveFolder"										{$Results.Add("Move Machine Catalog Folder", "Machine Catalogs")} #new in 2212
 			"Catalog_PowerOperations_RDS"								{$Results.Add("Perform power operations on Windows Server machines via Machine Catalog membership", "Machine Catalogs")}
 			"Catalog_PowerOperations_VDI"								{$Results.Add("Perform power operations on Windows Desktop machines via Machine Catalog membership", "Machine Catalogs")}
 			"Catalog_Read"												{$Results.Add("View Machine Catalogs", "Machine Catalogs")}
+			"Catalog_RemoveFolder"										{$Results.Add("Remove Machine Catalog Folder", "Machine Catalogs")} #new in 2212
 			"Catalog_RemoveMachine"										{$Results.Add("Remove Machines from Machine Catalog", "Machine Catalogs")}
 			"Catalog_RemoveScope"										{$Results.Add("Remove Machine Catalog from Scope", "Machine Catalogs")}
 			"Catalog_SessionManagement"									{$Results.Add("Perform session management on machines via Machine Catalog membership", "Machine Catalogs")}
@@ -34349,6 +34514,14 @@ Function GetRolePermissions
 
 			"Policies_Manage"											{$Results.Add("Manage Policies", "Policies")}
 			"Policies_Read"												{$Results.Add("View Policies", "Policies")}
+
+			"PolicySets_AddScope"										{$Results.Add("Add Policy Set to Scope", "Policy Sets")} #new in 2212
+			"PolicySets_Manage"											{$Results.Add("Manage Policy Sets", "Policy Sets")} #new in 2212
+			"PolicySets_Read"											{$Results.Add("View Policy Sets", "Policy Sets")} #new in 2212
+			"PolicySets_RemoveScope"									{$Results.Add("Remove Policy Set from Scope", "Policy Sets")} #new in 2212
+
+			"Setting_Edit"												{$Results.Add("Edit Settings", "Settings")} #new in 2212
+			"Setting_Read"												{$Results.Add("View Settings", "Settings")} #new in 2212
 
 			"Storefront_Create"											{$Results.Add("Create a new StoreFront definition", "StoreFronts")}
 			"Storefront_Delete"											{$Results.Add("Delete a StoreFront definition", "StoreFronts")}
@@ -38089,6 +38262,8 @@ Function ProcessScriptSetup
 			$CVADSiteVersionReal = "Unknown"
 			Switch ($CVADSiteVersion)
 			{
+				"7.36"	{$CVADSiteVersionReal = "CVAD 2212"; Break}
+				"7.35"	{$CVADSiteVersionReal = "CVAD 2209"; Break}
 				"7.34"	{$CVADSiteVersionReal = "CVAD 2206"; Break}
 				"7.33"	{$CVADSiteVersionReal = "CVAD 2203"; Break}
 				"7.32"	{$CVADSiteVersionReal = "CVAD 2112"; Break}
@@ -38302,6 +38477,8 @@ Script cannot continue
 	$Script:CVADSiteVersionReal = "Unknown"
 	Switch ($Script:CVADSiteVersion)
 	{
+		"7.36"	{$Script:CVADSiteVersionReal = "CVAD 2212"; Break}
+		"7.35"	{$Script:CVADSiteVersionReal = "CVAD 2209"; Break}
 		"7.34"	{$Script:CVADSiteVersionReal = "CVAD 2206"; Break}
 		"7.33"	{$Script:CVADSiteVersionReal = "CVAD 2203"; Break}
 		"7.32"	{$Script:CVADSiteVersionReal = "CVAD 2112"; Break}
