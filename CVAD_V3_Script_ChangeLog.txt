@@ -6,6 +6,92 @@
 
 # This script is based on the 2.36 script
 
+#Version 3.40 24-Mar-2023
+#	Added Broker Registry Keys:
+#		HKLM:\Software\Policies\Citrix\DesktopServer\GetEntitlementTypePeriodHours
+#			Type: int
+#			Default: 24
+#			Info: Hours Minimum=1
+#			Summary: The time between checks in hours for GetEntitlementType check
+#		HKLM:\Software\Policies\Citrix\DesktopServer\LaunchResumeRetryPeriodSec
+#			Type: int
+#			Default: 15
+#			Info: Seconds Minimum=0
+#			Summary: Period after which users of the XML service are hinted to retry launches 
+#					 that are delayed due to a resume request just being sent to that VDA to 
+#					 satisfy launch.
+#		HKLM:\Software\Policies\Citrix\DesktopServer\ResourceLimitRetryDelaySecs
+#			Type: int
+#			Default: 15
+#			Info: Seconds Minimum=2
+#			Summary: Interval between command batch retries when a resource limit appears to 
+#					 have been reached.
+#		HKLM:\Software\Policies\Citrix\DesktopServer\IsFirstConfigSyncSuccess
+#			Type: bool
+#			Default: false
+#			Info: 
+#			Summary: Indicates on the machine where the secondary broker resides that the 
+#					 secondary Broker successfully completed first config sync. An important 
+#					 function of this value is to ensure that if services are re-installed 
+#					 for any reason, the config sync ensures that we have the latest Lhc database.
+#		HKLM:\Software\Policies\Citrix\DesktopServer\LeaderInHAMode
+#			Type: bool
+#			Default: false
+#			Info: 
+#			Summary: Indicates whether the leader connector is in outage mode.
+#		HKLM:\Software\Policies\Citrix\DesktopServer\AlwaysRefreshNamesOnRegistration
+#			Type: bool
+#			Default: false
+#			Info: 
+#			Summary: Forces machine's cached name entries to be updated each time it registers. 
+#					 By default names are only updated by normal cache refresh logic.
+#		HKLM:\Software\Policies\Citrix\DesktopServer\FeatureTelemetryCollectionPeriodSec
+#			Type: int
+#			Default: 21600
+#			Info: Seconds Minimum=1
+#			Summary: Period between instances of reporting of feature use.
+#		HKLM:\Software\Policies\Citrix\DesktopServer\NFuseAppDataBulkLookupThreshold
+#			Type: int
+#			Default: 2
+#			Info: Minimum=0
+#			Summary: Defines the threshold number of resources in an AppData transaction above 
+#					 which a bulk lookup mechanism is used. For small numbers of resources the 
+#					 higher setup cost outweighs the improved efficiency.
+#	Added Computer policy
+#		ICA\HDX Direct
+#		Profile Management\Advanced settings\Free space ration (%)
+#		Profile Management\Advanced settings\Number of logoffs
+#		Profile Management\App access control
+#		Profile Management\Basic settings\Active write back on session lock and disconnection
+#		Profile Management\Profile container settings\Enable VHD disk compaction
+#		User Personalization Layer\User Layer Exclusions
+#	Added User policy
+#		ICA\File Redirection\Download file for Citrix Workspace app for Chrome OS/HTML5
+#		ICA\File Redirection\File transfer for Citrix Workspace app for Chrome OS/HTML5
+#		ICA\File Redirection\Upload file for Citrix Workspace app for Chrome OS/HTML5
+#	In Function GetRolePermissions:
+#		Added new permissions
+#			Image_Create        
+#			Image_Delete        
+#			Image_EditProperties
+#			Image_Read          
+#	In Function OutputDesktopOSMachine:
+#		test if there is a Desktop.DNSName
+#		If not, test Desktop.MachineName
+#		If not, test Desktop.HostedMachineName
+#		If not, use error message "error, there was no name found for the Desktop"
+#	In Function OutputHosting:
+#		update the list of Hypervisor Plugins
+#		for Word output:
+#			if there are no single-session OS or multi-session OS or sessions, output a message and don't waste a page
+#			add a page break after outputting Session data
+#	In Function OutputServerOSMachine:
+#		test if there is a Server.DNSName
+#		If not, test Server.MachineName
+#		If not, test Server.HostedMachineName
+#		If not, use error message "error, there was no name found for the Server"
+#	Updated for CVAD 2303/7.37
+
 #Version 3.39 6-Jan-2023
 #	Added to Function OutputMachines, the Catalog's reboot schedule if one exists
 #		https://docs.citrix.com/en-us/citrix-virtual-apps-desktops/install-configure/machine-catalogs-manage.html#update-the-catalog

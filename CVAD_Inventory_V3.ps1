@@ -1052,9 +1052,9 @@
 	This script creates a Word, PDF, plain text, or HTML document.
 .NOTES
 	NAME: CVAD_Inventory_V3.ps1
-	VERSION: 3.39
+	VERSION: 3.40
 	AUTHOR: Carl Webster
-	LASTEDIT: January 6, 2023
+	LASTEDIT: March 24, 2023
 #>
 
 #endregion
@@ -1247,7 +1247,92 @@ Param(
 
 # This script is based on the 2.36 script
 #
-
+#Version 3.40 24-Mar-2023
+#	Added Broker Registry Keys:
+#		HKLM:\Software\Policies\Citrix\DesktopServer\GetEntitlementTypePeriodHours
+#			Type: int
+#			Default: 24
+#			Info: Hours Minimum=1
+#			Summary: The time between checks in hours for GetEntitlementType check
+#		HKLM:\Software\Policies\Citrix\DesktopServer\LaunchResumeRetryPeriodSec
+#			Type: int
+#			Default: 15
+#			Info: Seconds Minimum=0
+#			Summary: Period after which users of the XML service are hinted to retry launches 
+#					 that are delayed due to a resume request just being sent to that VDA to 
+#					 satisfy launch.
+#		HKLM:\Software\Policies\Citrix\DesktopServer\ResourceLimitRetryDelaySecs
+#			Type: int
+#			Default: 15
+#			Info: Seconds Minimum=2
+#			Summary: Interval between command batch retries when a resource limit appears to 
+#					 have been reached.
+#		HKLM:\Software\Policies\Citrix\DesktopServer\IsFirstConfigSyncSuccess
+#			Type: bool
+#			Default: false
+#			Info: 
+#			Summary: Indicates on the machine where the secondary broker resides that the 
+#					 secondary Broker successfully completed first config sync. An important 
+#					 function of this value is to ensure that if services are re-installed 
+#					 for any reason, the config sync ensures that we have the latest Lhc database.
+#		HKLM:\Software\Policies\Citrix\DesktopServer\LeaderInHAMode
+#			Type: bool
+#			Default: false
+#			Info: 
+#			Summary: Indicates whether the leader connector is in outage mode.
+#		HKLM:\Software\Policies\Citrix\DesktopServer\AlwaysRefreshNamesOnRegistration
+#			Type: bool
+#			Default: false
+#			Info: 
+#			Summary: Forces machine's cached name entries to be updated each time it registers. 
+#					 By default names are only updated by normal cache refresh logic.
+#		HKLM:\Software\Policies\Citrix\DesktopServer\FeatureTelemetryCollectionPeriodSec
+#			Type: int
+#			Default: 21600
+#			Info: Seconds Minimum=1
+#			Summary: Period between instances of reporting of feature use.
+#		HKLM:\Software\Policies\Citrix\DesktopServer\NFuseAppDataBulkLookupThreshold
+#			Type: int
+#			Default: 2
+#			Info: Minimum=0
+#			Summary: Defines the threshold number of resources in an AppData transaction above 
+#					 which a bulk lookup mechanism is used. For small numbers of resources the 
+#					 higher setup cost outweighs the improved efficiency.
+#	Added Computer policy
+#		ICA\HDX Direct
+#		Profile Management\Advanced settings\Free space ration (%)
+#		Profile Management\Advanced settings\Number of logoffs
+#		Profile Management\App access control
+#		Profile Management\Basic settings\Active write back on session lock and disconnection
+#		Profile Management\Profile container settings\Enable VHD disk compaction
+#		User Personalization Layer\User Layer Exclusions
+#	Added User policy
+#		ICA\File Redirection\Download file for Citrix Workspace app for Chrome OS/HTML5
+#		ICA\File Redirection\File transfer for Citrix Workspace app for Chrome OS/HTML5
+#		ICA\File Redirection\Upload file for Citrix Workspace app for Chrome OS/HTML5
+#	In Function GetRolePermissions:
+#		Added new permissions
+#			Image_Create        
+#			Image_Delete        
+#			Image_EditProperties
+#			Image_Read          
+#	In Function OutputDesktopOSMachine:
+#		test if there is a Desktop.DNSName
+#		If not, test Desktop.MachineName
+#		If not, test Desktop.HostedMachineName
+#		If not, use error message "error, there was no name found for the Desktop"
+#	In Function OutputHosting:
+#		update the list of Hypervisor Plugins
+#		for Word output:
+#			if there are no single-session OS or multi-session OS or sessions, output a message and don't waste a page
+#			add a page break after outputting Session data
+#	In Function OutputServerOSMachine:
+#		test if there is a Server.DNSName
+#		If not, test Server.MachineName
+#		If not, test Server.HostedMachineName
+#		If not, use error message "error, there was no name found for the Server"
+#	Updated for CVAD 2303/7.37
+#
 #Version 3.39 6-Jan-2023
 #	Added to Function OutputMachines, the Catalog's reboot schedule if one exists
 #		https://docs.citrix.com/en-us/citrix-virtual-apps-desktops/install-configure/machine-catalogs-manage.html#update-the-catalog
@@ -2039,9 +2124,9 @@ $SaveEAPreference         = $ErrorActionPreference
 $ErrorActionPreference    = 'SilentlyContinue'
 
 #stuff for report footer
-$script:MyVersion   = '3.39'
+$script:MyVersion   = '3.40'
 $Script:ScriptName  = "CVAD_Inventory_V3.ps1"
-$tmpdate            = [datetime] "01/06/2022"
+$tmpdate            = [datetime] "03/24/2023"
 $Script:ReleaseDate = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($Null -eq $HTML)
@@ -17441,6 +17526,27 @@ Function ProcessCitrixPolicies
 							OutputPolicySetting $txt $Setting.AllowFidoRedirection.State 
 						}
 					}
+					If((validStateProp $Setting HDXDirect State ) -and ($Setting.HDXDirect.State -ne "NotConfigured"))
+					{
+						$txt = "ICA\HDX Direct"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.HDXDirect.State;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.HDXDirect.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.HDXDirect.State 
+						}
+					}
 					If((validStateProp $Setting AllowWIARedirection State ) -and ($Setting.AllowWIARedirection.State -ne "NotConfigured"))
 					{
 						$txt = "ICA\WIA Redirection"
@@ -18938,25 +19044,28 @@ Function ProcessCitrixPolicies
 					}
 
 					Write-Verbose "$(Get-Date -Format G): `t`t`tICA\File Redirection"
-					If((validStateProp $Setting AllowFileTransfer State ) -and ($Setting.AllowFileTransfer.State -ne "NotConfigured"))
+					If($Script:CVADSiteVersion -lt 7.37)
 					{
-						$txt = "ICA\File Redirection\Allow file transfer between desktop and client"
-						If($MSWord -or $PDF)
+						If((validStateProp $Setting AllowFileTransfer State ) -and ($Setting.AllowFileTransfer.State -ne "NotConfigured"))
 						{
-							$SettingsWordTable += @{
-							Text = $txt;
-							Value = $Setting.AllowFileTransfer.State;
+							$txt = "ICA\File Redirection\Allow file transfer between desktop and client"
+							If($MSWord -or $PDF)
+							{
+								$SettingsWordTable += @{
+								Text = $txt;
+								Value = $Setting.AllowFileTransfer.State;
+								}
 							}
-						}
-						If($HTML)
-						{
-							$rowdata += @(,(
-							$txt,$htmlbold,
-							$Setting.AllowFileTransfer.State,$htmlwhite))
-						}
-						If($Text)
-						{
-							OutputPolicySetting $txt $Setting.AllowFileTransfer.State 
+							If($HTML)
+							{
+								$rowdata += @(,(
+								$txt,$htmlbold,
+								$Setting.AllowFileTransfer.State,$htmlwhite))
+							}
+							If($Text)
+							{
+								OutputPolicySetting $txt $Setting.AllowFileTransfer.State 
+							}
 						}
 					}
 					If((validStateProp $Setting AutoConnectDrives State ) -and ($Setting.AutoConnectDrives.State -ne "NotConfigured"))
@@ -19106,25 +19215,94 @@ Function ProcessCitrixPolicies
 							OutputPolicySetting $txt $Setting.ClientRemoveableDrives.State 
 						}
 					}
-					If((validStateProp $Setting AllowFileDownload State ) -and ($Setting.AllowFileDownload.State -ne "NotConfigured"))
+					If($Script:CVADSiteVersion -lt 7.37)
 					{
-						$txt = "ICA\File Redirection\Download file from desktop"
-						If($MSWord -or $PDF)
+						If((validStateProp $Setting AllowFileDownload State ) -and ($Setting.AllowFileDownload.State -ne "NotConfigured"))
 						{
-							$SettingsWordTable += @{
-							Text = $txt;
-							Value = $Setting.AllowFileDownload.State;
+							$txt = "ICA\File Redirection\Download file from desktop"
+							If($MSWord -or $PDF)
+							{
+								$SettingsWordTable += @{
+								Text = $txt;
+								Value = $Setting.AllowFileDownload.State;
+								}
+							}
+							If($HTML)
+							{
+								$rowdata += @(,(
+								$txt,$htmlbold,
+								$Setting.AllowFileDownload.State,$htmlwhite))
+							}
+							If($Text)
+							{
+								OutputPolicySetting $txt $Setting.AllowFileDownload.State 
 							}
 						}
-						If($HTML)
+					}
+					If($Script:CVADSiteVersion -ge 7.37)
+					{
+						If((validStateProp $Setting AllowFileDownload State ) -and ($Setting.AllowFileDownload.State -ne "NotConfigured"))
 						{
-							$rowdata += @(,(
-							$txt,$htmlbold,
-							$Setting.AllowFileDownload.State,$htmlwhite))
+							$txt = "ICA\File Redirection\Download file for Citrix Workspace app for Chrome OS/HTML5"
+							If($MSWord -or $PDF)
+							{
+								$SettingsWordTable += @{
+								Text = $txt;
+								Value = $Setting.AllowFileDownload.State;
+								}
+							}
+							If($HTML)
+							{
+								$rowdata += @(,(
+								$txt,$htmlbold,
+								$Setting.AllowFileDownload.State,$htmlwhite))
+							}
+							If($Text)
+							{
+								OutputPolicySetting $txt $Setting.AllowFileDownload.State 
+							}
 						}
-						If($Text)
+						If((validStateProp $Setting AllowFileTransfer State ) -and ($Setting.AllowFileTransfer.State -ne "NotConfigured"))
 						{
-							OutputPolicySetting $txt $Setting.AllowFileDownload.State 
+							$txt = "ICA\File Redirection\File transfer for Citrix Workspace app for Chrome OS/HTML5"
+							If($MSWord -or $PDF)
+							{
+								$SettingsWordTable += @{
+								Text = $txt;
+								Value = $Setting.AllowFileTransfer.State;
+								}
+							}
+							If($HTML)
+							{
+								$rowdata += @(,(
+								$txt,$htmlbold,
+								$Setting.AllowFileTransfer.State,$htmlwhite))
+							}
+							If($Text)
+							{
+								OutputPolicySetting $txt $Setting.AllowFileTransfer.State 
+							}
+						}
+						If((validStateProp $Setting AllowFileUpload State ) -and ($Setting.AllowFileUpload.State -ne "NotConfigured"))
+						{
+							$txt = "ICA\File Redirection\Upload file for Citrix Workspace app for Chrome OS/HTML5"
+							If($MSWord -or $PDF)
+							{
+								$SettingsWordTable += @{
+								Text = $txt;
+								Value = $Setting.AllowFileUpload.State;
+								}
+							}
+							If($HTML)
+							{
+								$rowdata += @(,(
+								$txt,$htmlbold,
+								$Setting.AllowFileUpload.State,$htmlwhite))
+							}
+							If($Text)
+							{
+								OutputPolicySetting $txt $Setting.AllowFileUpload.State 
+							}
 						}
 					}
 					If((validStateProp $Setting HostToClientRedirection State ) -and ($Setting.HostToClientRedirection.State -ne "NotConfigured"))
@@ -19211,7 +19389,7 @@ Function ProcessCitrixPolicies
 							OutputPolicySetting $txt $Setting.SpecialFolderRedirection.State 
 						}
 					}
-					If((validStateProp $Setting AllowFileUpload State ) -and ($Setting.AllowFileUpload.State -ne "NotConfigured"))
+					<#If((validStateProp $Setting AllowFileUpload State ) -and ($Setting.AllowFileUpload.State -ne "NotConfigured"))
 					{
 						$txt = "ICA\File Redirection\Upload file to desktop"
 						If($MSWord -or $PDF)
@@ -19231,7 +19409,7 @@ Function ProcessCitrixPolicies
 						{
 							OutputPolicySetting $txt $Setting.AllowFileUpload.State 
 						}
-					}
+					}#>
 					If((validStateProp $Setting AsynchronousWrites State ) -and ($Setting.AsynchronousWrites.State -ne "NotConfigured"))
 					{
 						$txt = "ICA\File Redirection\Use asynchronous writes"
@@ -24337,6 +24515,27 @@ Function ProcessCitrixPolicies
 							OutputPolicySetting $txt $Setting.OutlookSearchRoamingEnabled.State
 						}
 					}
+					If((validStateProp $Setting FreeRatio4Compaction_Part State ) -and ($Setting.FreeRatio4Compaction_Part.State -ne "NotConfigured"))
+					{
+						$txt = "Profile Management\Advanced settings\Free space ration (%)"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.FreeRatio4Compaction_Part.Value;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.FreeRatio4Compaction_Part.Value,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.FreeRatio4Compaction_Part.Value 
+						}
+					}
 					If((validStateProp $Setting LogoffRatherThanTempProfile State ) -and ($Setting.LogoffRatherThanTempProfile.State -ne "NotConfigured"))
 					{
 						$txt = "Profile Management\Advanced settings\Log off user if a problem is encountered"
@@ -24377,6 +24576,27 @@ Function ProcessCitrixPolicies
 						If($Text)
 						{
 							OutputPolicySetting $txt $Setting.OutlookSearchRoamingConcurrentSession_Part.Value 
+						}
+					}
+					If((validStateProp $Setting NLogoffs4Compaction_Part State ) -and ($Setting.NLogoffs4Compaction_Part.State -ne "NotConfigured"))
+					{
+						$txt = "Profile Management\Advanced settings\Number of logoffs"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.NLogoffs4Compaction_Part.Value;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.NLogoffs4Compaction_Part.Value,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.NLogoffs4Compaction_Part.Value 
 						}
 					}
 					If((validStateProp $Setting LoadRetries_Part State ) -and ($Setting.LoadRetries_Part.State -ne "NotConfigured"))
@@ -24526,6 +24746,109 @@ Function ProcessCitrixPolicies
 						}
 					}
 
+					Write-Verbose "$(Get-Date -Format G): `t`t`tProfile Management\App access control"
+					If((validStateProp $Setting AppAccessControl_Part State ) -and ($Setting.AppAccessControl_Part.State -ne "NotConfigured"))
+					{
+						$txt = "Profile Management\Basic settings\App access control"
+						If($Setting.AppAccessControl_Part.State -eq "Enabled")
+						{
+							If(validStateProp $Setting AppAccessControl_Part Value )
+							{
+								$tmpArray = $Setting.AppAccessControl_Part.Value
+								$tmp = ""
+								$cnt = 0
+								ForEach($Thing in $tmpArray)
+								{
+									$cnt++
+									$tmp = "$($Thing)"
+									If($cnt -eq 1)
+									{
+										If($MSWord -or $PDF)
+										{
+											$SettingsWordTable += @{
+											Text = $txt;
+											Value = $tmp;
+											}
+										}
+										If($HTML)
+										{
+											$rowdata += @(,(
+											$txt,$htmlbold,
+											$tmp,$htmlwhite))
+										}
+										If($Text)
+										{
+											OutputPolicySetting $txt $tmp
+										}
+									}
+									Else
+									{
+										If($MSWord -or $PDF)
+										{
+											$SettingsWordTable += @{
+											Text = "";
+											Value = $tmp;
+											}
+										}
+										If($HTML)
+										{
+											$rowdata += @(,(
+											"",$htmlbold,
+											$tmp,$htmlwhite))
+										}
+										If($Text)
+										{
+											OutputPolicySetting "`t`t`t`t`t`t " $tmp
+										}
+									}
+								}
+								$tmpArray = $Null
+								$tmp = $Null
+							}
+							Else
+							{
+								$tmp = "No Apps were found"
+								If($MSWord -or $PDF)
+								{
+									$SettingsWordTable += @{
+									Text = $txt;
+									Value = $tmp;
+									}
+								}
+								If($HTML)
+								{
+									$rowdata += @(,(
+									$txt,$htmlbold,
+									$tmp,$htmlwhite))
+								}
+								If($Text)
+								{
+									OutputPolicySetting $txt $tmp
+								}
+							}
+						}
+						Else
+						{
+							If($MSWord -or $PDF)
+							{
+								$SettingsWordTable += @{
+								Text = $txt;
+								Value = $Setting.AppAccessControl_Part.State;
+								}
+							}
+							If($HTML)
+							{
+								$rowdata += @(,(
+								$txt,$htmlbold,
+								$Setting.AppAccessControl_Part.State,$htmlwhite))
+							}
+							If($Text)
+							{
+								OutputPolicySetting $txt $Setting.AppAccessControl_Part.State
+							}
+						}
+					}
+
 					Write-Verbose "$(Get-Date -Format G): `t`t`tProfile Management\Basic settings"
 					If((validStateProp $Setting PSMidSessionWriteBack State ) -and ($Setting.PSMidSessionWriteBack.State -ne "NotConfigured"))
 					{
@@ -24546,6 +24869,27 @@ Function ProcessCitrixPolicies
 						If($Text)
 						{
 							OutputPolicySetting $txt $Setting.PSMidSessionWriteBack.State
+						}
+					}
+					If((validStateProp $Setting PSMidSessionWriteBackSessionLock State ) -and ($Setting.PSMidSessionWriteBackSessionLock.State -ne "NotConfigured"))
+					{
+						$txt = "Profile Management\Basic settings\Active write back on session lock and disconnection"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.PSMidSessionWriteBackSessionLock.State;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.PSMidSessionWriteBackSessionLock.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.PSMidSessionWriteBackSessionLock.State
 						}
 					}
 					If((validStateProp $Setting PSMidSessionWriteBackReg State ) -and ($Setting.PSMidSessionWriteBackReg.State -ne "NotConfigured"))
@@ -28185,6 +28529,27 @@ Function ProcessCitrixPolicies
 							OutputPolicySetting $txt $Setting.ProfileContainerLocalCache.State
 						}
 					}
+					If((validStateProp $Setting EnableVHDDiskCompaction State ) -and ($Setting.EnableVHDDiskCompaction.State -ne "NotConfigured"))
+					{
+						$txt = "Profile Management\Profile container settings\Enable VHD disk compaction"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.EnableVHDDiskCompaction.State;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.EnableVHDDiskCompaction.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.EnableVHDDiskCompaction.State
+						}
+					}
 					If((validStateProp $Setting ProfileContainerExclusionListDir_Part State ) -and ($Setting.ProfileContainerExclusionListDir_Part.State -ne "NotConfigured"))
 					{
 						$txt = "Profile Management\Profile container settings\Folders to exclude in profile container"
@@ -29421,6 +29786,92 @@ Function ProcessCitrixPolicies
 					}
 
 					Write-Verbose "$(Get-Date -Format G): `t`t`tUser Personalization Layer"
+					If((validStateProp $Setting UplUserExclusions State ) -and ($Setting.UplUserExclusions.State -ne "NotConfigured"))
+					{
+						$txt = "User Personalization Layer\User Layer Exclusions"
+						If((validStateProp $Setting UplUserExclusions State ) -and ($Setting.UplUserExclusions.State -ne "NotConfigured"))
+						{
+							$tmpArray = $Setting.UplUserExclusions.Values
+							$array = $Null
+							$tmp = ""
+							$cnt = 0
+							ForEach($Thing in $TmpArray)
+							{
+								If($Null -eq $Thing)
+								{
+									$Thing = ''
+								}
+								$cnt++
+								$tmp = "$($Thing) "
+								If($cnt -eq 1)
+								{
+									If($MSWord -or $PDF)
+									{
+										$WordTableRowHash = @{
+										Text = $txt;
+										Value = $tmp;
+										}
+										$SettingsWordTable += $WordTableRowHash;
+									}
+									If($HTML)
+									{
+										$rowdata += @(,(
+										$txt,$htmlbold,
+										$tmp,$htmlwhite))
+									}
+									If($Text)
+									{
+										OutputPolicySetting $txt $tmp
+									}
+								}
+								Else
+								{
+									If($MSWord -or $PDF)
+									{
+										$WordTableRowHash = @{
+										Text = "";
+										Value = $tmp;
+										}
+										$SettingsWordTable += $WordTableRowHash;
+									}
+									If($HTML)
+									{
+										$rowdata += @(,(
+										"",$htmlbold,
+										$tmp,$htmlwhite))
+									}
+									If($Text)
+									{
+										OutputPolicySetting "`t`t`t`t`t`t    " $tmp
+									}
+								}
+							}
+							$TmpArray = $Null
+							$tmp = $Null
+						}
+						Else
+						{
+							$tmp = "No User Layer Exclusions were found"
+							If($MSWord -or $PDF)
+							{
+								$WordTableRowHash = @{
+								Text = $txt;
+								Value = $tmp;
+								}
+								$SettingsWordTable += $WordTableRowHash;
+							}
+							If($HTML)
+							{
+								$rowdata += @(,(
+								$txt,$htmlbold,
+								$tmp,$htmlwhite))
+							}
+							If($Text)
+							{
+								OutputPolicySetting $txt $tmp
+							}
+						}
+					}
 					If((validStateProp $Setting UplRepositoryPath State ) -and ($Setting.UplRepositoryPath.State -ne "NotConfigured"))
 					{
 						$txt = "User Personalization Layer\User Layer Repository Path"
@@ -34460,6 +34911,11 @@ Function GetRolePermissions
 			"Hosts_Read"												{$Results.Add("View Host Connections and Resources", "Hosts")}
 			"Hosts_RemoveScope"											{$Results.Add("Remove Host Connection from Scope", "Hosts")}
 
+			"Image_Create"												{$Results.Add("Create Images", "Images")} #new in 2303
+			"Image_Delete"												{$Results.Add("Delete Images", "Images")} #new in 2303
+			"Image_EditProperties"										{$Results.Add("Edit Images", "Images")} #new in 2303
+			"Image_Read"												{$Results.Add("Read Images", "Images")} #new in 2303
+
 			"Licensing_ChangeLicenseServer"								{$Results.Add("Change licensing server", "Licensing")}
 			"Licensing_EditLicensingProperties"							{$Results.Add("Edit product edition", "Licensing")}
 			"Licensing_Read"											{$Results.Add("View Licensing", "Licensing")}
@@ -35070,11 +35526,13 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "ExtraSpinUpTimeSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "FirstHeartbeatDistributionWidthSecs" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "FreeSessionThresholdForLoadEvaluation" $ComputerName
+	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "GetEntitlementTypePeriodHours" $ComputerName #Added in 3.40
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "HeartbeatDistributionWidthSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "HeartbeatPeriodMs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "LaunchCheckFaultStates" $ComputerName #added in 3.31
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "LaunchDelayedRetryPeriodSec" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "LaunchLicenseCheckPeriodSec" $ComputerName
+	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "LaunchResumeRetryPeriodSec" $ComputerName #Added in 3.40
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "LaunchRetryPeriodSec" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "LicensingCacheFileLocation" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "LogoffOperationTimeOutSecs" $ComputerName #Added in 3.29
@@ -35128,11 +35586,13 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "ExtraSpinUpTimeSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "FirstHeartbeatDistributionWidthSecs" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "FreeSessionThresholdForLoadEvaluation" $ComputerName
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "GetEntitlementTypePeriodHours" $ComputerName #Added in 3.40
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "HeartbeatDistributionWidthSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "HeartbeatPeriodMs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "LaunchCheckFaultStates" $ComputerName #added in 3.31
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "LaunchDelayedRetryPeriodSec" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "LaunchLicenseCheckPeriodSec" $ComputerName
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "LaunchResumeRetryPeriodSec" $ComputerName #Added in 3.40
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "LaunchRetryPeriodSec" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "LicensingCacheFileLocation" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "LogoffOperationTimeOutSecs" $ComputerName #Added in 3.29
@@ -35185,6 +35645,7 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer\DataStore\Connections\Controller" "MinTxRetryIntervalMs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer\DataStore\Connections\Controller" "ProviderName" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer\DataStore\Connections\Controller" "ReaperDeferralPeriodSecs" $ComputerName
+	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer\DataStore\Connections\Controller" "ResourceLimitRetryDelaySecs" $ComputerName #Added in 3.40
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer\DataStore\Connections\Controller" "SdkSqlQueryTimeoutSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\DataStore\Connections\Controller" "ConnectionString" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\DataStore\Connections\Controller" "ConnectivityRetryDelaySecs" $ComputerName
@@ -35196,6 +35657,7 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\DataStore\Connections\Controller" "MinTxRetryIntervalMs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\DataStore\Connections\Controller" "ProviderName" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\DataStore\Connections\Controller" "ReaperDeferralPeriodSecs" $ComputerName
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\DataStore\Connections\Controller" "ResourceLimitRetryDelaySecs" $ComputerName #Added in 3.40
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\DataStore\Connections\Controller" "SdkSqlQueryTimeoutSecs" $ComputerName
 	
 	#DBConnectionState
@@ -35285,6 +35747,7 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\LHC" "ExportConfigurationChunkSize" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\LHC" "HypervisorConnectionSyncIntervalSeconds" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\LHC" "InitialOutageModeDetectionPeriod" $ComputerName
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\LHC" "IsFirstConfigSyncSuccess" $ComputerName #Added in 3.40
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\LHC" "MaximumOutageModeDetectionPeriod" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\LHC" "MaxLocalDBMemorySizeMB" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\LHC" "MinimalOutageModeRecoveryPeriod" $ComputerName
@@ -35308,6 +35771,7 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "LastOutageModeEnteredTime" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "LeaderConnectorId" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "LeaderFqdn" $ComputerName #Added in 3.29
+	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "LeaderInHAMode" $ComputerName #Added in 3.40
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "OutageModeEntered" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "OutageModeThresholdReached" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "ResourceLocationId" $ComputerName #Added in 3.29
@@ -35341,6 +35805,7 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\MachineCommandQueues" "VdaCommandBufferSizeLimitKB" $ComputerName #Added in 3.29
 	
 	#NameCacheSettings
+	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer\NameCache" "AlwaysRefreshNamesOnRegistration" $ComputerName #Added in 3.40
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer\NameCache" "DisableAutomaticDomainTrustSearch" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer\NameCache" "DisableDomainCaching" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer\NameCache" "DomainTrustMappingMaxThreads" $ComputerName
@@ -35353,6 +35818,7 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer\NameCache" "OnDemandLookupCoalescePeriodMs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer\NameCache" "RefreshDBBatchSize" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer\NameCache" "UserNameLookupTimeoutMs" $ComputerName
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\NameCache" "AlwaysRefreshNamesOnRegistration" $ComputerName #Added in 3.40
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\NameCache" "DisableAutomaticDomainTrustSearch" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\NameCache" "DisableDomainCaching" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\NameCache" "DomainTrustMappingMaxThreads" $ComputerName
@@ -35378,12 +35844,14 @@ Function GetControllerRegistryKeys
 
 	#SiteServicesSettings
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer\SiteServices" "ControllerKeepalivePollMs" $ComputerName
+	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer\SiteServices" "FeatureTelemetryCollectionPeriodSec" $ComputerName #Added in 3.40
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer\SiteServices" "LeasePeriodSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer\SiteServices" "LeaseRefreshPollAfterFailoverSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer\SiteServices" "LeaseRefreshPollSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer\SiteServices" "MaxControllerInactivitySecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer\SiteServices" "MaxShutdownTimeSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\SiteServices" "ControllerKeepalivePollMs" $ComputerName
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\SiteServices" "FeatureTelemetryCollectionPeriodSec" $ComputerName #Added in 3.40
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\SiteServices" "LeasePeriodSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\SiteServices" "LeaseRefreshPollAfterFailoverSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\SiteServices" "LeaseRefreshPollSecs" $ComputerName
@@ -35401,6 +35869,7 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "DisableStaNfuseSecurityChecks" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "EnableXmlServiceSidEnumeration" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "LocalXmlAuthHeaderAllowedDelaySecs" $ComputerName #Added in 3.29
+	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "NFuseAppDataBulkLookupThreshold" $ComputerName #Added in 3.40
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "StableServerFarmDataCachePeriodSecs" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "ThrottledRequestAddressMaxConcurrentTransactions" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "ThrottledRequestAddressRetryIntervalSecs" $ComputerName
@@ -35426,6 +35895,7 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "DisableStaNfuseSecurityChecks" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "EnableXmlServiceSidEnumeration" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "LocalXmlAuthHeaderAllowedDelaySecs" $ComputerName #Added in 3.29
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "NFuseAppDataBulkLookupThreshold" $ComputerName #Added in 3.40
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "StableServerFarmDataCachePeriodSecs" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "ThrottledRequestAddressMaxConcurrentTransactions" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "ThrottledRequestAddressRetryIntervalSecs" $ComputerName
@@ -35729,30 +36199,35 @@ Function OutputHosting
 		$HypICName += $ICState
 	}
 	
-	#to get all the Connection Types and PluginIDs, use Get-HypHypervisorPlugin
+	#to get all the Connection Types and PluginIDs, use Get-HypHypervisorPlugin | ft
 	#Thanks to fellow CTPs Neil Spellings, Kees Baggerman, and Trond Eirik Haavarstein for getting this info for me
 	#For CVAD 2012, the values are:
 	<#
-		ConnectionType DisplayName                                      PluginFactoryName                 UsesCloudInfrastructure
-		-------------- -----------                                      -----------------                 -----------------------
-				 SCVMM Microsoft® System Center Virtual Machine Manager MicrosoftPSFactory                                  False
-			   VCenter VMware vSphere®                                  VmwareFactory                                       False
-			 XenServer Citrix Hypervisor®                               XenFactory                                          False
-			 WakeOnLAN Microsoft® Configuration Manager Wake on LAN     ConfigMgrWOLMachineManagerFactory                   False
-				Custom Nutanix AHV                                      AcropolisFactory                              		False
-				Custom Remote PC Wake on LAN                            VdaWOLMachineManagerFactory                         False
-	#>	
+		CitrixVerified ConnectionType DisplayName                                      PluginFactoryName                 UsesCloudInfrastructure
+		-------------- -------------- -----------                                      -----------------                 -----------------------
+								  AWS Amazon EC2                                       AWSMachineManagerFactory                             True
+								SCVMM Microsoft® System Center Virtual Machine Manager MicrosoftPSFactory                                  False
+							  VCenter VMware vSphere®                                  VmwareFactory                                       False
+							WakeOnLAN Microsoft® Configuration Manager Wake on LAN     ConfigMgrWOLMachineManagerFactory                   False
+							XenServer Citrix Hypervisor®                               XenFactory                                          False
+							   Custom Google Cloud Platform                            GcpPluginFactory                                    False
+							   Custom Microsoft® Azure™                                AzureRmFactory                                      False
+							   Custom Remote PC Wake on LAN                            VdaWOLMachineManagerFactory                         False	
+	#>
 	$xxConnectionType = ""
 	Switch ($xConnectionType)
 	{
+		"AWS"		{$xxConnectionType = "Amazon EC2"; Break}
 		"SCVMM"     {$xxConnectionType = "Microsoft System Center Virtual Machine Manager"; Break}
 		"vCenter"   {$xxConnectionType = "VMware vSphere"; Break}
-		"XenServer" {$xxConnectionType = "Citrix Hypervisor"; Break}
 		"WakeOnLAN"	{$xxConnectionType = "Microsoft Configuration Manager Wake on LAN"; Break}
+		"XenServer" {$xxConnectionType = "Citrix Hypervisor"; Break}
 		"Custom"    {
 						Switch ($xConnectionPluginID)
 						{
 							"AcropolisFactory"				{$xxConnectionType = "Nutanix AHV"; Break}
+							"GcpPluginFactory"				{$xxConnectionType = "Google Cloud Platform"; Break}
+							"AzureRmFactory"				{$xxConnectionType = "Microsoft Azure"; Break}
 							"VdaWOLMachineManagerFactory"	{$xxConnectionType = "Remote PC Wake on LAN"; Break}
 							Default     					{$xxConnectionType = "Custom Hypervisor Type PluginID could not be determined: $($xConnectionPluginID)"; Break}
 						}
@@ -36139,9 +36614,9 @@ Function OutputHosting
 		}
 
 		Write-Verbose "$(Get-Date -Format G): `tProcessing Single-session OS Data"
-		$DesktopOSMachines = @(Get-BrokerMachine @CVADParams2 -hypervisorconnectionname $Hypervisor.Name -sessionsupport "SingleSession")
+		$DesktopOSMachines = @(Get-BrokerMachine @CCParams2 -hypervisorconnectionname $Hypervisor.Name -sessionsupport "SingleSession")
 
-		If($? -and ($Null -ne $DesktopOSMachines))
+		If($? -and ($Null -ne $DesktopOSMachines -and $DesktopOSMachines.Count -gt 0))
 		{
 			[int]$cnt = $DesktopOSMachines.Count
 			
@@ -36165,7 +36640,7 @@ Function OutputHosting
 				OutputDesktopOSMachine $Desktop
 			}
 		}
-		ElseIf($? -and ($Null -eq $DesktopOSMachines))
+		ElseIf($? -and ($Null -eq $DesktopOSMachines -or $DesktopOSMachines.Count -eq 0))
 		{
 			$txt = "There are no Single-session OS Machines"
 			OutputNotice $txt
@@ -36177,9 +36652,9 @@ Function OutputHosting
 		}
 
 		Write-Verbose "$(Get-Date -Format G): `tProcessing Multi-session OS Data"
-		$ServerOSMachines = @(Get-BrokerMachine @CVADParams2 -hypervisorconnectionname $Hypervisor.Name -sessionsupport "MultiSession")
+		$ServerOSMachines = @(Get-BrokerMachine @CCParams2 -hypervisorconnectionname $Hypervisor.Name -sessionsupport "MultiSession")
 		
-		If($? -and ($Null -ne $ServerOSMachines))
+		If($? -and ($Null -ne $ServerOSMachines -and $ServerOSMachines.Count -gt 0))
 		{
 			[int]$cnt = $ServerOSMachines.Count
 
@@ -36204,7 +36679,7 @@ Function OutputHosting
 				OutputServerOSMachine $Server
 			}
 		}
-		ElseIf($? -and ($Null -eq $ServerOSMachines))
+		ElseIf($? -and ($Null -eq $ServerOSMachines -or $ServerOSMachines.Count -eq 0))
 		{
 			$txt = "There are no Multi-session OS Machines"
 			OutputNotice $txt
@@ -36218,9 +36693,8 @@ Function OutputHosting
 		If($NoSessions -eq $False)
 		{
 			Write-Verbose "$(Get-Date -Format G): `tProcessing Sessions Data"
-			#10-feb-2018 change from CVADParams1 to CVADParams2 to add maxrecordcount
-			$Sessions = @(Get-BrokerSession @CVADParams2 -hypervisorconnectionname $Hypervisor.Name -SortBy UserName)
-			If($? -and ($Null -ne $Sessions))
+			$Sessions = @(Get-BrokerSession @CCParams2 -hypervisorconnectionname $Hypervisor.Name -SortBy UserName)
+			If($? -and ($Null -ne $Sessions -and $Sessions.Count -gt 0))
 			{
 				[int]$cnt = $Sessions.Count
 
@@ -36242,7 +36716,7 @@ Function OutputHosting
 				
 				OutputHostingSessions $Sessions
 			}
-			ElseIf($? -and ($Null -eq $Sessions))
+			ElseIf($? -and ($Null -eq $Sessions -or $Sessions.Count -eq 0))
 			{
 				$txt = "There are no Sessions"
 				OutputNotice $txt
@@ -36252,6 +36726,12 @@ Function OutputHosting
 				$txt = "Unable to retrieve Sessions"
 				OutputWarning $txt
 			}
+
+			If($MSWord -or $PDF)
+			{
+				#added in 3.40, add a page break after sessions
+				$Selection.InsertNewPage()
+			}
 		}
 	}
 }
@@ -36260,7 +36740,29 @@ Function OutputDesktopOSMachine
 {
 	Param([object]$Desktop)
 
-	Write-Verbose "$(Get-Date -Format G): `t`t`tOutput desktop $($Desktop.DNSName)"
+	#updated in V3.40
+	If($Desktop.DNSName)	# is there anything in the DNSName property
+	{
+		$tmp = $Desktop.DNSName.Split(".")
+		$xDesktopName = $tmp[0]
+		$tmp = $Null
+	}
+	ElseIf($Desktop.MachineName)	# is there anything in the MachineName property
+	{
+		$tmp = $Desktop.MachineName.Split("\")
+		$xDesktopName = $tmp[1]
+		$tmp = $Null
+	}
+	ElseIf($Desktop.HostedMachineName)	# is there anything in the HostedMachineName property
+	{
+		$xDesktopName = $Desktop.HostedMachineName
+	}
+	Else	# error, there is no name for the Server
+	{
+		$xDesktopName = "error, there was no name found for the Desktop"
+	}
+
+	Write-Verbose "$(Get-Date -Format G): `t`t`tOutput desktop $xDesktopName"
 
 	$xMaintMode = ""
 	$xUserChanges = ""
@@ -36298,7 +36800,7 @@ Function OutputDesktopOSMachine
 	If($MSWord -or $PDF)
 	{
 		$ScriptInformation = New-Object System.Collections.ArrayList
-		$ScriptInformation.Add(@{Data = "Name"; Value = $Desktop.DNSName; }) > $Null
+		$ScriptInformation.Add(@{Data = "Name"; Value = $xDesktopName; }) > $Null
 		$ScriptInformation.Add(@{Data = "Machine Catalog"; Value = $Desktop.CatalogName; }) > $Null
 		$ScriptInformation.Add(@{Data = "Delivery Group"; Value = $Desktop.DesktopGroupName; }) > $Null
 		If(![String]::IsNullOrEmpty($Desktop.AssociatedUserNames))
@@ -36339,7 +36841,7 @@ Function OutputDesktopOSMachine
 	}
 	If($Text)
 	{
-		Line 1 "Name`t`t`t: " $Desktop.DNSName
+		Line 1 "Name`t`t`t: " $xDesktopName
 		Line 1 "Machine Catalog`t`t: " $Desktop.CatalogName
 		If(![String]::IsNullOrEmpty($Desktop.DesktopGroupName))
 		{
@@ -36371,7 +36873,7 @@ Function OutputDesktopOSMachine
 	If($HTML)
 	{
 		$rowdata = @()
-		$columnHeaders = @("Name",($global:htmlsb),$Desktop.DNSName,$htmlwhite)
+		$columnHeaders = @("Name",($global:htmlsb),$xDesktopName,$htmlwhite)
 		$rowdata += @(,('Machine Catalog',($global:htmlsb),$Desktop.CatalogName,$htmlwhite))
 		If(![String]::IsNullOrEmpty($Desktop.DesktopGroupName))
 		{
@@ -36409,7 +36911,30 @@ Function OutputServerOSMachine
 {
 	Param([object]$Server)
 	
-	Write-Verbose "$(Get-Date -Format G): `t`t`tOutput server $($Server.DNSName)"
+	#updated in V3.40
+	If($Server.DNSName)	# is there anything in the DNSName property
+	{
+		$tmp = $Server.DNSName.Split(".")
+		$xServerName = $tmp[0]
+		$tmp = $Null
+	}
+	ElseIf($Server.MachineName)	# is there anything in the MachineName property
+	{
+		$tmp = $Server.MachineName.Split("\")
+		$xServerName = $tmp[1]
+		$tmp = $Null
+	}
+	ElseIf($Server.HostedMachineName)	# is there anything in the HostedMachineName property
+	{
+		$xServerName = $Server.HostedMachineName
+	}
+	Else	# error, there is no name for the Server
+	{
+		$xServerName = "error, there was no name found for the Server"
+	}
+
+	Write-Verbose "$(Get-Date -Format G): `t`t`tOutput server $xServerName"
+
 	$xMaintMode = ""
 	$xUserChanges = ""
 
@@ -36447,7 +36972,7 @@ Function OutputServerOSMachine
 	If($MSWord -or $PDF)
 	{
 		$ScriptInformation = New-Object System.Collections.ArrayList
-		$ScriptInformation.Add(@{Data = "Name"; Value = $Server.DNSName; }) > $Null
+		$ScriptInformation.Add(@{Data = "Name"; Value = $xServerName; }) > $Null
 		$ScriptInformation.Add(@{Data = "Machine Catalog"; Value = $Server.CatalogName; }) > $Null
 		$ScriptInformation.Add(@{Data = "Delivery Group"; Value = $Server.DesktopGroupName; }) > $Null
 		If(![String]::IsNullOrEmpty($Server.AssociatedUserNames))
@@ -36488,7 +37013,7 @@ Function OutputServerOSMachine
 	}
 	If($Text)
 	{
-		Line 1 "Name`t`t`t: " $Server.DNSName
+		Line 1 "Name`t`t`t: " $xServerName
 		Line 1 "Machine Catalog`t`t: " $Server.CatalogName
 		If(![String]::IsNullOrEmpty($Server.DesktopGroupName))
 		{
@@ -36520,7 +37045,7 @@ Function OutputServerOSMachine
 	If($HTML)
 	{
 		$rowdata = @()
-		$columnHeaders = @("Name",($global:htmlsb),$Server.DNSName,$htmlwhite)
+		$columnHeaders = @("Name",($global:htmlsb),$xServerName,$htmlwhite)
 		$rowdata += @(,('Machine Catalog',($global:htmlsb),$Server.CatalogName,$htmlwhite))
 		If(![String]::IsNullOrEmpty($Server.DesktopGroupName))
 		{
@@ -38262,6 +38787,7 @@ Function ProcessScriptSetup
 			$CVADSiteVersionReal = "Unknown"
 			Switch ($CVADSiteVersion)
 			{
+				"7.37"	{$CVADSiteVersionReal = "CVAD 2303"; Break}
 				"7.36"	{$CVADSiteVersionReal = "CVAD 2212"; Break}
 				"7.35"	{$CVADSiteVersionReal = "CVAD 2209"; Break}
 				"7.34"	{$CVADSiteVersionReal = "CVAD 2206"; Break}
@@ -38477,6 +39003,7 @@ Script cannot continue
 	$Script:CVADSiteVersionReal = "Unknown"
 	Switch ($Script:CVADSiteVersion)
 	{
+		"7.37"	{$Script:CVADSiteVersionReal = "CVAD 2303"; Break}
 		"7.36"	{$Script:CVADSiteVersionReal = "CVAD 2212"; Break}
 		"7.35"	{$Script:CVADSiteVersionReal = "CVAD 2209"; Break}
 		"7.34"	{$Script:CVADSiteVersionReal = "CVAD 2206"; Break}
