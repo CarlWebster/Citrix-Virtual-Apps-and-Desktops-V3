@@ -1054,7 +1054,7 @@
 	NAME: CVAD_Inventory_V3.ps1
 	VERSION: 3.42
 	AUTHOR: Carl Webster
-	LASTEDIT: January 6, 2024
+	LASTEDIT: January 8, 2024
 #>
 
 #endregion
@@ -1248,22 +1248,103 @@ Param(
 # This script is based on the 2.36 script
 #
 #Version 3.42
+#	Added Broker Registry Keys:
+#		HKLM:\Software\Policies\Citrix\DesktopServer\CheckLicensesWithExpiredSwmPeriodHours
+#			Type: int
+#			Default: 24
+#			Info: Hours, Minimum=1
+#			Summary: The time between checks in hours for CVAD licenses with expired SWM.
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\MaxConsecutiveFailedRegistrationsBeforeSinBin
+#			Type: int
+#			Default: 2
+#			Info: Minimum=1
+#			Summary: Maximum times a worker can fail registration continuously before being put into the registration sinbin.
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\PiiDataRetentionDays
+#			Type: int
+#			Default: 365
+#			Info: 
+#			Summary: Number of days to store pii data in database.
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\RegistrationSinbinPeriodSecs
+#			Type: int
+#			Default: 180
+#			Info: Seconds, Minimum=60, Maximum=300
+#			Summary: Maximum time a worker is put into sin bin when a registration failure occurs multiple times 
+#				 for a worker within a timeframe.
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\ScrambleLicensingData
+#			Type: bool
+#			Default: false
+#			Info: 
+#			Summary: When enabled, scrambles personally identifiable information (PII) in licensing events.
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\UserDrivenSuspendTimeoutMs
+#			Type: int
+#			Default: 15000
+#			Info: Milliseconds, Minimum=0
+#			Summary: How long to allow for a user-driven suspend action to complete (success or fail).
+#
+#		HKLM:\Software\Citrix\DesktopServer\DataStore\Connections\Controller\SqlLogin
+#			Type: string
+#			Default: 
+#			Info: 
+#			Summary: The SQL login for use with SQL authenticated connections to the database.
+#
+#		HKLM:\Software\Citrix\DesktopServer\DataStore\Connections\Controller\SqlPassword
+#			Type: string
+#			Default: 
+#			Info: 
+#			Summary: The SQL password for use with SQL authenticated connections to the database.
+#
+#		HKLM:\Software\Citrix\Broker\Service\State\LHC\IsElectedLastUpdatedAt
+#			Type: DateTime
+#			Default: 0
+#			Info: 
+#			Summary: Indicates when this connector was elected leader.
+#
+#		HKLM:\Software\Citrix\Broker\Service\State\LHC\LeaderInHAModeLastUpdatedAt
+#			Type: DateTime
+#			Default: 0
+#			Info: 
+#			Summary: Indicates when this connector was elected leader.
+#
+#
 #	Added Computer policy
+#		ICA\Enhanced domain passthrough for single sign on (2311)
 #		ICA\HDX Direct mode (2308)
 #		ICA\HDX Direct port range (2308)
 #		ICA\Remote Credential Guard mode (2308)
 #		ICA\Secure HDX (2308)
+#		ICA\VDA upgrade proxy configuration (2311)
 #		ICA\Virtual channel allow list log throttling (hours) (2308)
 #		ICA\Virtual channel allow list logging (2308)
 #		ICA\App Protection\Posture check for Citrix Workspace App (2308)
+#		ICA\Printing\Universal Print Server\UPS FIPS mode (2311)
 #		Profile Management\Advanced settings\Default capacity of VHD containers (GB) (2308)
+#		Profile Management\Advanced settings\User store selection method (2311)
+#		Profile Management\Profile container settings\Enable exclusive access to VHD containers - OneDrive container (2311)
+#		Profile Management\Profile container settings\Enable exclusive access to VHD containers - Profile container (2311)
 #		Profile Management\Profile container settings\Enable VHD auto-expansion for profile container (2308)
+#		Profile Management\Profile container settings\Log off users when profile container is not available during logon (2311)
 #		Profile Management\Profile container settings\OneDrive container (2308)
 #		Profile Management\Profile container settings\OneDrive container - List of OneDrive folders (2308)
+#		Profile Management\Profile container settings\Users and groups to access profile container (2311)
 #		Profile Management\Advanced settings\Profile container auto-expansion increment (GB) (2308)
 #		Profile Management\Advanced settings\Profile container auto-expansion limit (GB) (2308)
 #		Profile Management\Advanced settings\Profile container auto-expansion threshold (%) (2308)
-#		Profile Management\Advanced settings\UWP apps roaming (2308)
+#		Profile Management\Advanced settings\UWP app roaming (2308)
+#		Profile Management\File deduplication\Minimum size of files to deduplicate from profile containers (2311)
+#		User Personalization Layer\Customized User Layer Sizer in GB (2311)
+#		User Personalization Layer\Groups using customized user layer size (2311)
+#		User Personalization Layer\User layer exclusions (2311)
+#		User Personalization Layer\User layer repository path (2311)
+#		User Personalization Layer\User layer size in GB (2311)
+#		VDA Data Collection\Performance\Diagnostic data collection for performance monitoring (2311)
+#	Added User policy
+#		ICA\Bidirectional Content Redirection\Bidirectional content redirection configuration (2311)
+#		ICA\Printing\Wait for printers to be created (server desktop) (2311)
 #	In Function GetRolePermissions:
 #		Added new permissions
 #			Director_MTOPInformation_Edit (2311)          
@@ -2206,7 +2287,7 @@ $ErrorActionPreference    = 'SilentlyContinue'
 #stuff for report footer
 $script:MyVersion   = '3.42'
 $Script:ScriptName  = "CVAD_Inventory_V3.ps1"
-$tmpdate            = [datetime] "01/06/2024"
+$tmpdate            = [datetime] "01/08/2024"
 $Script:ReleaseDate = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($Null -eq $HTML)
@@ -17471,6 +17552,27 @@ Function ProcessCitrixPolicies
 							OutputPolicySetting $txt $Setting.DragDrop.State 
 						}
 					}
+					If((validStateProp $Setting RemoteCredentialGuard State ) -and ($Setting.RemoteCredentialGuard.State -ne "NotConfigured"))
+					{
+						$txt = "ICA\Enhanced domain passthrough for single sign on"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.RemoteCredentialGuard.State;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.RemoteCredentialGuard.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.RemoteCredentialGuard.State 
+						}
+					}
 					If((validStateProp $Setting AllowFidoRedirection State ) -and ($Setting.AllowFidoRedirection.State -ne "NotConfigured"))
 					{
 						$txt = "ICA\FIDO2 Redirection"
@@ -18062,6 +18164,28 @@ Function ProcessCitrixPolicies
 							{
 								OutputPolicySetting $txt $tmp
 							}
+						}
+					}
+					If((validStateProp $Setting VdaUpgradeProxy State ) -and ($Setting.VdaUpgradeProxy.State -ne "NotConfigured"))
+					{
+						#added in 2311
+						$txt = "ICA\VDA upgrade proxy configuration"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.VdaUpgradeProxy.Value;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.VdaUpgradeProxy.Value,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.VdaUpgradeProxy.Value 
 						}
 					}
 					If((validStateProp $Setting VirtualChannelWhiteList State ) -and ($Setting.VirtualChannelWhiteList.State -ne "NotConfigured"))
@@ -22257,7 +22381,7 @@ Function ProcessCitrixPolicies
 					}
 					If((validStateProp $Setting UpcSslFips State ) -and ($Setting.UpcSslFips.State -ne "NotConfigured"))
 					{
-						$txt = "ICA\Printing\Universal Print Server\SSL FIPS Mode"
+						$txt = "ICA\Printing\Universal Print Server\UPS FIPS Mode" #in 2311 renamed from SSL FIPS mode to UPS FIPS mode
 						If($MSWord -or $PDF)
 						{
 							$SettingsWordTable += @{
@@ -25196,10 +25320,39 @@ Function ProcessCitrixPolicies
 							}
 						}
 					}
+					If((validStateProp $Setting UserStoreSelection_Part State ) -and ($Setting.UserStoreSelection_Part.State -ne "NotConfigured"))
+					{
+						#added in 2311
+						$txt = "Profile Management\Advanced settings\User store selection method"
+						$tmp = ""
+						Switch ($Setting.UserStoreSelection_Part.Value)
+						{
+							"Config"	{$tmp = "Configuration order"; Break}
+							"AccPerf"	{$tmp = "Access performance"; Break}
+							Default		{$tmp = "User store selection method could not be determined: $($Setting.UserStoreSelection_Part.Value)"; Break}
+						}
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $tmp;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$tmp,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $tmp 
+						}
+					}
 					If((validStateProp $Setting UwpAppsRoaming State ) -and ($Setting.UwpAppsRoaming.State -ne "NotConfigured"))
 					{
 						#added in 2308
-						$txt = "Profile Management\Advanced settings\UWP apps roaming"
+						$txt = "Profile Management\Advanced settings\UWP app roaming"
 						If($MSWord -or $PDF)
 						{
 							$SettingsWordTable += @{
@@ -26243,6 +26396,27 @@ Function ProcessCitrixPolicies
 							{
 								OutputPolicySetting $txt $Setting.SharedStoreFileInclusionList_Part.State
 							}
+						}
+					}
+					If((validStateProp $Setting SharedStoreProfileContainerFileSizeLimit_Part State ) -and ($Setting.SharedStoreProfileContainerFileSizeLimit_Part.State -ne "NotConfigured"))
+					{
+						$txt = "Profile Management\File deduplication\Minimum size of files to deduplicate from profile containers"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.SharedStoreProfileContainerFileSizeLimit_Part.Value;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.SharedStoreProfileContainerFileSizeLimit_Part.Value,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.SharedStoreProfileContainerFileSizeLimit_Part.Value
 						}
 					}
 
@@ -28981,6 +29155,50 @@ Function ProcessCitrixPolicies
 					}
 
 					Write-Verbose "$(Get-Date -Format G): `t`t`tProfile Management\Profile container settings"
+					If((validStateProp $Setting DisableConcurrentAccessToOneDriveContainer State ) -and ($Setting.DisableConcurrentAccessToOneDriveContainer.State -ne "NotConfigured"))
+					{
+						#added in 2311
+						$txt = "Profile Management\Profile container settings\Enable exclusive access to VHD containers - OneDrive container"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.DisableConcurrentAccessToOneDriveContainer.State;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.DisableConcurrentAccessToOneDriveContainer.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.DisableConcurrentAccessToOneDriveContainer.State
+						}
+					}
+					If((validStateProp $Setting DisableConcurrentAccessToProfileContainer State ) -and ($Setting.DisableConcurrentAccessToProfileContainer.State -ne "NotConfigured"))
+					{
+						#added in 2311
+						$txt = "Profile Management\Profile container settings\Enable exclusive access to VHD containers - Profile container"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.DisableConcurrentAccessToProfileContainer.State;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.DisableConcurrentAccessToProfileContainer.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.DisableConcurrentAccessToProfileContainer.State
+						}
+					}
 					If((validStateProp $Setting ProfileContainerLocalCache State ) -and ($Setting.ProfileContainerLocalCache.State -ne "NotConfigured"))
 					{
 						$txt = "Profile Management\Profile container settings\Enable local caching for profile containers"
@@ -29255,6 +29473,28 @@ Function ProcessCitrixPolicies
 							}
 						}
 					}
+					If((validStateProp $Setting PreventLoginWhenMountFailed_Part State ) -and ($Setting.PreventLoginWhenMountFailed_Part.State -ne "NotConfigured"))
+					{
+						#added in 2311
+						$txt = "Profile Management\Profile container settings\Log off users when profile container is not available during logon"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.PreventLoginWhenMountFailed_Part.State;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.PreventLoginWhenMountFailed_Part.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.PreventLoginWhenMountFailed_Part.State
+						}
+					}
 					If((validStateProp $Setting DisableConcurrentAccessToOneDriveContainer State ) -and ($Setting.DisableConcurrentAccessToOneDriveContainer.State -ne "NotConfigured"))
 					{
 						#added in 2308
@@ -29402,6 +29642,111 @@ Function ProcessCitrixPolicies
 						If($Text)
 						{
 							OutputPolicySetting $txt $Setting.DisableConcurrentAccessToProfileContainer.State
+						}
+					}
+					If((validStateProp $Setting GroupsToAccessProfileContainer_Part State ) -and ($Setting.GroupsToAccessProfileContainer_Part.State -ne "NotConfigured"))
+					{
+						$txt = "Profile Management\Profile container settings\Users and groups to access profile container"
+						If($Setting.GroupsToAccessProfileContainer_Part.State -eq "Enabled")
+						{
+							If(validStateProp $Setting GroupsToAccessProfileContainer_Part Values )
+							{
+								$tmpArray = $Setting.GroupsToAccessProfileContainer_Part.Values
+								$tmp = ""
+								$cnt = 0
+								ForEach($Thing in $tmpArray)
+								{
+									$cnt++
+									$tmp = "$($Thing)"
+									If($cnt -eq 1)
+									{
+										If($MSWord -or $PDF)
+										{
+											$WordTableRowHash = @{
+											Text = $txt;
+											Value = $tmp;
+											}
+											$SettingsWordTable += $WordTableRowHash;
+										}
+										If($HTML)
+										{
+											$rowdata += @(,(
+											$txt,$htmlbold,
+											$tmp,$htmlwhite))
+										}
+										If($Text)
+										{
+											OutputPolicySetting $txt $tmp
+										}
+									}
+									Else
+									{
+										If($MSWord -or $PDF)
+										{
+											$WordTableRowHash = @{
+											Text = "";
+											Value = $tmp;
+											}
+											$SettingsWordTable += $WordTableRowHash;
+										}
+										If($HTML)
+										{
+											$rowdata += @(,(
+											"",$htmlbold,
+											$tmp,$htmlwhite))
+										}
+										If($Text)
+										{
+											OutputPolicySetting "`t`t`t`t`t`t`t`t`t`t     " $tmp
+										}
+									}
+								}
+								$tmpArray = $Null
+								$tmp = $Null
+							}
+							Else
+							{
+								$tmp = "No Users and groups list was found"
+								If($MSWord -or $PDF)
+								{
+									$WordTableRowHash = @{
+									Text = $txt;
+									Value = $tmp;
+									}
+									$SettingsWordTable += $WordTableRowHash;
+								}
+								If($HTML)
+								{
+									$rowdata += @(,(
+									$txt,$htmlbold,
+									$tmp,$htmlwhite))
+								}
+								If($Text)
+								{
+									OutputPolicySetting $txt $tmp
+								}
+							}
+						}
+						Else
+						{
+							If($MSWord -or $PDF)
+							{
+								$WordTableRowHash = @{
+								Text = $txt;
+								Value = $Setting.GroupsToAccessProfileContainer_Part.State;
+								}
+								$SettingsWordTable += $WordTableRowHash;
+							}
+							If($HTML)
+							{
+								$rowdata += @(,(
+								$txt,$htmlbold,
+								$Setting.GroupsToAccessProfileContainer_Part.State,$htmlwhite))
+							}
+							If($Text)
+							{
+								OutputPolicySetting $txt $Setting.GroupsToAccessProfileContainer_Part.State
+							}
 						}
 					}
 
@@ -30430,6 +30775,27 @@ Function ProcessCitrixPolicies
 					}
 
 					Write-Verbose "$(Get-Date -Format G): `t`t`tUser Personalization Layer"
+					If((validStateProp $Setting UplCustomizedUserLayerSizeInGb State ) -and ($Setting.UplCustomizedUserLayerSizeInGb.State -ne "NotConfigured"))
+					{
+						$txt = "User Personalization Layer\Customized User Layer Sizer in GB"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.UplCustomizedUserLayerSizeInGb.Value;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.UplCustomizedUserLayerSizeInGb.Value,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.UplCustomizedUserLayerSizeInGb.Value
+						}
+					}
 					If((validStateProp $Setting UplUserExclusions State ) -and ($Setting.UplUserExclusions.State -ne "NotConfigured"))
 					{
 						$txt = "User Personalization Layer\User Layer Exclusions"
@@ -36194,6 +36560,7 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "AutoTagRuleIntervalsTimeSecs" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "BrokerStartupRetryPeriodLimitMs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "BrokerStartupRetryPeriodStartMaxMs" $ComputerName
+	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "CheckLicensesWithExpiredSwmPeriodHours" $ComputerName #added in 3.42
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "DisableActiveSessionReconnect" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "DisablePerformanceCounters" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "DisconnectOperationTimeOutSecs" $ComputerName #Added in 3.29
@@ -36214,6 +36581,7 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "LogonToleranceIsHardLimit" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "MachineSinBinStayTimeSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "MaxConcurrentRegistrationUpgrades" $ComputerName
+	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "MaxConsecutiveFailedRegistrationsBeforeSinBin" $ComputerName #Added in 3.42
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "MaxDisconnectWaitTimeSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "MaxHeartbeatIntervalMs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "MaxLogoffWaitTimeSecs" $ComputerName
@@ -36230,9 +36598,12 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "MinVdaStatusUpdatePeriodMs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "NonContactableSessionGracePeriodSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "PhantomRegistrationSecs" $ComputerName #added in 3.31
+	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "PiiDataRetentionDays" $ComputerName #added in 3.42
+	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "RegistrationSinbinPeriodSecs" $ComputerName #added in 3.42
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "ProtectedSessionReconnectSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "RoTPublicKeysUpdateMaxDelayHours" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "SaaSLicenseComponentCheckPeriodHours" $ComputerName #Added in 3.33
+	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "ScrambleLicensingData" $ComputerName #Added in 3.42
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "SetSiteDataPeriodSecs" $ComputerName #Added in 3.41
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "SettleTimeForVdaStatusUpdateMs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "SiteDynamicDataRefreshMaxShutdownMs" $ComputerName
@@ -36245,6 +36616,7 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "UserDrivenResetDebounceTimeSecs" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "UserDrivenResetTimeoutMs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "UserDrivenShutDownTimeoutMs" $ComputerName #Added in 3.29
+	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "UserDrivenSuspendTimeoutMs" $ComputerName #added in 3.42
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "UserNotify2SigningKeyLifetimeHours" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "WIRetryIntervalDuringRegistrationStateChangeSec" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "WIRetryIntervalDuringSessionStateChangeSec" $ComputerName
@@ -36256,6 +36628,7 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "AutoTagRuleIntervalsTimeSecs" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "BrokerStartupRetryPeriodLimitMs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "BrokerStartupRetryPeriodStartMaxMs" $ComputerName
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "CheckLicensesWithExpiredSwmPeriodHours" $ComputerName #added in 3.42
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "DisableActiveSessionReconnect" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "DisablePerformanceCounters" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "DisconnectOperationTimeOutSecs" $ComputerName #Added in 3.29
@@ -36276,6 +36649,7 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "LogonToleranceIsHardLimit" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "MachineSinBinStayTimeSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "MaxConcurrentRegistrationUpgrades" $ComputerName
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "MaxConsecutiveFailedRegistrationsBeforeSinBin" $ComputerName #Added in 3.42
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "MaxDisconnectWaitTimeSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "MaxHeartbeatIntervalMs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "MaxLogoffWaitTimeSecs" $ComputerName
@@ -36292,9 +36666,12 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "MinVdaStatusUpdatePeriodMs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "NonContactableSessionGracePeriodSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "PhantomRegistrationSecs" $ComputerName #added in 3.31
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "PiiDataRetentionDays" $ComputerName #added in 3.42
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "RegistrationSinbinPeriodSecs" $ComputerName #added in 3.42
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "ProtectedSessionReconnectSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "RoTPublicKeysUpdateMaxDelayHours" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "SaaSLicenseComponentCheckPeriodHours" $ComputerName #Added in 3.33
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "ScrambleLicensingData" $ComputerName #Added in 3.42
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "SetSiteDataPeriodSecs" $ComputerName #Added in 3.41
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "SettleTimeForVdaStatusUpdateMs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "SiteDynamicDataRefreshMaxShutdownMs" $ComputerName
@@ -36307,6 +36684,7 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "UserDrivenResetDebounceTimeSecs" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "UserDrivenResetTimeoutMs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "UserDrivenShutDownTimeoutMs" $ComputerName #Added in 3.29
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "UserDrivenSuspendTimeoutMs" $ComputerName #added in 3.42
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "UserNotify2SigningKeyLifetimeHours" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "WIRetryIntervalDuringRegistrationStateChangeSec" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "WIRetryIntervalDuringSessionStateChangeSec" $ComputerName
@@ -36337,6 +36715,8 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\DataStore\Connections\Controller" "ReaperDeferralPeriodSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\DataStore\Connections\Controller" "ResourceLimitRetryDelaySecs" $ComputerName #Added in 3.40
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\DataStore\Connections\Controller" "SdkSqlQueryTimeoutSecs" $ComputerName
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\DataStore\Connections\Controller" "SqlLogin" $ComputerName #added in 3.42
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\DataStore\Connections\Controller" "SqlPassword" $ComputerName #added in 3.42
 	
 	#DBConnectionState
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\DatabaseConnection" "State" $ComputerName
@@ -36444,6 +36824,7 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "EarliestOutageModeEndTime" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "Enabled" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "IsElected" $ComputerName #Added in 3.29
+	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "IsElectedLastUpdatedAt" $ComputerName #Added in 3.42
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "IsOnPremStoreFrontPresent" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "IsStaRequestReceived" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "LastOutageModeEndTime" $ComputerName
@@ -36451,6 +36832,7 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "LeaderConnectorId" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "LeaderFqdn" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "LeaderInHAMode" $ComputerName #Added in 3.40
+	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "LeaderInHAModeLastUpdatedAt" $ComputerName #Added in 3.42
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "OutageModeEntered" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "OutageModeThresholdReached" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "PeerStatus" $ComputerName #Added in 3.41
