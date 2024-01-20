@@ -1054,7 +1054,7 @@
 	NAME: CVAD_Inventory_V3.ps1
 	VERSION: 3.42
 	AUTHOR: Carl Webster
-	LASTEDIT: January 8, 2024
+	LASTEDIT: January 20, 2024
 #>
 
 #endregion
@@ -1247,7 +1247,7 @@ Param(
 
 # This script is based on the 2.36 script
 #
-#Version 3.42
+#Version 3.42 20-Jan-2024
 #	Added Broker Registry Keys:
 #		HKLM:\Software\Policies\Citrix\DesktopServer\CheckLicensesWithExpiredSwmPeriodHours
 #			Type: int
@@ -1342,6 +1342,12 @@ Param(
 #		User Personalization Layer\User layer repository path (2311)
 #		User Personalization Layer\User layer size in GB (2311)
 #		VDA Data Collection\Performance\Diagnostic data collection for performance monitoring (2311)
+#	Added to Configuration/Site Settings
+#		Always Bypass Authentication for Cached Resources
+#		Connection Leasing Enabled
+#		Load Balancing Sessions on Machines
+#	Added to Machine Catalog details, Write back cache drive letter
+#		https://docs.citrix.com/en-us/citrix-virtual-apps-desktops/2308/install-configure/machine-catalogs-create#assign-a-specific-drive-letter-to-mcs-io-write-back-cache-disk
 #	Added User policy
 #		ICA\Bidirectional Content Redirection\Bidirectional content redirection configuration (2311)
 #		ICA\Printing\Wait for printers to be created (server desktop) (2311)
@@ -2287,7 +2293,7 @@ $ErrorActionPreference    = 'SilentlyContinue'
 #stuff for report footer
 $script:MyVersion   = '3.42'
 $Script:ScriptName  = "CVAD_Inventory_V3.ps1"
-$tmpdate            = [datetime] "01/08/2024"
+$tmpdate            = [datetime] "01/20/2024"
 $Script:ReleaseDate = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($Null -eq $HTML)
@@ -7519,6 +7525,18 @@ Function OutputMachines
 							$TempMemoryCacheSize = $Null
 							Remove-Variable TempMemoryCacheSize
 						}
+
+						#$TempWriteBackCacheDriveLetter = $MachineData.WriteBackCacheDriveLetter
+						#added in 3.42
+						If( $MachineData.PSObject.Properties[ 'WriteBackCacheDriveLetter' ] )
+						{
+							$TempWriteBackCacheDriveLetter = "$($MachineData.WriteBackCacheDriveLetter)"
+						}
+						Else
+						{
+							$TempWriteBackCacheDriveLetter = $Null
+							Remove-Variable TempWriteBackCacheDriveLetter
+						}
 					}
 					
 					If(($Catalog.MinimumFunctionalLevel -eq "L7_9" -or 
@@ -7620,26 +7638,28 @@ Function OutputMachines
 				}
 				Else
 				{
-					$CleanOnBoot                 = "Unable to retrieve details"
-					$CPUCount                    = "Unable to retrieve details"
-					$DedicatedTenancy            = "Unable to retrieve details"
-					$DiskSize                    = "Unable to retrieve details"
-					$HostingUnitName             = "Unable to retrieve details"
-					$IdentityPoolName            = "Unable to retrieve details"
-					$InstalledVDAVersion         = "Unable to retrieve details"
-					$MasterVM                    = "Unable to retrieve details"
-					$MasterImageVMDate           = "Unable to retrieve details"
-					$MemoryMB                    = "Unable to retrieve details"
-					$OperatingSystem             = "Unable to retrieve details"
-					$PreparedImageDefinitionName = "Unable to retrieve details"
-					$PreparedImageVersionNumber  = "Unable to retrieve details"
-					$ResetAdministratorPasswords = "Unable to retrieve details"
-					$TempDiskCacheSize           = $Null
-					$TempMemoryCacheSize         = $Null
-					$WindowsActivationType       = "Unable to retrieve details"
-					$xDiskImage                  = "Unable to retrieve details"
+					$CleanOnBoot                   = "Unable to retrieve details"
+					$CPUCount                      = "Unable to retrieve details"
+					$DedicatedTenancy              = "Unable to retrieve details"
+					$DiskSize                      = "Unable to retrieve details"
+					$HostingUnitName               = "Unable to retrieve details"
+					$IdentityPoolName              = "Unable to retrieve details"
+					$InstalledVDAVersion           = "Unable to retrieve details"
+					$MasterVM                      = "Unable to retrieve details"
+					$MasterImageVMDate             = "Unable to retrieve details"
+					$MemoryMB                      = "Unable to retrieve details"
+					$OperatingSystem               = "Unable to retrieve details"
+					$PreparedImageDefinitionName   = "Unable to retrieve details"
+					$PreparedImageVersionNumber    = "Unable to retrieve details"
+					$ResetAdministratorPasswords   = "Unable to retrieve details"
+					$TempDiskCacheSize             = $Null
+					$TempMemoryCacheSize           = $Null
+					$TempWriteBackCacheDriveLetter = $Null
+					$WindowsActivationType         = "Unable to retrieve details"
+					$xDiskImage                    = "Unable to retrieve details"
 					Remove-Variable TempDiskCacheSize
 					Remove-Variable TempMemoryCacheSize
+					Remove-Variable TempWriteBackCacheDriveLetter
 				}
 			}
 			Else
@@ -7685,10 +7705,12 @@ Function OutputMachines
 			$ResetAdministratorPasswords = "Unable to retrieve details"
 			$TempDiskCacheSize           = $Null
 			$TempMemoryCacheSize         = $Null
+			$TempWriteBackCacheDriveLetter = $Null
 			$WindowsActivationType       = "Unable to retrieve details"
 			$xDiskImage                  = "Unable to retrieve details"
 			Remove-Variable TempDiskCacheSize
 			Remove-Variable TempMemoryCacheSize
+			Remove-Variable TempWriteBackCacheDriveLetter
 		}
 		
 		If($Catalog.ProvisioningType -eq "MCS")
@@ -7796,6 +7818,10 @@ Function OutputMachines
 				If(Test-Path variable:TempMemoryCacheSize)
 				{
 					$CatalogInformation += @{Data = "Temporary memory cache size"; Value = $TempMemoryCacheSize; }
+				}
+				If(Test-Path variable:TempWriteBackCacheDriveLetter)
+				{
+					$CatalogInformation += @{Data = "Write back cache drive letter"; Value = $TempWriteBackCacheDriveLetter; }
 				}
 				$CatalogInformation += @{Data = "User data"; Value = $xPersistType; }
 				$CatalogInformation += @{Data = "Virtual CPUs"; Value = $CPUCount; }
@@ -8005,6 +8031,10 @@ Function OutputMachines
 				{
 					Line 1 "Temporary memory cache size`t`t: " $TempMemoryCacheSize
 				}
+				If(Test-Path variable:TempWriteBackCacheDriveLetter)
+				{
+					Line 1 "Write back cache drive letter`t`t: " $TempWriteBackCacheDriveLetter
+				}
 				Line 1 "User data`t`t`t`t: " $xPersistType
 				Line 1 "Virtual CPUs`t`t`t`t: " $CPUCount
 				If(Test-Path variable:VMCopyMode)
@@ -8199,6 +8229,10 @@ Function OutputMachines
 				If(Test-Path variable:TempMemoryCacheSize)
 				{
 					$rowdata += @(,('Temporary memory cache size',($global:htmlsb),$TempMemoryCacheSize,$htmlwhite))
+				}
+				If(Test-Path variable:TempWriteBackCacheDriveLetter)
+				{
+					$rowdata += @(,('Write back cache drive letter',($global:htmlsb),$TempWriteBackCacheDriveLetter,$htmlwhite))
 				}
 				$rowdata += @(,('User data',($global:htmlsb),$xPersistType,$htmlwhite))
 				$rowdata += @(,('Virtual CPUs',($global:htmlsb),$CPUCount,$htmlwhite))
@@ -19182,6 +19216,27 @@ Function ProcessCitrixPolicies
 						}
 						$array = $Null
 						$tmp = $Null
+					}
+					If((validStateProp $Setting BidirectionalRedirectionConfig State ) -and ($Setting.BidirectionalRedirectionConfig.State -ne "NotConfigured"))
+					{
+						$txt = "ICA\Bidirectional Content Redirection\Bidirectional content redirection configuration"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.BidirectionalRedirectionConfig.Value;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.BidirectionalRedirectionConfig.Value,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.BidirectionalRedirectionConfig.Value 
+						}
 					}
 
 					Write-Verbose "$(Get-Date -Format G): `t`t`tICA\Client Sensors\Location"
@@ -30796,6 +30851,92 @@ Function ProcessCitrixPolicies
 							OutputPolicySetting $txt $Setting.UplCustomizedUserLayerSizeInGb.Value
 						}
 					}
+					If((validStateProp $Setting UplGroupsUsingCustomizedUserLayerSizeState ) -and ($Setting.UplUserExclusions.State -ne "NotConfigured"))
+					{
+						$txt = "User Personalization Layer\Groups using customized user layer size"
+						If((validStateProp $Setting UplGroupsUsingCustomizedUserLayerSizeState ) -and ($Setting.UplUserExclusions.State -ne "NotConfigured"))
+						{
+							$tmpArray = $Setting.UplUserExclusions.Values
+							$array = $Null
+							$tmp = ""
+							$cnt = 0
+							ForEach($Thing in $TmpArray)
+							{
+								If($Null -eq $Thing)
+								{
+									$Thing = ''
+								}
+								$cnt++
+								$tmp = "$($Thing) "
+								If($cnt -eq 1)
+								{
+									If($MSWord -or $PDF)
+									{
+										$WordTableRowHash = @{
+										Text = $txt;
+										Value = $tmp;
+										}
+										$SettingsWordTable += $WordTableRowHash;
+									}
+									If($HTML)
+									{
+										$rowdata += @(,(
+										$txt,$htmlbold,
+										$tmp,$htmlwhite))
+									}
+									If($Text)
+									{
+										OutputPolicySetting $txt $tmp
+									}
+								}
+								Else
+								{
+									If($MSWord -or $PDF)
+									{
+										$WordTableRowHash = @{
+										Text = "";
+										Value = $tmp;
+										}
+										$SettingsWordTable += $WordTableRowHash;
+									}
+									If($HTML)
+									{
+										$rowdata += @(,(
+										"",$htmlbold,
+										$tmp,$htmlwhite))
+									}
+									If($Text)
+									{
+										OutputPolicySetting "`t`t`t`t`t`t    " $tmp
+									}
+								}
+							}
+							$TmpArray = $Null
+							$tmp = $Null
+						}
+						Else
+						{
+							$tmp = "No User Layer Exclusions were found"
+							If($MSWord -or $PDF)
+							{
+								$WordTableRowHash = @{
+								Text = $txt;
+								Value = $tmp;
+								}
+								$SettingsWordTable += $WordTableRowHash;
+							}
+							If($HTML)
+							{
+								$rowdata += @(,(
+								$txt,$htmlbold,
+								$tmp,$htmlwhite))
+							}
+							If($Text)
+							{
+								OutputPolicySetting $txt $tmp
+							}
+						}
+					}
 					If((validStateProp $Setting UplUserExclusions State ) -and ($Setting.UplUserExclusions.State -ne "NotConfigured"))
 					{
 						$txt = "User Personalization Layer\User Layer Exclusions"
@@ -30959,6 +31100,32 @@ Function ProcessCitrixPolicies
 							OutputPolicySetting $txt $Setting.VdcPolicyEnable.State
 						}
 					}
+
+					#added in 3.42
+					Write-Verbose "$(Get-Date -Format G): `t`t`tVDA Data Collection\Performance"
+					If((validStateProp $Setting EnableVdaDiagnosticsCollection State ) -and ($Setting.EnableVdaDiagnosticsCollection.State -ne "NotConfigured"))
+					{
+						$txt = "VDA Data Collection\Performance\Diagnostic data collection for performance monitoring"
+						If($MSWord -or $PDF)
+						{
+							$WordTableRowHash = @{
+							Text = $txt;
+							Value = $Setting.EnableVdaDiagnosticsCollection.State;
+							}
+							$SettingsWordTable += $WordTableRowHash;
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.EnableVdaDiagnosticsCollection.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.EnableVdaDiagnosticsCollection.State
+						}
+					}
+					#end added in 3.42
 
 					#added in 3.41
 					Write-Verbose "$(Get-Date -Format G): `t`t`tVDA Data Collection\Security"
@@ -32414,6 +32581,16 @@ Function OutputSiteSettings
 		Default {$xVDAVersion = "Unable to determine VDA version: $($Script:CVADSite1.DefaultMinimumFunctionalLevel)"; Break}
 	}
 
+	$LoadBalancingSessionsonMachines = ""
+	If($Script:CVADSite1.UseVerticalScalingForRdsLaunches -eq $False)
+	{
+		$LoadBalancingSessionsonMachines = "Horizontal load balancing"
+	}
+	ELse
+	{
+		$LoadBalancingSessionsonMachines = "Vertical load balancing"
+	}
+	
 	$SecurityKeyValue = "Not set"
 	$itemKeys = $Script:CVADSite2.MetadataMap.Keys
 
@@ -32444,25 +32621,28 @@ Function OutputSiteSettings
 		$ScriptInformation = New-Object System.Collections.ArrayList
 		$ScriptInformation.Add(@{Data = "Site name"; Value = $CVADSiteName; }) > $Null
 		$ScriptInformation.Add(@{Data = "Default StoreFront address"; Value = $DefaultStoreFrontAddress; }) > $Null
+		$ScriptInformation.Add(@{Data = "Always Bypass Authentication for Cached Resources"; Value = $Script:CVADSite1.AlwaysBypassAuthForCachedResources.ToString(); }) > $Null #new in 3.42
 		$ScriptInformation.Add(@{Data = "Base OU"; Value = $Script:CVADSite1.BaseOU; }) > $Null
 		$ScriptInformation.Add(@{Data = "Bypass Authentication for Cached Resources"; Value = $Script:CVADSite1.BypassAuthForCachedResources.ToString(); }) > $Null #new in 1.15
 		$ScriptInformation.Add(@{Data = "Color Depth"; Value = $xColorDepth; }) > $Null
+		$ScriptInformation.Add(@{Data = "Connection Leasing Enabled"; Value = $Script:CVADSite1.ConnectionLeasingEnabled.ToString(); }) > $Null #new in 3.42
 		$ScriptInformation.Add(@{Data = "Credential Forwarding to Cloud Allowed"; Value = $Script:CVADSite1.CredentialForwardingToCloudAllowed.ToString(); }) > $Null #new in 1.15
 		$ScriptInformation.Add(@{Data = "Default Minimum Functional Level"; Value = $xVDAVersion; }) > $Null
 		$ScriptInformation.Add(@{Data = "Default Reuse Machines Without Shutdown In Outage"; Value = $Script:CVADSite1.DefaultReuseMachinesWithoutShutdownInOutage.ToString(); }) > $Null #new in 1.15
 		$ScriptInformation.Add(@{Data = "Delete Resource Leases on Logoff"; Value = $Script:CVADSite1.DeleteResourceLeasesOnLogOff.ToString(); }) > $Null #new in 1.15
 		$ScriptInformation.Add(@{Data = "DNS Resolution Enabled"; Value = $Script:CVADSite1.DnsResolutionEnabled.ToString(); }) > $Null
+		$ScriptInformation.Add(@{Data = "Load Balancing Sessions on Machines"; Value = $LoadBalancingSessionsonMachines; }) > $Null #new in 3.42
 		$ScriptInformation.Add(@{Data = "Local Host Cache Enabled"; Value = $Script:CVADSite1.LocalHostCacheEnabled.ToString(); }) > $Null
 		$ScriptInformation.Add(@{Data = "Resource Lease Validity Period in Days"; Value = $Script:CVADSite1.ResourceLeaseValidityPeriodInDays.ToString(); }) > $Null #new in 1.15
 		$ScriptInformation.Add(@{Data = "Resource Leasing Enabled"; Value = $Script:CVADSite1.ResourceLeasingEnabled.ToString(); }) > $Null #new in 1.15
 		$ScriptInformation.Add(@{Data = "Reuse Machines Without Shutdown in Outage Allowed"; Value = $Script:CVADSite1.ReuseMachinesWithoutShutdownInOutageAllowed.ToString(); }) > $Null
 		$ScriptInformation.Add(@{Data = "Secure ICA Required"; Value = $Script:CVADSite1.SecureIcaRequired.ToString(); }) > $Null
+		$ScriptInformation.Add(@{Data = "Security Key Management Enabled"; Value = $SecurityKeyValue; }) > $Null
 		$ScriptInformation.Add(@{Data = "Telemetry Headless Launch Enabled"; Value = $Script:CVADSite1.TelemetryHeadlessLaunchEnabled.ToString(); }) > $Null #new in 1.15
 		$ScriptInformation.Add(@{Data = "Telemetry Launch Minimum Time Interval in Minutes"; Value = $Script:CVADSite1.TelemetryLaunchMinTimeIntervalMins.ToString(); }) > $Null #new in 1.15
 		$ScriptInformation.Add(@{Data = "Telemetry Launch Shadow Delay in Minutes"; Value = $Script:CVADSite1.TelemetryLaunchShadowDelayMins.ToString(); }) > $Null #new in 1.15
 		$ScriptInformation.Add(@{Data = "Trust Managed Anonymous XML Service Requests"; Value = $Script:CVADSite1.TrustManagedAnonymousXmlServiceRequests.ToString(); }) > $Null
 		$ScriptInformation.Add(@{Data = "Trust Requests Sent to the XML Service Port"; Value = $Script:CVADSite1.TrustRequestsSentToTheXmlServicePort.ToString(); }) > $Null
-		$ScriptInformation.Add(@{Data = "Security Key Management Enabled"; Value = $SecurityKeyValue; }) > $Null
 		$Table = AddWordTable -Hashtable $ScriptInformation `
 		-Columns Data,Value `
 		-List `
@@ -32485,25 +32665,28 @@ Function OutputSiteSettings
 		Line 0 ""
 		Line 1 "Site name`t`t`t`t`t`t: " $CVADSiteName
 		Line 1 "Default StoreFront address`t`t`t`t: " $DefaultStoreFrontAddress
+		Line 1 "Always Bypass Authentication for Cached Resources`t`t: " $Script:CVADSite1.AlwaysBypassAuthForCachedResources.ToString() #new in 3.42
 		Line 1 "Base OU`t`t`t`t`t`t`t: " $Script:CVADSite1.BaseOU
 		Line 1 "Bypass Authentication for Cached Resources`t`t: " $Script:CVADSite1.BypassAuthForCachedResources.ToString() #new in 1.15
 		Line 1 "Color Depth`t`t`t`t`t`t: " $xColorDepth
+		Line 1 "Connection Leasing Enabled`t`t`t`t: " $Script:CVADSite1.ConnectionLeasingEnabled.ToString() #new in 3.42
 		Line 1 "Credential Forwarding to Cloud Allowed`t`t`t: " $Script:CVADSite1.CredentialForwardingToCloudAllowed.ToString() #new in 1.15
 		Line 1 "Default Minimum Functional Level`t`t`t: " $xVDAVersion
 		Line 1 "Default Reuse Machines Without Shutdown In Outage`t: " $Script:CVADSite1.DefaultReuseMachinesWithoutShutdownInOutage.ToString() #new in 1.15
 		Line 1 "Delete Resource Leases on Logoff`t`t`t: " $Script:CVADSite1.DeleteResourceLeasesOnLogOff.ToString() #new in 1.15
 		Line 1 "DNS Resolution Enabled`t`t`t`t`t: " $Script:CVADSite1.DnsResolutionEnabled.ToString()
+		Line 1 "Load Balancing Sessions on Machines`t`t`t: " $LoadBalancingSessionsonMachines #new in 3.42
 		Line 1 "Local Host Cache Enabled`t`t`t`t: " $Script:CVADSite1.LocalHostCacheEnabled.ToString()
 		Line 1 "Resource Lease Validity Period in Days`t`t`t: " $Script:CVADSite1.ResourceLeaseValidityPeriodInDays.ToString() #new in 1.15
 		Line 1 "Resource Leasing Enabled`t`t`t`t: "  $Script:CVADSite1.ResourceLeasingEnabled.ToString() #new in 1.15
 		Line 1 "Reuse Machines Without Shutdown in Outage Allowed`t: " $Script:CVADSite1.ReuseMachinesWithoutShutdownInOutageAllowed.ToString()
 		Line 1 "Secure ICA Required`t`t`t`t`t: " $Script:CVADSite1.SecureIcaRequired.ToString()
+		Line 1 "Security Key Management Enabled`t`t`t`t: " $SecurityKeyValue
 		Line 1 "Telemetry Headless Launch Enabled`t`t`t: " $Script:CVADSite1.TelemetryHeadlessLaunchEnabled.ToString() #new in 1.15
 		Line 1 "Telemetry Launch Minimum Time Interval in Minutes`t: " $Script:CVADSite1.TelemetryLaunchMinTimeIntervalMins.ToString() #new in 1.15
 		Line 1 "Telemetry Launch Shadow Delay in Minutes`t`t: " $Script:CVADSite1.TelemetryLaunchShadowDelayMins.ToString() #new in 1.15
 		Line 1 "Trust Managed Anonymous XML Service Requests`t`t: " $Script:CVADSite1.TrustManagedAnonymousXmlServiceRequests.ToString()
 		Line 1 "Trust Requests Sent to the XML Service Port`t`t: " $Script:CVADSite1.TrustRequestsSentToTheXmlServicePort.ToString()
-		Line 1 "Security Key Management Enabled`t`t`t`t: " $SecurityKeyValue
 		Line 0 ""
 	}
 	If($HTML)
@@ -32513,25 +32696,28 @@ Function OutputSiteSettings
 		$rowdata = @()
 		$columnHeaders = @("Site name",($global:htmlsb),$CVADSiteName,$htmlwhite)
 		$rowdata += @(,('Default StoreFront address',($global:htmlsb),$DefaultStoreFrontAddress,$htmlwhite))
+		$rowdata += @(,("Always Bypass Authentication for Cached Resources",($global:htmlsb),$Script:CVADSite1.AlwaysBypassAuthForCachedResources.ToString(),$htmlwhite)) #new in 3.42
 		$rowdata += @(,("Base OU",($global:htmlsb),$Script:CVADSite1.BaseOU,$htmlwhite))
 		$rowdata += @(,("Bypass Authentication for Cached Resources",($global:htmlsb),$Script:CVADSite1.BypassAuthForCachedResources.ToString(),$htmlwhite)) #new in 1.15
 		$rowdata += @(,("Color Depth",($global:htmlsb),$xColorDepth,$htmlwhite))
+		$rowdata += @(,("Connection Leasing Enabled",($global:htmlsb),$Script:CVADSite1.ConnectionLeasingEnabled.ToString(),$htmlwhite)) #new in 3.42
 		$rowdata += @(,("Credential Forwarding to Cloud Allowed",($global:htmlsb),$Script:CVADSite1.CredentialForwardingToCloudAllowed.ToString(),$htmlwhite)) #new in 1.15
 		$rowdata += @(,("Default Minimum Functional Level",($global:htmlsb),$xVDAVersion,$htmlwhite))
 		$rowdata += @(,("Default Reuse Machines Without Shutdown In Outage",($global:htmlsb),$Script:CVADSite1.DefaultReuseMachinesWithoutShutdownInOutage.ToString(),$htmlwhite)) #new in 1.15
 		$rowdata += @(,("Delete Resource Leases on Logoff",($global:htmlsb),$Script:CVADSite1.DeleteResourceLeasesOnLogOff.ToString(),$htmlwhite)) #new in 1.15
 		$rowdata += @(,("DNS Resolution Enabled",($global:htmlsb),$Script:CVADSite1.DnsResolutionEnabled.ToString(),$htmlwhite))
+		$rowdata += @(,("Load Balancing Sessions on Machines",($global:htmlsb),$LoadBalancingSessionsonMachines,$htmlwhite)) #new in 3.42
 		$rowdata += @(,("Local Host Cache Enabled",($global:htmlsb),$Script:CVADSite1.LocalHostCacheEnabled.ToString(),$htmlwhite))
 		$rowdata += @(,("Resource Lease Validity Period in Days",($global:htmlsb),$Script:CVADSite1.ResourceLeaseValidityPeriodInDays.ToString(),$htmlwhite)) #new in 1.15
 		$rowdata += @(,("Resource Leasing Enabled",($global:htmlsb),$Script:CVADSite1.ResourceLeasingEnabled.ToString(),$htmlwhite)) #new in 1.15
 		$rowdata += @(,("Reuse Machines Without Shutdown in Outage Allowed",($global:htmlsb),$Script:CVADSite1.ReuseMachinesWithoutShutdownInOutageAllowed.ToString(),$htmlwhite))
 		$rowdata += @(,("Secure ICA Required",($global:htmlsb),$Script:CVADSite1.SecureIcaRequired.ToString(),$htmlwhite))
+		$rowdata += @(,("Security Key Management Enabled",($global:htmlsb),$SecurityKeyValue,$htmlwhite))
 		$rowdata += @(,("Telemetry Headless Launch Enabled",($global:htmlsb),$Script:CVADSite1.TelemetryHeadlessLaunchEnabled.ToString(),$htmlwhite)) #new in 1.15
 		$rowdata += @(,("Telemetry Launch Minimum Time Interval in Minutes",($global:htmlsb),$Script:CVADSite1.TelemetryLaunchMinTimeIntervalMins.ToString(),$htmlwhite)) #new in 1.15
 		$rowdata += @(,("Telemetry Launch Shadow Delay in Minutes",($global:htmlsb),$Script:CVADSite1.TelemetryLaunchShadowDelayMins.ToString(),$htmlwhite)) #new in 1.15
 		$rowdata += @(,("Trust Managed Anonymous XML Service Requests",($global:htmlsb),$Script:CVADSite1.TrustManagedAnonymousXmlServiceRequests.ToString(),$htmlwhite))
 		$rowdata += @(,("Trust Requests Sent to the XML Service Port",($global:htmlsb),$Script:CVADSite1.TrustRequestsSentToTheXmlServicePort.ToString(),$htmlwhite))
-		$rowdata += @(,("Security Key Management Enabled",($global:htmlsb),$SecurityKeyValue,$htmlwhite))
 		
 		$msg = ""
 		FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders
