@@ -6,6 +6,121 @@
 
 # This script is based on the 2.36 script
 
+#Version 3.42 20-Jan-2024
+#	Added Broker Registry Keys:
+#		HKLM:\Software\Policies\Citrix\DesktopServer\CheckLicensesWithExpiredSwmPeriodHours
+#			Type: int
+#			Default: 24
+#			Info: Hours, Minimum=1
+#			Summary: The time between checks in hours for CVAD licenses with expired SWM.
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\MaxConsecutiveFailedRegistrationsBeforeSinBin
+#			Type: int
+#			Default: 2
+#			Info: Minimum=1
+#			Summary: Maximum times a worker can fail registration continuously before being put into the registration sinbin.
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\PiiDataRetentionDays
+#			Type: int
+#			Default: 365
+#			Info: 
+#			Summary: Number of days to store pii data in database.
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\RegistrationSinbinPeriodSecs
+#			Type: int
+#			Default: 180
+#			Info: Seconds, Minimum=60, Maximum=300
+#			Summary: Maximum time a worker is put into sin bin when a registration failure occurs multiple times 
+#				 for a worker within a timeframe.
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\ScrambleLicensingData
+#			Type: bool
+#			Default: false
+#			Info: 
+#			Summary: When enabled, scrambles personally identifiable information (PII) in licensing events.
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\UserDrivenSuspendTimeoutMs
+#			Type: int
+#			Default: 15000
+#			Info: Milliseconds, Minimum=0
+#			Summary: How long to allow for a user-driven suspend action to complete (success or fail).
+#
+#		HKLM:\Software\Citrix\DesktopServer\DataStore\Connections\Controller\SqlLogin
+#			Type: string
+#			Default: 
+#			Info: 
+#			Summary: The SQL login for use with SQL authenticated connections to the database.
+#
+#		HKLM:\Software\Citrix\DesktopServer\DataStore\Connections\Controller\SqlPassword
+#			Type: string
+#			Default: 
+#			Info: 
+#			Summary: The SQL password for use with SQL authenticated connections to the database.
+#
+#		HKLM:\Software\Citrix\Broker\Service\State\LHC\IsElectedLastUpdatedAt
+#			Type: DateTime
+#			Default: 0
+#			Info: 
+#			Summary: Indicates when this connector was elected leader.
+#
+#		HKLM:\Software\Citrix\Broker\Service\State\LHC\LeaderInHAModeLastUpdatedAt
+#			Type: DateTime
+#			Default: 0
+#			Info: 
+#			Summary: Indicates when this connector was elected leader.
+#
+#
+#	Added Computer policy
+#		ICA\Enhanced domain passthrough for single sign on (2311)
+#		ICA\HDX Direct mode (2308)
+#		ICA\HDX Direct port range (2308)
+#		ICA\Remote Credential Guard mode (2308)
+#		ICA\Secure HDX (2308)
+#		ICA\VDA upgrade proxy configuration (2311)
+#		ICA\Virtual channel allow list log throttling (hours) (2308)
+#		ICA\Virtual channel allow list logging (2308)
+#		ICA\App Protection\Posture check for Citrix Workspace App (2308)
+#		ICA\Printing\Universal Print Server\UPS FIPS mode (2311)
+#		Profile Management\Advanced settings\Default capacity of VHD containers (GB) (2308)
+#		Profile Management\Advanced settings\User store selection method (2311)
+#		Profile Management\Profile container settings\Enable exclusive access to VHD containers - OneDrive container (2311)
+#		Profile Management\Profile container settings\Enable exclusive access to VHD containers - Profile container (2311)
+#		Profile Management\Profile container settings\Enable VHD auto-expansion for profile container (2308)
+#		Profile Management\Profile container settings\Log off users when profile container is not available during logon (2311)
+#		Profile Management\Profile container settings\OneDrive container (2308)
+#		Profile Management\Profile container settings\OneDrive container - List of OneDrive folders (2308)
+#		Profile Management\Profile container settings\Users and groups to access profile container (2311)
+#		Profile Management\Advanced settings\Profile container auto-expansion increment (GB) (2308)
+#		Profile Management\Advanced settings\Profile container auto-expansion limit (GB) (2308)
+#		Profile Management\Advanced settings\Profile container auto-expansion threshold (%) (2308)
+#		Profile Management\Advanced settings\UWP app roaming (2308)
+#		Profile Management\File deduplication\Minimum size of files to deduplicate from profile containers (2311)
+#		User Personalization Layer\Customized User Layer Sizer in GB (2311)
+#		User Personalization Layer\Groups using customized user layer size (2311)
+#		User Personalization Layer\User layer exclusions (2311)
+#		User Personalization Layer\User layer repository path (2311)
+#		User Personalization Layer\User layer size in GB (2311)
+#		VDA Data Collection\Performance\Diagnostic data collection for performance monitoring (2311)
+#	Added to Configuration/Site Settings
+#		Always Bypass Authentication for Cached Resources
+#		Connection Leasing Enabled
+#		Load Balancing Sessions on Machines
+#	Added to Machine Catalog details, Write back cache drive letter
+#		https://docs.citrix.com/en-us/citrix-virtual-apps-desktops/2308/install-configure/machine-catalogs-create#assign-a-specific-drive-letter-to-mcs-io-write-back-cache-disk
+#	Added User policy
+#		ICA\Bidirectional Content Redirection\Bidirectional content redirection configuration (2311)
+#		ICA\Printing\Wait for printers to be created (server desktop) (2311)
+#	In Function GetRolePermissions:
+#		Added new permissions
+#			Director_MTOPInformation_Edit (2311)          
+#			PolicySets_AddScope (2308)        
+#			PolicySets_RemoveScope (2308)
+#			Trust_VdaEnrollment (2311)        
+#	Renamed Computer policy
+#		"Profile Management\Advanced settings\Free space ratio (%)" to "Free space ratio to trigger VHD disk compaction(%)" (2308)
+#		"Profile Management\Advanced settings\Number of logoffs" to "Number of logoffs to trigger VHD disk compaction" (2308)
+#	Updated for CVAD 2308 (7.39) and 2311 (7.40)
+
 #Version 3.41 23-Jun-2023
 #	Added Broker Registry Keys:
 #		HKLM:\Software\Policies\Citrix\DesktopServer\AssignmentPolicyMaxDesktops

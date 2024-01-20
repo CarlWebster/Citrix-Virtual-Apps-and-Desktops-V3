@@ -1052,9 +1052,9 @@
 	This script creates a Word, PDF, plain text, or HTML document.
 .NOTES
 	NAME: CVAD_Inventory_V3.ps1
-	VERSION: 3.41
+	VERSION: 3.42
 	AUTHOR: Carl Webster
-	LASTEDIT: June 23, 2023
+	LASTEDIT: January 20, 2024
 #>
 
 #endregion
@@ -1246,6 +1246,121 @@ Param(
 #started updating for CVAD version 2006 on August 10, 2020
 
 # This script is based on the 2.36 script
+#
+#Version 3.42 20-Jan-2024
+#	Added Broker Registry Keys:
+#		HKLM:\Software\Policies\Citrix\DesktopServer\CheckLicensesWithExpiredSwmPeriodHours
+#			Type: int
+#			Default: 24
+#			Info: Hours, Minimum=1
+#			Summary: The time between checks in hours for CVAD licenses with expired SWM.
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\MaxConsecutiveFailedRegistrationsBeforeSinBin
+#			Type: int
+#			Default: 2
+#			Info: Minimum=1
+#			Summary: Maximum times a worker can fail registration continuously before being put into the registration sinbin.
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\PiiDataRetentionDays
+#			Type: int
+#			Default: 365
+#			Info: 
+#			Summary: Number of days to store pii data in database.
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\RegistrationSinbinPeriodSecs
+#			Type: int
+#			Default: 180
+#			Info: Seconds, Minimum=60, Maximum=300
+#			Summary: Maximum time a worker is put into sin bin when a registration failure occurs multiple times 
+#				 for a worker within a timeframe.
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\ScrambleLicensingData
+#			Type: bool
+#			Default: false
+#			Info: 
+#			Summary: When enabled, scrambles personally identifiable information (PII) in licensing events.
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\UserDrivenSuspendTimeoutMs
+#			Type: int
+#			Default: 15000
+#			Info: Milliseconds, Minimum=0
+#			Summary: How long to allow for a user-driven suspend action to complete (success or fail).
+#
+#		HKLM:\Software\Citrix\DesktopServer\DataStore\Connections\Controller\SqlLogin
+#			Type: string
+#			Default: 
+#			Info: 
+#			Summary: The SQL login for use with SQL authenticated connections to the database.
+#
+#		HKLM:\Software\Citrix\DesktopServer\DataStore\Connections\Controller\SqlPassword
+#			Type: string
+#			Default: 
+#			Info: 
+#			Summary: The SQL password for use with SQL authenticated connections to the database.
+#
+#		HKLM:\Software\Citrix\Broker\Service\State\LHC\IsElectedLastUpdatedAt
+#			Type: DateTime
+#			Default: 0
+#			Info: 
+#			Summary: Indicates when this connector was elected leader.
+#
+#		HKLM:\Software\Citrix\Broker\Service\State\LHC\LeaderInHAModeLastUpdatedAt
+#			Type: DateTime
+#			Default: 0
+#			Info: 
+#			Summary: Indicates when this connector was elected leader.
+#
+#
+#	Added Computer policy
+#		ICA\Enhanced domain passthrough for single sign on (2311)
+#		ICA\HDX Direct mode (2308)
+#		ICA\HDX Direct port range (2308)
+#		ICA\Remote Credential Guard mode (2308)
+#		ICA\Secure HDX (2308)
+#		ICA\VDA upgrade proxy configuration (2311)
+#		ICA\Virtual channel allow list log throttling (hours) (2308)
+#		ICA\Virtual channel allow list logging (2308)
+#		ICA\App Protection\Posture check for Citrix Workspace App (2308)
+#		ICA\Printing\Universal Print Server\UPS FIPS mode (2311)
+#		Profile Management\Advanced settings\Default capacity of VHD containers (GB) (2308)
+#		Profile Management\Advanced settings\User store selection method (2311)
+#		Profile Management\Profile container settings\Enable exclusive access to VHD containers - OneDrive container (2311)
+#		Profile Management\Profile container settings\Enable exclusive access to VHD containers - Profile container (2311)
+#		Profile Management\Profile container settings\Enable VHD auto-expansion for profile container (2308)
+#		Profile Management\Profile container settings\Log off users when profile container is not available during logon (2311)
+#		Profile Management\Profile container settings\OneDrive container (2308)
+#		Profile Management\Profile container settings\OneDrive container - List of OneDrive folders (2308)
+#		Profile Management\Profile container settings\Users and groups to access profile container (2311)
+#		Profile Management\Advanced settings\Profile container auto-expansion increment (GB) (2308)
+#		Profile Management\Advanced settings\Profile container auto-expansion limit (GB) (2308)
+#		Profile Management\Advanced settings\Profile container auto-expansion threshold (%) (2308)
+#		Profile Management\Advanced settings\UWP app roaming (2308)
+#		Profile Management\File deduplication\Minimum size of files to deduplicate from profile containers (2311)
+#		User Personalization Layer\Customized User Layer Sizer in GB (2311)
+#		User Personalization Layer\Groups using customized user layer size (2311)
+#		User Personalization Layer\User layer exclusions (2311)
+#		User Personalization Layer\User layer repository path (2311)
+#		User Personalization Layer\User layer size in GB (2311)
+#		VDA Data Collection\Performance\Diagnostic data collection for performance monitoring (2311)
+#	Added to Configuration/Site Settings
+#		Always Bypass Authentication for Cached Resources
+#		Connection Leasing Enabled
+#		Load Balancing Sessions on Machines
+#	Added to Machine Catalog details, Write back cache drive letter
+#		https://docs.citrix.com/en-us/citrix-virtual-apps-desktops/2308/install-configure/machine-catalogs-create#assign-a-specific-drive-letter-to-mcs-io-write-back-cache-disk
+#	Added User policy
+#		ICA\Bidirectional Content Redirection\Bidirectional content redirection configuration (2311)
+#		ICA\Printing\Wait for printers to be created (server desktop) (2311)
+#	In Function GetRolePermissions:
+#		Added new permissions
+#			Director_MTOPInformation_Edit (2311)          
+#			PolicySets_AddScope (2308)        
+#			PolicySets_RemoveScope (2308)
+#			Trust_VdaEnrollment (2311)        
+#	Renamed Computer policy
+#		"Profile Management\Advanced settings\Free space ratio (%)" to "Free space ratio to trigger VHD disk compaction(%)" (2308)
+#		"Profile Management\Advanced settings\Number of logoffs" to "Number of logoffs to trigger VHD disk compaction" (2308)
+#	Updated for CVAD 2308 (7.39) and 2311 (7.40)
 #
 #Version 3.41 23-Jun-2023
 #	Added Broker Registry Keys:
@@ -2176,9 +2291,9 @@ $SaveEAPreference         = $ErrorActionPreference
 $ErrorActionPreference    = 'SilentlyContinue'
 
 #stuff for report footer
-$script:MyVersion   = '3.41'
+$script:MyVersion   = '3.42'
 $Script:ScriptName  = "CVAD_Inventory_V3.ps1"
-$tmpdate            = [datetime] "06/23/2023"
+$tmpdate            = [datetime] "01/20/2024"
 $Script:ReleaseDate = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($Null -eq $HTML)
@@ -7410,6 +7525,18 @@ Function OutputMachines
 							$TempMemoryCacheSize = $Null
 							Remove-Variable TempMemoryCacheSize
 						}
+
+						#$TempWriteBackCacheDriveLetter = $MachineData.WriteBackCacheDriveLetter
+						#added in 3.42
+						If( $MachineData.PSObject.Properties[ 'WriteBackCacheDriveLetter' ] )
+						{
+							$TempWriteBackCacheDriveLetter = "$($MachineData.WriteBackCacheDriveLetter)"
+						}
+						Else
+						{
+							$TempWriteBackCacheDriveLetter = $Null
+							Remove-Variable TempWriteBackCacheDriveLetter
+						}
 					}
 					
 					If(($Catalog.MinimumFunctionalLevel -eq "L7_9" -or 
@@ -7511,26 +7638,28 @@ Function OutputMachines
 				}
 				Else
 				{
-					$CleanOnBoot                 = "Unable to retrieve details"
-					$CPUCount                    = "Unable to retrieve details"
-					$DedicatedTenancy            = "Unable to retrieve details"
-					$DiskSize                    = "Unable to retrieve details"
-					$HostingUnitName             = "Unable to retrieve details"
-					$IdentityPoolName            = "Unable to retrieve details"
-					$InstalledVDAVersion         = "Unable to retrieve details"
-					$MasterVM                    = "Unable to retrieve details"
-					$MasterImageVMDate           = "Unable to retrieve details"
-					$MemoryMB                    = "Unable to retrieve details"
-					$OperatingSystem             = "Unable to retrieve details"
-					$PreparedImageDefinitionName = "Unable to retrieve details"
-					$PreparedImageVersionNumber  = "Unable to retrieve details"
-					$ResetAdministratorPasswords = "Unable to retrieve details"
-					$TempDiskCacheSize           = $Null
-					$TempMemoryCacheSize         = $Null
-					$WindowsActivationType       = "Unable to retrieve details"
-					$xDiskImage                  = "Unable to retrieve details"
+					$CleanOnBoot                   = "Unable to retrieve details"
+					$CPUCount                      = "Unable to retrieve details"
+					$DedicatedTenancy              = "Unable to retrieve details"
+					$DiskSize                      = "Unable to retrieve details"
+					$HostingUnitName               = "Unable to retrieve details"
+					$IdentityPoolName              = "Unable to retrieve details"
+					$InstalledVDAVersion           = "Unable to retrieve details"
+					$MasterVM                      = "Unable to retrieve details"
+					$MasterImageVMDate             = "Unable to retrieve details"
+					$MemoryMB                      = "Unable to retrieve details"
+					$OperatingSystem               = "Unable to retrieve details"
+					$PreparedImageDefinitionName   = "Unable to retrieve details"
+					$PreparedImageVersionNumber    = "Unable to retrieve details"
+					$ResetAdministratorPasswords   = "Unable to retrieve details"
+					$TempDiskCacheSize             = $Null
+					$TempMemoryCacheSize           = $Null
+					$TempWriteBackCacheDriveLetter = $Null
+					$WindowsActivationType         = "Unable to retrieve details"
+					$xDiskImage                    = "Unable to retrieve details"
 					Remove-Variable TempDiskCacheSize
 					Remove-Variable TempMemoryCacheSize
+					Remove-Variable TempWriteBackCacheDriveLetter
 				}
 			}
 			Else
@@ -7576,10 +7705,12 @@ Function OutputMachines
 			$ResetAdministratorPasswords = "Unable to retrieve details"
 			$TempDiskCacheSize           = $Null
 			$TempMemoryCacheSize         = $Null
+			$TempWriteBackCacheDriveLetter = $Null
 			$WindowsActivationType       = "Unable to retrieve details"
 			$xDiskImage                  = "Unable to retrieve details"
 			Remove-Variable TempDiskCacheSize
 			Remove-Variable TempMemoryCacheSize
+			Remove-Variable TempWriteBackCacheDriveLetter
 		}
 		
 		If($Catalog.ProvisioningType -eq "MCS")
@@ -7687,6 +7818,10 @@ Function OutputMachines
 				If(Test-Path variable:TempMemoryCacheSize)
 				{
 					$CatalogInformation += @{Data = "Temporary memory cache size"; Value = $TempMemoryCacheSize; }
+				}
+				If(Test-Path variable:TempWriteBackCacheDriveLetter)
+				{
+					$CatalogInformation += @{Data = "Write back cache drive letter"; Value = $TempWriteBackCacheDriveLetter; }
 				}
 				$CatalogInformation += @{Data = "User data"; Value = $xPersistType; }
 				$CatalogInformation += @{Data = "Virtual CPUs"; Value = $CPUCount; }
@@ -7896,6 +8031,10 @@ Function OutputMachines
 				{
 					Line 1 "Temporary memory cache size`t`t: " $TempMemoryCacheSize
 				}
+				If(Test-Path variable:TempWriteBackCacheDriveLetter)
+				{
+					Line 1 "Write back cache drive letter`t`t: " $TempWriteBackCacheDriveLetter
+				}
 				Line 1 "User data`t`t`t`t: " $xPersistType
 				Line 1 "Virtual CPUs`t`t`t`t: " $CPUCount
 				If(Test-Path variable:VMCopyMode)
@@ -8090,6 +8229,10 @@ Function OutputMachines
 				If(Test-Path variable:TempMemoryCacheSize)
 				{
 					$rowdata += @(,('Temporary memory cache size',($global:htmlsb),$TempMemoryCacheSize,$htmlwhite))
+				}
+				If(Test-Path variable:TempWriteBackCacheDriveLetter)
+				{
+					$rowdata += @(,('Write back cache drive letter',($global:htmlsb),$TempWriteBackCacheDriveLetter,$htmlwhite))
 				}
 				$rowdata += @(,('User data',($global:htmlsb),$xPersistType,$htmlwhite))
 				$rowdata += @(,('Virtual CPUs',($global:htmlsb),$CPUCount,$htmlwhite))
@@ -17443,6 +17586,27 @@ Function ProcessCitrixPolicies
 							OutputPolicySetting $txt $Setting.DragDrop.State 
 						}
 					}
+					If((validStateProp $Setting RemoteCredentialGuard State ) -and ($Setting.RemoteCredentialGuard.State -ne "NotConfigured"))
+					{
+						$txt = "ICA\Enhanced domain passthrough for single sign on"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.RemoteCredentialGuard.State;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.RemoteCredentialGuard.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.RemoteCredentialGuard.State 
+						}
+					}
 					If((validStateProp $Setting AllowFidoRedirection State ) -and ($Setting.AllowFidoRedirection.State -ne "NotConfigured"))
 					{
 						$txt = "ICA\FIDO2 Redirection"
@@ -17484,6 +17648,92 @@ Function ProcessCitrixPolicies
 						{
 							OutputPolicySetting $txt $Setting.HDXDirect.State 
 						}
+					}
+					If((validStateProp $Setting HDXDirectMode State ) -and ($Setting.HDXDirectMode.State -ne "NotConfigured"))
+					{
+						#added in 2308
+						$txt = "ICA\HDX Direct mode"
+						$tmp = ""
+						Switch ($Setting.HDXDirectMode.Value)
+						{
+							"InternalOnly"		{$tmp = "Internal only"; Break}
+							"InternalAndExternal"	{$tmp = "Internal and external"; Break}
+							Default			{$tmp = "HDX Direct mode: $($Setting.HDXDirectMode.Value)"; Break}
+						}
+						
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $tmp;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$tmp,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $tmp 
+						}
+						$tmp = $Null
+					}
+					If((validStateProp $Setting HDXDirectPortRange State ) -and ($Setting.HDXDirectPortRange.State -ne "NotConfigured"))
+					{
+						#added in 2308
+						$txt = "ICA\HDX Direct port range"
+						$array = $Setting.HDXDirectPortRange.Value.Split(',')
+						$tmp = $array[0]
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $tmp;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$tmp,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $tmp 
+						}
+
+						$txt = ""
+						$cnt = -1
+						ForEach($element in $array)
+						{
+							$cnt++
+							
+							If($cnt -ne 0)
+							{
+								$tmp = "$($element) "
+								If($MSWord -or $PDF)
+								{
+									$SettingsWordTable += @{
+									Text = "";
+									Value = $tmp;
+									}
+								}
+								If($HTML)
+								{
+									$rowdata += @(,(
+									"",$htmlbold,
+									$tmp,$htmlwhite))
+								}
+								If($Text)
+								{
+									OutputPolicySetting "`t`t`t`t`t`t" $tmp
+								}
+							}
+						}
+						$array = $Null
+						$tmp = $Null
 					}
 					If((validStateProp $Setting AllowWIARedirection State ) -and ($Setting.AllowWIARedirection.State -ne "NotConfigured"))
 					{
@@ -17690,11 +17940,11 @@ Function ProcessCitrixPolicies
 						$tmp = ""
 						Switch ($Setting.PrimarySelectionUpdateMode.Value)
 						{
-							"AllUpdatesAllowed"		{$tmp = "Selection changes are updated on both client and host"; Break}
-							"AllUpdatesDenied"		{$tmp = "Select changes are not updated on neither client nor host"; Break}
+							"AllUpdatesAllowed"	{$tmp = "Selection changes are updated on both client and host"; Break}
+							"AllUpdatesDenied"	{$tmp = "Select changes are not updated on neither client nor host"; Break}
 							"UpdateToClientDenied"	{$tmp = "Host selection changes are not updated to client"; Break}
 							"UpdateToHostDenied"	{$tmp = "Client selection changes are not updated to host"; Break}
-							Default					{$tmp = "Primary selection update mode: $($Setting.PrimarySelectionUpdateMode.Value)"; Break}
+							Default			{$tmp = "Primary selection update mode: $($Setting.PrimarySelectionUpdateMode.Value)"; Break}
 						}
 						
 						If($MSWord -or $PDF)
@@ -17715,6 +17965,28 @@ Function ProcessCitrixPolicies
 							OutputPolicySetting $txt $tmp 
 						}
 						$tmp = $Null
+					}
+					If((validStateProp $Setting RemoteCredentialGuard State ) -and ($Setting.RemoteCredentialGuard.State -ne "NotConfigured"))
+					{
+						#added in 2308
+						$txt = "ICA\Remote Credential Guard mode"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.RemoteCredentialGuard.State;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.RemoteCredentialGuard.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.RemoteCredentialGuard.State 
+						}
 					}
 					If((validStateProp $Setting RendezvousProtocol State ) -and ($Setting.RendezvousProtocol.State -ne "NotConfigured"))
 					{
@@ -17823,6 +18095,28 @@ Function ProcessCitrixPolicies
 							OutputPolicySetting $txt $Setting.RestrictSessionClipboardWrite.State 
 						}
 					}
+					If((validStateProp $Setting SecureHDX State ) -and ($Setting.SecureHDX.State -ne "NotConfigured"))
+					{
+						#added in 2308
+						$txt = "ICA\Secure HDX"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.SecureHDX.State;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.SecureHDX.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.SecureHDX.State 
+						}
+					}
 					If((validStateProp $Setting SessionClipboardWriteAllowedFormats State ) -and ($Setting.SessionClipboardWriteAllowedFormats.State -ne "NotConfigured"))
 					{
 						$txt = "ICA\Session clipboard write allowed formats"
@@ -17906,6 +18200,28 @@ Function ProcessCitrixPolicies
 							}
 						}
 					}
+					If((validStateProp $Setting VdaUpgradeProxy State ) -and ($Setting.VdaUpgradeProxy.State -ne "NotConfigured"))
+					{
+						#added in 2311
+						$txt = "ICA\VDA upgrade proxy configuration"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.VdaUpgradeProxy.Value;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.VdaUpgradeProxy.Value,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.VdaUpgradeProxy.Value 
+						}
+					}
 					If((validStateProp $Setting VirtualChannelWhiteList State ) -and ($Setting.VirtualChannelWhiteList.State -ne "NotConfigured"))
 					{
 						$txt = "ICA\Virtual channel allow list" #renamed in 2103
@@ -17968,7 +18284,146 @@ Function ProcessCitrixPolicies
 							$tmp = $Null
 						}
 					}
+					If((validStateProp $Setting VirtualChannelWhiteListLogThrottling State ) -and ($Setting.VirtualChannelWhiteListLogThrottling.State -ne "NotConfigured"))
+					{
+						#added in 2308
+						$txt = "ICA\Virtual channel allow list log throttling (hours)"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.VirtualChannelWhiteListLogThrottling.Value;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.VirtualChannelWhiteListLogThrottling.Value,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.VirtualChannelWhiteListLogThrottling.Value 
+						}
+					}
+					If((validStateProp $Setting VirtualChannelWhiteListLogging State ) -and ($Setting.VirtualChannelWhiteListLogging.State -ne "NotConfigured"))
+					{
+						#added in 2308
+						$txt = "ICA\Virtual channel allow list logging"
+						$tmp = ""
+						Switch ($Setting.VirtualChannelWhiteListLogging.Value)
+						{
+							"LogWarningsOnly"	{$tmp = "Log Warnings Only"; Break}
+							"Disabled"		{$tmp = "Disabled"; Break}
+							"LogAllEvents"		{$tmp = "Log All Events"; Break}
+							Default			{$tmp = "Virtual channel allow list logging: $($Setting.VirtualChannelWhiteListLogging.Value)"; Break}
+						}
+						
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $tmp;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$tmp,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $tmp 
+						}
+						$tmp = $Null
+					}
 					
+					Write-Verbose "$(Get-Date -Format G): `t`t`tICA\App Protection"
+					If((validStateProp $Setting AppProtectionPostureCheck State ) -and ($Setting.AppProtectionPostureCheck.State -ne "NotConfigured"))
+					{
+						#new in CVAD 2308
+						$txt = "ICA\App Protection\Posture check for Citrix Workspace App"
+						If(validStateProp $Setting AppProtectionPostureCheck Values )
+						{
+							$tmpArray = $Setting.AppProtectionPostureCheck.Values
+							$tmp = ""
+							$cnt = 0
+							ForEach($Thing in $TmpArray)
+							{
+								If($Null -eq $Thing)
+								{
+									$Thing = ''
+								}
+								$cnt++
+								$tmp = "$($Thing) "
+								If($cnt -eq 1)
+								{
+									If($MSWord -or $PDF)
+									{
+										$SettingsWordTable += @{
+										Text = $txt;
+										Value = $tmp;
+										}
+									}
+									If($HTML)
+									{
+										$rowdata += @(,(
+										$txt,$htmlbold,
+										$tmp,$htmlwhite))
+									}
+									If($Text)
+									{
+										OutputPolicySetting $txt $tmp
+									}
+								}
+								Else
+								{
+									If($MSWord -or $PDF)
+									{
+										$SettingsWordTable += @{
+										Text = "";
+										Value = $tmp;
+										}
+									}
+									If($HTML)
+									{
+										$rowdata += @(,(
+										"",$htmlbold,
+										$tmp,$htmlwhite))
+									}
+									If($Text)
+									{
+										OutputPolicySetting "`t`t`t`t`t       " $tmp
+									}
+								}
+							}
+							$TmpArray = $Null
+							$tmp = $Null
+						}
+						Else
+						{
+							$tmp = "No Posture check for Citrix Workspace App list were found"
+							If($MSWord -or $PDF)
+							{
+								$SettingsWordTable += @{
+								Text = $txt;
+								Value = $tmp;
+								}
+							}
+							If($HTML)
+							{
+								$rowdata += @(,(
+								$txt,$htmlbold,
+								$tmp,$htmlwhite))
+							}
+							If($Text)
+							{
+								OutputPolicySetting $txt $tmp
+							}
+						}
+					}
+
 					Write-Verbose "$(Get-Date -Format G): `t`t`tICA\Audio"
 					If((validStateProp $Setting EnableAdaptiveAudio State ) -and ($Setting.EnableAdaptiveAudio.State -ne "NotConfigured"))
 					{
@@ -18761,6 +19216,27 @@ Function ProcessCitrixPolicies
 						}
 						$array = $Null
 						$tmp = $Null
+					}
+					If((validStateProp $Setting BidirectionalRedirectionConfig State ) -and ($Setting.BidirectionalRedirectionConfig.State -ne "NotConfigured"))
+					{
+						$txt = "ICA\Bidirectional Content Redirection\Bidirectional content redirection configuration"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.BidirectionalRedirectionConfig.Value;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.BidirectionalRedirectionConfig.Value,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.BidirectionalRedirectionConfig.Value 
+						}
 					}
 
 					Write-Verbose "$(Get-Date -Format G): `t`t`tICA\Client Sensors\Location"
@@ -21960,7 +22436,7 @@ Function ProcessCitrixPolicies
 					}
 					If((validStateProp $Setting UpcSslFips State ) -and ($Setting.UpcSslFips.State -ne "NotConfigured"))
 					{
-						$txt = "ICA\Printing\Universal Print Server\SSL FIPS Mode"
+						$txt = "ICA\Printing\Universal Print Server\UPS FIPS Mode" #in 2311 renamed from SSL FIPS mode to UPS FIPS mode
 						If($MSWord -or $PDF)
 						{
 							$SettingsWordTable += @{
@@ -24325,6 +24801,28 @@ Function ProcessCitrixPolicies
 							OutputPolicySetting $txt $Setting.VhdStorePath_Part.State
 						}
 					}
+					If((validStateProp $Setting VhdContainerCapacity_Part State ) -and ($Setting.VhdContainerCapacity_Part.State -ne "NotConfigured"))
+					{
+						#added in 2308
+						$txt = "Profile Management\Advanced settings\Default capacity of VHD containers (GB)"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.VhdContainerCapacity_Part.Value;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.VhdContainerCapacity_Part.Value,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.VhdContainerCapacity_Part.Value 
+						}
+					}
 					If((validStateProp $Setting DisableDynamicConfig State ) -and ($Setting.DisableDynamicConfig.State -ne "NotConfigured"))
 					{
 						$txt = "Profile Management\Advanced settings\Disable automatic configuration"
@@ -24499,7 +24997,7 @@ Function ProcessCitrixPolicies
 					}
 					If((validStateProp $Setting FreeRatio4Compaction_Part State ) -and ($Setting.FreeRatio4Compaction_Part.State -ne "NotConfigured"))
 					{
-						$txt = "Profile Management\Advanced settings\Free space ration (%)"
+						$txt = "Profile Management\Advanced settings\Free space ratio to trigger VHD disk compaction(%)"
 						If($MSWord -or $PDF)
 						{
 							$SettingsWordTable += @{
@@ -24562,7 +25060,7 @@ Function ProcessCitrixPolicies
 					}
 					If((validStateProp $Setting NLogoffs4Compaction_Part State ) -and ($Setting.NLogoffs4Compaction_Part.State -ne "NotConfigured"))
 					{
-						$txt = "Profile Management\Advanced settings\Number of logoffs"
+						$txt = "Profile Management\Advanced settings\Number of logoffs to trigger VHD disk compaction"
 						If($MSWord -or $PDF)
 						{
 							$SettingsWordTable += @{
@@ -24642,6 +25140,72 @@ Function ProcessCitrixPolicies
 						If($Text)
 						{
 							OutputPolicySetting $txt $Setting.ProcessCookieFiles.State
+						}
+					}
+					If((validStateProp $Setting VhdAutoExpansionIncrement_Part State ) -and ($Setting.VhdAutoExpansionIncrement_Part.State -ne "NotConfigured"))
+					{
+						#added in 2308
+						$txt = "Profile Management\Advanced settings\Profile container auto-expansion increment (GB)"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.VhdAutoExpansionIncrement_Part.Value;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.VhdAutoExpansionIncrement_Part.Value,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.VhdAutoExpansionIncrement_Part.Value 
+						}
+					}
+					If((validStateProp $Setting VhdAutoExpansionLimit_Part State ) -and ($Setting.VhdAutoExpansionLimit_Part.State -ne "NotConfigured"))
+					{
+						#added in 2308
+						$txt = "Profile Management\Advanced settings\Profile container auto-expansion limit (GB)"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.VhdAutoExpansionLimit_Part.Value;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.VhdAutoExpansionLimit_Part.Value,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.VhdAutoExpansionLimit_Part.Value 
+						}
+					}
+					If((validStateProp $Setting VhdAutoExpansionThreshold_Part State ) -and ($Setting.VhdAutoExpansionThreshold_Part.State -ne "NotConfigured"))
+					{
+						#added in 2308
+						$txt = "Profile Management\Advanced settings\Profile container auto-expansion threshold (%)"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.VhdAutoExpansionThreshold_Part.Value;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.VhdAutoExpansionThreshold_Part.Value,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.VhdAutoExpansionThreshold_Part.Value 
 						}
 					}
 					If((validStateProp $Setting MultiSiteReplication_Part State ) -and ($Setting.MultiSiteReplication_Part.State -ne "NotConfigured"))
@@ -24809,6 +25373,57 @@ Function ProcessCitrixPolicies
 							{
 								OutputPolicySetting $txt $tmp
 							}
+						}
+					}
+					If((validStateProp $Setting UserStoreSelection_Part State ) -and ($Setting.UserStoreSelection_Part.State -ne "NotConfigured"))
+					{
+						#added in 2311
+						$txt = "Profile Management\Advanced settings\User store selection method"
+						$tmp = ""
+						Switch ($Setting.UserStoreSelection_Part.Value)
+						{
+							"Config"	{$tmp = "Configuration order"; Break}
+							"AccPerf"	{$tmp = "Access performance"; Break}
+							Default		{$tmp = "User store selection method could not be determined: $($Setting.UserStoreSelection_Part.Value)"; Break}
+						}
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $tmp;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$tmp,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $tmp 
+						}
+					}
+					If((validStateProp $Setting UwpAppsRoaming State ) -and ($Setting.UwpAppsRoaming.State -ne "NotConfigured"))
+					{
+						#added in 2308
+						$txt = "Profile Management\Advanced settings\UWP app roaming"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.UwpAppsRoaming.State;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.UwpAppsRoaming.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.UwpAppsRoaming.State
 						}
 					}
 
@@ -25836,6 +26451,27 @@ Function ProcessCitrixPolicies
 							{
 								OutputPolicySetting $txt $Setting.SharedStoreFileInclusionList_Part.State
 							}
+						}
+					}
+					If((validStateProp $Setting SharedStoreProfileContainerFileSizeLimit_Part State ) -and ($Setting.SharedStoreProfileContainerFileSizeLimit_Part.State -ne "NotConfigured"))
+					{
+						$txt = "Profile Management\File deduplication\Minimum size of files to deduplicate from profile containers"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.SharedStoreProfileContainerFileSizeLimit_Part.Value;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.SharedStoreProfileContainerFileSizeLimit_Part.Value,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.SharedStoreProfileContainerFileSizeLimit_Part.Value
 						}
 					}
 
@@ -28574,6 +29210,50 @@ Function ProcessCitrixPolicies
 					}
 
 					Write-Verbose "$(Get-Date -Format G): `t`t`tProfile Management\Profile container settings"
+					If((validStateProp $Setting DisableConcurrentAccessToOneDriveContainer State ) -and ($Setting.DisableConcurrentAccessToOneDriveContainer.State -ne "NotConfigured"))
+					{
+						#added in 2311
+						$txt = "Profile Management\Profile container settings\Enable exclusive access to VHD containers - OneDrive container"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.DisableConcurrentAccessToOneDriveContainer.State;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.DisableConcurrentAccessToOneDriveContainer.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.DisableConcurrentAccessToOneDriveContainer.State
+						}
+					}
+					If((validStateProp $Setting DisableConcurrentAccessToProfileContainer State ) -and ($Setting.DisableConcurrentAccessToProfileContainer.State -ne "NotConfigured"))
+					{
+						#added in 2311
+						$txt = "Profile Management\Profile container settings\Enable exclusive access to VHD containers - Profile container"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.DisableConcurrentAccessToProfileContainer.State;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.DisableConcurrentAccessToProfileContainer.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.DisableConcurrentAccessToProfileContainer.State
+						}
+					}
 					If((validStateProp $Setting ProfileContainerLocalCache State ) -and ($Setting.ProfileContainerLocalCache.State -ne "NotConfigured"))
 					{
 						$txt = "Profile Management\Profile container settings\Enable local caching for profile containers"
@@ -28593,6 +29273,28 @@ Function ProcessCitrixPolicies
 						If($Text)
 						{
 							OutputPolicySetting $txt $Setting.ProfileContainerLocalCache.State
+						}
+					}
+					If((validStateProp $Setting EnableVHDAutoExtend State ) -and ($Setting.EnableVHDAutoExtend.State -ne "NotConfigured"))
+					{
+						#added in 2308
+						$txt = "Profile Management\Profile container settings\Enable VHD auto-expansion for profile container"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.EnableVHDAutoExtend.State;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.EnableVHDAutoExtend.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.EnableVHDAutoExtend.State
 						}
 					}
 					If((validStateProp $Setting EnableVHDDiskCompaction State ) -and ($Setting.EnableVHDDiskCompaction.State -ne "NotConfigured"))
@@ -28823,6 +29525,282 @@ Function ProcessCitrixPolicies
 							If($Text)
 							{
 								OutputPolicySetting $txt $Setting.ProfileContainerInclusionListDir_Part.State
+							}
+						}
+					}
+					If((validStateProp $Setting PreventLoginWhenMountFailed_Part State ) -and ($Setting.PreventLoginWhenMountFailed_Part.State -ne "NotConfigured"))
+					{
+						#added in 2311
+						$txt = "Profile Management\Profile container settings\Log off users when profile container is not available during logon"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.PreventLoginWhenMountFailed_Part.State;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.PreventLoginWhenMountFailed_Part.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.PreventLoginWhenMountFailed_Part.State
+						}
+					}
+					If((validStateProp $Setting DisableConcurrentAccessToOneDriveContainer State ) -and ($Setting.DisableConcurrentAccessToOneDriveContainer.State -ne "NotConfigured"))
+					{
+						#added in 2308
+						$txt = "Profile Management\Profile container settings\OneDrive container"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.DisableConcurrentAccessToOneDriveContainer.State;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.DisableConcurrentAccessToOneDriveContainer.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.DisableConcurrentAccessToOneDriveContainer.State
+						}
+					}
+					If((validStateProp $Setting ProfileContainer_Part State ) -and ($Setting.ProfileContainer_Part.State -ne "NotConfigured"))
+					{
+						#added in 2308
+						$txt = "Profile Management\Profile container settings\OneDrive container - List of OneDrive folders"
+						If($Setting.ProfileContainer_Part.State -eq "Enabled")
+						{
+							If(validStateProp $Setting ProfileContainer_Part Values )
+							{
+								$tmpArray = $Setting.ProfileContainer_Part.Values
+								$tmp = ""
+								$cnt = 0
+								ForEach($Thing in $tmpArray)
+								{
+									$cnt++
+									$tmp = "$($Thing)"
+									If($cnt -eq 1)
+									{
+										If($MSWord -or $PDF)
+										{
+											$WordTableRowHash = @{
+											Text = $txt;
+											Value = $tmp;
+											}
+											$SettingsWordTable += $WordTableRowHash;
+										}
+										If($HTML)
+										{
+											$rowdata += @(,(
+											$txt,$htmlbold,
+											$tmp,$htmlwhite))
+										}
+										If($Text)
+										{
+											OutputPolicySetting $txt $tmp
+										}
+									}
+									Else
+									{
+										If($MSWord -or $PDF)
+										{
+											$WordTableRowHash = @{
+											Text = "";
+											Value = $tmp;
+											}
+											$SettingsWordTable += $WordTableRowHash;
+										}
+										If($HTML)
+										{
+											$rowdata += @(,(
+											"",$htmlbold,
+											$tmp,$htmlwhite))
+										}
+										If($Text)
+										{
+											OutputPolicySetting "`t`t`t`t`t  " $tmp
+										}
+									}
+								}
+								$tmpArray = $Null
+								$tmp = $Null
+							}
+							Else
+							{
+								$tmp = "No Exclusion list was found"
+								If($MSWord -or $PDF)
+								{
+									$WordTableRowHash = @{
+									Text = $txt;
+									Value = $tmp;
+									}
+									$SettingsWordTable += $WordTableRowHash;
+								}
+								If($HTML)
+								{
+									$rowdata += @(,(
+									$txt,$htmlbold,
+									$tmp,$htmlwhite))
+								}
+								If($Text)
+								{
+									OutputPolicySetting $txt $tmp
+								}
+							}
+						}
+						Else
+						{
+							If($MSWord -or $PDF)
+							{
+								$WordTableRowHash = @{
+								Text = $txt;
+								Value = $Setting.ExclusionList_Part.State;
+								}
+								$SettingsWordTable += $WordTableRowHash;
+							}
+							If($HTML)
+							{
+								$rowdata += @(,(
+								$txt,$htmlbold,
+								$Setting.ExclusionList_Part.State,$htmlwhite))
+							}
+							If($Text)
+							{
+								OutputPolicySetting $txt $Setting.ExclusionList_Part.State
+							}
+						}
+					}
+					If((validStateProp $Setting DisableConcurrentAccessToProfileContainer State ) -and ($Setting.DisableConcurrentAccessToProfileContainer.State -ne "NotConfigured"))
+					{
+						$txt = "Profile Management\Profile container settings\Profile container"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.DisableConcurrentAccessToProfileContainer.State;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.DisableConcurrentAccessToProfileContainer.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.DisableConcurrentAccessToProfileContainer.State
+						}
+					}
+					If((validStateProp $Setting GroupsToAccessProfileContainer_Part State ) -and ($Setting.GroupsToAccessProfileContainer_Part.State -ne "NotConfigured"))
+					{
+						$txt = "Profile Management\Profile container settings\Users and groups to access profile container"
+						If($Setting.GroupsToAccessProfileContainer_Part.State -eq "Enabled")
+						{
+							If(validStateProp $Setting GroupsToAccessProfileContainer_Part Values )
+							{
+								$tmpArray = $Setting.GroupsToAccessProfileContainer_Part.Values
+								$tmp = ""
+								$cnt = 0
+								ForEach($Thing in $tmpArray)
+								{
+									$cnt++
+									$tmp = "$($Thing)"
+									If($cnt -eq 1)
+									{
+										If($MSWord -or $PDF)
+										{
+											$WordTableRowHash = @{
+											Text = $txt;
+											Value = $tmp;
+											}
+											$SettingsWordTable += $WordTableRowHash;
+										}
+										If($HTML)
+										{
+											$rowdata += @(,(
+											$txt,$htmlbold,
+											$tmp,$htmlwhite))
+										}
+										If($Text)
+										{
+											OutputPolicySetting $txt $tmp
+										}
+									}
+									Else
+									{
+										If($MSWord -or $PDF)
+										{
+											$WordTableRowHash = @{
+											Text = "";
+											Value = $tmp;
+											}
+											$SettingsWordTable += $WordTableRowHash;
+										}
+										If($HTML)
+										{
+											$rowdata += @(,(
+											"",$htmlbold,
+											$tmp,$htmlwhite))
+										}
+										If($Text)
+										{
+											OutputPolicySetting "`t`t`t`t`t`t`t`t`t`t     " $tmp
+										}
+									}
+								}
+								$tmpArray = $Null
+								$tmp = $Null
+							}
+							Else
+							{
+								$tmp = "No Users and groups list was found"
+								If($MSWord -or $PDF)
+								{
+									$WordTableRowHash = @{
+									Text = $txt;
+									Value = $tmp;
+									}
+									$SettingsWordTable += $WordTableRowHash;
+								}
+								If($HTML)
+								{
+									$rowdata += @(,(
+									$txt,$htmlbold,
+									$tmp,$htmlwhite))
+								}
+								If($Text)
+								{
+									OutputPolicySetting $txt $tmp
+								}
+							}
+						}
+						Else
+						{
+							If($MSWord -or $PDF)
+							{
+								$WordTableRowHash = @{
+								Text = $txt;
+								Value = $Setting.GroupsToAccessProfileContainer_Part.State;
+								}
+								$SettingsWordTable += $WordTableRowHash;
+							}
+							If($HTML)
+							{
+								$rowdata += @(,(
+								$txt,$htmlbold,
+								$Setting.GroupsToAccessProfileContainer_Part.State,$htmlwhite))
+							}
+							If($Text)
+							{
+								OutputPolicySetting $txt $Setting.GroupsToAccessProfileContainer_Part.State
 							}
 						}
 					}
@@ -29852,6 +30830,113 @@ Function ProcessCitrixPolicies
 					}
 
 					Write-Verbose "$(Get-Date -Format G): `t`t`tUser Personalization Layer"
+					If((validStateProp $Setting UplCustomizedUserLayerSizeInGb State ) -and ($Setting.UplCustomizedUserLayerSizeInGb.State -ne "NotConfigured"))
+					{
+						$txt = "User Personalization Layer\Customized User Layer Sizer in GB"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.UplCustomizedUserLayerSizeInGb.Value;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.UplCustomizedUserLayerSizeInGb.Value,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.UplCustomizedUserLayerSizeInGb.Value
+						}
+					}
+					If((validStateProp $Setting UplGroupsUsingCustomizedUserLayerSizeState ) -and ($Setting.UplUserExclusions.State -ne "NotConfigured"))
+					{
+						$txt = "User Personalization Layer\Groups using customized user layer size"
+						If((validStateProp $Setting UplGroupsUsingCustomizedUserLayerSizeState ) -and ($Setting.UplUserExclusions.State -ne "NotConfigured"))
+						{
+							$tmpArray = $Setting.UplUserExclusions.Values
+							$array = $Null
+							$tmp = ""
+							$cnt = 0
+							ForEach($Thing in $TmpArray)
+							{
+								If($Null -eq $Thing)
+								{
+									$Thing = ''
+								}
+								$cnt++
+								$tmp = "$($Thing) "
+								If($cnt -eq 1)
+								{
+									If($MSWord -or $PDF)
+									{
+										$WordTableRowHash = @{
+										Text = $txt;
+										Value = $tmp;
+										}
+										$SettingsWordTable += $WordTableRowHash;
+									}
+									If($HTML)
+									{
+										$rowdata += @(,(
+										$txt,$htmlbold,
+										$tmp,$htmlwhite))
+									}
+									If($Text)
+									{
+										OutputPolicySetting $txt $tmp
+									}
+								}
+								Else
+								{
+									If($MSWord -or $PDF)
+									{
+										$WordTableRowHash = @{
+										Text = "";
+										Value = $tmp;
+										}
+										$SettingsWordTable += $WordTableRowHash;
+									}
+									If($HTML)
+									{
+										$rowdata += @(,(
+										"",$htmlbold,
+										$tmp,$htmlwhite))
+									}
+									If($Text)
+									{
+										OutputPolicySetting "`t`t`t`t`t`t    " $tmp
+									}
+								}
+							}
+							$TmpArray = $Null
+							$tmp = $Null
+						}
+						Else
+						{
+							$tmp = "No User Layer Exclusions were found"
+							If($MSWord -or $PDF)
+							{
+								$WordTableRowHash = @{
+								Text = $txt;
+								Value = $tmp;
+								}
+								$SettingsWordTable += $WordTableRowHash;
+							}
+							If($HTML)
+							{
+								$rowdata += @(,(
+								$txt,$htmlbold,
+								$tmp,$htmlwhite))
+							}
+							If($Text)
+							{
+								OutputPolicySetting $txt $tmp
+							}
+						}
+					}
 					If((validStateProp $Setting UplUserExclusions State ) -and ($Setting.UplUserExclusions.State -ne "NotConfigured"))
 					{
 						$txt = "User Personalization Layer\User Layer Exclusions"
@@ -30015,6 +31100,32 @@ Function ProcessCitrixPolicies
 							OutputPolicySetting $txt $Setting.VdcPolicyEnable.State
 						}
 					}
+
+					#added in 3.42
+					Write-Verbose "$(Get-Date -Format G): `t`t`tVDA Data Collection\Performance"
+					If((validStateProp $Setting EnableVdaDiagnosticsCollection State ) -and ($Setting.EnableVdaDiagnosticsCollection.State -ne "NotConfigured"))
+					{
+						$txt = "VDA Data Collection\Performance\Diagnostic data collection for performance monitoring"
+						If($MSWord -or $PDF)
+						{
+							$WordTableRowHash = @{
+							Text = $txt;
+							Value = $Setting.EnableVdaDiagnosticsCollection.State;
+							}
+							$SettingsWordTable += $WordTableRowHash;
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.EnableVdaDiagnosticsCollection.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.EnableVdaDiagnosticsCollection.State
+						}
+					}
+					#end added in 3.42
 
 					#added in 3.41
 					Write-Verbose "$(Get-Date -Format G): `t`t`tVDA Data Collection\Security"
@@ -31470,6 +32581,16 @@ Function OutputSiteSettings
 		Default {$xVDAVersion = "Unable to determine VDA version: $($Script:CVADSite1.DefaultMinimumFunctionalLevel)"; Break}
 	}
 
+	$LoadBalancingSessionsonMachines = ""
+	If($Script:CVADSite1.UseVerticalScalingForRdsLaunches -eq $False)
+	{
+		$LoadBalancingSessionsonMachines = "Horizontal load balancing"
+	}
+	ELse
+	{
+		$LoadBalancingSessionsonMachines = "Vertical load balancing"
+	}
+	
 	$SecurityKeyValue = "Not set"
 	$itemKeys = $Script:CVADSite2.MetadataMap.Keys
 
@@ -31500,25 +32621,28 @@ Function OutputSiteSettings
 		$ScriptInformation = New-Object System.Collections.ArrayList
 		$ScriptInformation.Add(@{Data = "Site name"; Value = $CVADSiteName; }) > $Null
 		$ScriptInformation.Add(@{Data = "Default StoreFront address"; Value = $DefaultStoreFrontAddress; }) > $Null
+		$ScriptInformation.Add(@{Data = "Always Bypass Authentication for Cached Resources"; Value = $Script:CVADSite1.AlwaysBypassAuthForCachedResources.ToString(); }) > $Null #new in 3.42
 		$ScriptInformation.Add(@{Data = "Base OU"; Value = $Script:CVADSite1.BaseOU; }) > $Null
 		$ScriptInformation.Add(@{Data = "Bypass Authentication for Cached Resources"; Value = $Script:CVADSite1.BypassAuthForCachedResources.ToString(); }) > $Null #new in 1.15
 		$ScriptInformation.Add(@{Data = "Color Depth"; Value = $xColorDepth; }) > $Null
+		$ScriptInformation.Add(@{Data = "Connection Leasing Enabled"; Value = $Script:CVADSite1.ConnectionLeasingEnabled.ToString(); }) > $Null #new in 3.42
 		$ScriptInformation.Add(@{Data = "Credential Forwarding to Cloud Allowed"; Value = $Script:CVADSite1.CredentialForwardingToCloudAllowed.ToString(); }) > $Null #new in 1.15
 		$ScriptInformation.Add(@{Data = "Default Minimum Functional Level"; Value = $xVDAVersion; }) > $Null
 		$ScriptInformation.Add(@{Data = "Default Reuse Machines Without Shutdown In Outage"; Value = $Script:CVADSite1.DefaultReuseMachinesWithoutShutdownInOutage.ToString(); }) > $Null #new in 1.15
 		$ScriptInformation.Add(@{Data = "Delete Resource Leases on Logoff"; Value = $Script:CVADSite1.DeleteResourceLeasesOnLogOff.ToString(); }) > $Null #new in 1.15
 		$ScriptInformation.Add(@{Data = "DNS Resolution Enabled"; Value = $Script:CVADSite1.DnsResolutionEnabled.ToString(); }) > $Null
+		$ScriptInformation.Add(@{Data = "Load Balancing Sessions on Machines"; Value = $LoadBalancingSessionsonMachines; }) > $Null #new in 3.42
 		$ScriptInformation.Add(@{Data = "Local Host Cache Enabled"; Value = $Script:CVADSite1.LocalHostCacheEnabled.ToString(); }) > $Null
 		$ScriptInformation.Add(@{Data = "Resource Lease Validity Period in Days"; Value = $Script:CVADSite1.ResourceLeaseValidityPeriodInDays.ToString(); }) > $Null #new in 1.15
 		$ScriptInformation.Add(@{Data = "Resource Leasing Enabled"; Value = $Script:CVADSite1.ResourceLeasingEnabled.ToString(); }) > $Null #new in 1.15
 		$ScriptInformation.Add(@{Data = "Reuse Machines Without Shutdown in Outage Allowed"; Value = $Script:CVADSite1.ReuseMachinesWithoutShutdownInOutageAllowed.ToString(); }) > $Null
 		$ScriptInformation.Add(@{Data = "Secure ICA Required"; Value = $Script:CVADSite1.SecureIcaRequired.ToString(); }) > $Null
+		$ScriptInformation.Add(@{Data = "Security Key Management Enabled"; Value = $SecurityKeyValue; }) > $Null
 		$ScriptInformation.Add(@{Data = "Telemetry Headless Launch Enabled"; Value = $Script:CVADSite1.TelemetryHeadlessLaunchEnabled.ToString(); }) > $Null #new in 1.15
 		$ScriptInformation.Add(@{Data = "Telemetry Launch Minimum Time Interval in Minutes"; Value = $Script:CVADSite1.TelemetryLaunchMinTimeIntervalMins.ToString(); }) > $Null #new in 1.15
 		$ScriptInformation.Add(@{Data = "Telemetry Launch Shadow Delay in Minutes"; Value = $Script:CVADSite1.TelemetryLaunchShadowDelayMins.ToString(); }) > $Null #new in 1.15
 		$ScriptInformation.Add(@{Data = "Trust Managed Anonymous XML Service Requests"; Value = $Script:CVADSite1.TrustManagedAnonymousXmlServiceRequests.ToString(); }) > $Null
 		$ScriptInformation.Add(@{Data = "Trust Requests Sent to the XML Service Port"; Value = $Script:CVADSite1.TrustRequestsSentToTheXmlServicePort.ToString(); }) > $Null
-		$ScriptInformation.Add(@{Data = "Security Key Management Enabled"; Value = $SecurityKeyValue; }) > $Null
 		$Table = AddWordTable -Hashtable $ScriptInformation `
 		-Columns Data,Value `
 		-List `
@@ -31541,25 +32665,28 @@ Function OutputSiteSettings
 		Line 0 ""
 		Line 1 "Site name`t`t`t`t`t`t: " $CVADSiteName
 		Line 1 "Default StoreFront address`t`t`t`t: " $DefaultStoreFrontAddress
+		Line 1 "Always Bypass Authentication for Cached Resources`t`t: " $Script:CVADSite1.AlwaysBypassAuthForCachedResources.ToString() #new in 3.42
 		Line 1 "Base OU`t`t`t`t`t`t`t: " $Script:CVADSite1.BaseOU
 		Line 1 "Bypass Authentication for Cached Resources`t`t: " $Script:CVADSite1.BypassAuthForCachedResources.ToString() #new in 1.15
 		Line 1 "Color Depth`t`t`t`t`t`t: " $xColorDepth
+		Line 1 "Connection Leasing Enabled`t`t`t`t: " $Script:CVADSite1.ConnectionLeasingEnabled.ToString() #new in 3.42
 		Line 1 "Credential Forwarding to Cloud Allowed`t`t`t: " $Script:CVADSite1.CredentialForwardingToCloudAllowed.ToString() #new in 1.15
 		Line 1 "Default Minimum Functional Level`t`t`t: " $xVDAVersion
 		Line 1 "Default Reuse Machines Without Shutdown In Outage`t: " $Script:CVADSite1.DefaultReuseMachinesWithoutShutdownInOutage.ToString() #new in 1.15
 		Line 1 "Delete Resource Leases on Logoff`t`t`t: " $Script:CVADSite1.DeleteResourceLeasesOnLogOff.ToString() #new in 1.15
 		Line 1 "DNS Resolution Enabled`t`t`t`t`t: " $Script:CVADSite1.DnsResolutionEnabled.ToString()
+		Line 1 "Load Balancing Sessions on Machines`t`t`t: " $LoadBalancingSessionsonMachines #new in 3.42
 		Line 1 "Local Host Cache Enabled`t`t`t`t: " $Script:CVADSite1.LocalHostCacheEnabled.ToString()
 		Line 1 "Resource Lease Validity Period in Days`t`t`t: " $Script:CVADSite1.ResourceLeaseValidityPeriodInDays.ToString() #new in 1.15
 		Line 1 "Resource Leasing Enabled`t`t`t`t: "  $Script:CVADSite1.ResourceLeasingEnabled.ToString() #new in 1.15
 		Line 1 "Reuse Machines Without Shutdown in Outage Allowed`t: " $Script:CVADSite1.ReuseMachinesWithoutShutdownInOutageAllowed.ToString()
 		Line 1 "Secure ICA Required`t`t`t`t`t: " $Script:CVADSite1.SecureIcaRequired.ToString()
+		Line 1 "Security Key Management Enabled`t`t`t`t: " $SecurityKeyValue
 		Line 1 "Telemetry Headless Launch Enabled`t`t`t: " $Script:CVADSite1.TelemetryHeadlessLaunchEnabled.ToString() #new in 1.15
 		Line 1 "Telemetry Launch Minimum Time Interval in Minutes`t: " $Script:CVADSite1.TelemetryLaunchMinTimeIntervalMins.ToString() #new in 1.15
 		Line 1 "Telemetry Launch Shadow Delay in Minutes`t`t: " $Script:CVADSite1.TelemetryLaunchShadowDelayMins.ToString() #new in 1.15
 		Line 1 "Trust Managed Anonymous XML Service Requests`t`t: " $Script:CVADSite1.TrustManagedAnonymousXmlServiceRequests.ToString()
 		Line 1 "Trust Requests Sent to the XML Service Port`t`t: " $Script:CVADSite1.TrustRequestsSentToTheXmlServicePort.ToString()
-		Line 1 "Security Key Management Enabled`t`t`t`t: " $SecurityKeyValue
 		Line 0 ""
 	}
 	If($HTML)
@@ -31569,25 +32696,28 @@ Function OutputSiteSettings
 		$rowdata = @()
 		$columnHeaders = @("Site name",($global:htmlsb),$CVADSiteName,$htmlwhite)
 		$rowdata += @(,('Default StoreFront address',($global:htmlsb),$DefaultStoreFrontAddress,$htmlwhite))
+		$rowdata += @(,("Always Bypass Authentication for Cached Resources",($global:htmlsb),$Script:CVADSite1.AlwaysBypassAuthForCachedResources.ToString(),$htmlwhite)) #new in 3.42
 		$rowdata += @(,("Base OU",($global:htmlsb),$Script:CVADSite1.BaseOU,$htmlwhite))
 		$rowdata += @(,("Bypass Authentication for Cached Resources",($global:htmlsb),$Script:CVADSite1.BypassAuthForCachedResources.ToString(),$htmlwhite)) #new in 1.15
 		$rowdata += @(,("Color Depth",($global:htmlsb),$xColorDepth,$htmlwhite))
+		$rowdata += @(,("Connection Leasing Enabled",($global:htmlsb),$Script:CVADSite1.ConnectionLeasingEnabled.ToString(),$htmlwhite)) #new in 3.42
 		$rowdata += @(,("Credential Forwarding to Cloud Allowed",($global:htmlsb),$Script:CVADSite1.CredentialForwardingToCloudAllowed.ToString(),$htmlwhite)) #new in 1.15
 		$rowdata += @(,("Default Minimum Functional Level",($global:htmlsb),$xVDAVersion,$htmlwhite))
 		$rowdata += @(,("Default Reuse Machines Without Shutdown In Outage",($global:htmlsb),$Script:CVADSite1.DefaultReuseMachinesWithoutShutdownInOutage.ToString(),$htmlwhite)) #new in 1.15
 		$rowdata += @(,("Delete Resource Leases on Logoff",($global:htmlsb),$Script:CVADSite1.DeleteResourceLeasesOnLogOff.ToString(),$htmlwhite)) #new in 1.15
 		$rowdata += @(,("DNS Resolution Enabled",($global:htmlsb),$Script:CVADSite1.DnsResolutionEnabled.ToString(),$htmlwhite))
+		$rowdata += @(,("Load Balancing Sessions on Machines",($global:htmlsb),$LoadBalancingSessionsonMachines,$htmlwhite)) #new in 3.42
 		$rowdata += @(,("Local Host Cache Enabled",($global:htmlsb),$Script:CVADSite1.LocalHostCacheEnabled.ToString(),$htmlwhite))
 		$rowdata += @(,("Resource Lease Validity Period in Days",($global:htmlsb),$Script:CVADSite1.ResourceLeaseValidityPeriodInDays.ToString(),$htmlwhite)) #new in 1.15
 		$rowdata += @(,("Resource Leasing Enabled",($global:htmlsb),$Script:CVADSite1.ResourceLeasingEnabled.ToString(),$htmlwhite)) #new in 1.15
 		$rowdata += @(,("Reuse Machines Without Shutdown in Outage Allowed",($global:htmlsb),$Script:CVADSite1.ReuseMachinesWithoutShutdownInOutageAllowed.ToString(),$htmlwhite))
 		$rowdata += @(,("Secure ICA Required",($global:htmlsb),$Script:CVADSite1.SecureIcaRequired.ToString(),$htmlwhite))
+		$rowdata += @(,("Security Key Management Enabled",($global:htmlsb),$SecurityKeyValue,$htmlwhite))
 		$rowdata += @(,("Telemetry Headless Launch Enabled",($global:htmlsb),$Script:CVADSite1.TelemetryHeadlessLaunchEnabled.ToString(),$htmlwhite)) #new in 1.15
 		$rowdata += @(,("Telemetry Launch Minimum Time Interval in Minutes",($global:htmlsb),$Script:CVADSite1.TelemetryLaunchMinTimeIntervalMins.ToString(),$htmlwhite)) #new in 1.15
 		$rowdata += @(,("Telemetry Launch Shadow Delay in Minutes",($global:htmlsb),$Script:CVADSite1.TelemetryLaunchShadowDelayMins.ToString(),$htmlwhite)) #new in 1.15
 		$rowdata += @(,("Trust Managed Anonymous XML Service Requests",($global:htmlsb),$Script:CVADSite1.TrustManagedAnonymousXmlServiceRequests.ToString(),$htmlwhite))
 		$rowdata += @(,("Trust Requests Sent to the XML Service Port",($global:htmlsb),$Script:CVADSite1.TrustRequestsSentToTheXmlServicePort.ToString(),$htmlwhite))
-		$rowdata += @(,("Security Key Management Enabled",($global:htmlsb),$SecurityKeyValue,$htmlwhite))
 		
 		$msg = ""
 		FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders
@@ -34857,231 +35987,235 @@ Function GetRolePermissions
 	{
 		Switch ($Permission)
 		{
-			"Admin_FullControl"											{$Results.Add("Manage Administrators", "Administrators")}
-			"Admin_Read"												{$Results.Add("View Administrators", "Administrators")}
-			"Admin_RoleControl"											{$Results.Add("Manage Administrator Custom Roles", "Administrators")}
-			"Admin_ScopeControl"										{$Results.Add("Manage Administrator Scopes", "Administrators")}
-			"Manage_ServiceConfigurationData"							{$Results.Add("Manage ServiceSettings", "Administrators")}
+			"Admin_FullControl"						{$Results.Add("Manage Administrators", "Administrators")}
+			"Admin_Read"							{$Results.Add("View Administrators", "Administrators")}
+			"Admin_RoleControl"						{$Results.Add("Manage Administrator Custom Roles", "Administrators")}
+			"Admin_ScopeControl"						{$Results.Add("Manage Administrator Scopes", "Administrators")}
+			"Manage_ServiceConfigurationData"				{$Results.Add("Manage ServiceSettings", "Administrators")}
 			
-			"AppGroupApplications_ChangeTags"							{$Results.Add("Edit Application tags (Application Group)", "Application Groups")}
-			"AppGroupApplications_ChangeUserAssignment"					{$Results.Add("Change users assigned to an application (Application Group)", "Application Groups")}
-			"AppGroupApplications_Create"								{$Results.Add("Create Application (Application Group)", "Application Groups")}
-			"AppGroupApplications_CreateFolder"							{$Results.Add("Create Application Folder (Application Group)", "Application Groups")}
-			"AppGroupApplications_Delete"								{$Results.Add("Delete Application (Application Group)", "Application Groups")}
-			"AppGroupApplications_EditFolder"							{$Results.Add("Edit Application Folder (Application Group)", "Application Groups")}
-			"AppGroupApplications_EditProperties"						{$Results.Add("Edit Application Properties (Application Group)", "Application Groups")}
-			"AppGroupApplications_MoveFolder"							{$Results.Add("Move Application Folder (Application Group)", "Application Groups")}
-			"AppGroupApplications_Read"									{$Results.Add("View Applications (Application Group)", "Application Groups")}
-			"AppGroupApplications_RemoveFolder"							{$Results.Add("Remove Application Folder (Application Group)", "Application Groups")}
-			"ApplicationGroup_AddApplication"							{$Results.Add("Add Application to Application Group", "Application Groups")}
-			"ApplicationGroup_AddScope"									{$Results.Add("Add Application Group to Scope", "Application Groups")}
-			"ApplicationGroup_AddToDesktopGroup"						{$Results.Add("Add Delivery Group to Application Group", "Application Groups")}
-			"ApplicationGroup_ChangeTags"								{$Results.Add("Change Tags on Application Group", "Application Groups")}
-			"ApplicationGroup_ChangeUserAssignment"						{$Results.Add("Edit User Assignment on Application Group", "Application Groups")}
-			"ApplicationGroup_Create"									{$Results.Add("Create Application Group", "Application Groups")}
-			"ApplicationGroup_CreateFolder"								{$Results.Add("Create Application Group Folder", "Application Groups")}
-			"ApplicationGroup_Delete"									{$Results.Add("Delete Application Group", "Application Groups")}
-			"ApplicationGroup_EditFolder"								{$Results.Add("Edit Application Group Folder", "Application Groups")}
-			"ApplicationGroup_EditProperties"							{$Results.Add("Edit Application Group Properties", "Application Groups")}
-			"ApplicationGroup_MoveFolder"								{$Results.Add("Move Application Group Folder", "Application Groups")}
-			"ApplicationGroup_Read"										{$Results.Add("View Application Groups", "Application Groups")}
-			"ApplicationGroup_RemoveApplication"						{$Results.Add("Remove Application from Application Group", "Application Groups")}
-			"ApplicationGroup_RemoveFolder"								{$Results.Add("Remove Application Group Folder", "Application Groups")}
-			"ApplicationGroup_RemoveFromDesktopGroup"					{$Results.Add("Remove Delivery Group from Application Group", "Application Groups")}
-			"ApplicationGroup_RemoveScope"								{$Results.Add("Remove Application Group from Scope", "Application Groups")}
+			"AppGroupApplications_ChangeTags"				{$Results.Add("Edit Application tags (Application Group)", "Application Groups")}
+			"AppGroupApplications_ChangeUserAssignment"			{$Results.Add("Change users assigned to an application (Application Group)", "Application Groups")}
+			"AppGroupApplications_Create"					{$Results.Add("Create Application (Application Group)", "Application Groups")}
+			"AppGroupApplications_CreateFolder"				{$Results.Add("Create Application Folder (Application Group)", "Application Groups")}
+			"AppGroupApplications_Delete"					{$Results.Add("Delete Application (Application Group)", "Application Groups")}
+			"AppGroupApplications_EditFolder"				{$Results.Add("Edit Application Folder (Application Group)", "Application Groups")}
+			"AppGroupApplications_EditProperties"				{$Results.Add("Edit Application Properties (Application Group)", "Application Groups")}
+			"AppGroupApplications_MoveFolder"				{$Results.Add("Move Application Folder (Application Group)", "Application Groups")}
+			"AppGroupApplications_Read"					{$Results.Add("View Applications (Application Group)", "Application Groups")}
+			"AppGroupApplications_RemoveFolder"				{$Results.Add("Remove Application Folder (Application Group)", "Application Groups")}
+			"ApplicationGroup_AddApplication"				{$Results.Add("Add Application to Application Group", "Application Groups")}
+			"ApplicationGroup_AddScope"					{$Results.Add("Add Application Group to Scope", "Application Groups")}
+			"ApplicationGroup_AddToDesktopGroup"				{$Results.Add("Add Delivery Group to Application Group", "Application Groups")}
+			"ApplicationGroup_ChangeTags"					{$Results.Add("Change Tags on Application Group", "Application Groups")}
+			"ApplicationGroup_ChangeUserAssignment"				{$Results.Add("Edit User Assignment on Application Group", "Application Groups")}
+			"ApplicationGroup_Create"					{$Results.Add("Create Application Group", "Application Groups")}
+			"ApplicationGroup_CreateFolder"					{$Results.Add("Create Application Group Folder", "Application Groups")}
+			"ApplicationGroup_Delete"					{$Results.Add("Delete Application Group", "Application Groups")}
+			"ApplicationGroup_EditFolder"					{$Results.Add("Edit Application Group Folder", "Application Groups")}
+			"ApplicationGroup_EditProperties"				{$Results.Add("Edit Application Group Properties", "Application Groups")}
+			"ApplicationGroup_MoveFolder"					{$Results.Add("Move Application Group Folder", "Application Groups")}
+			"ApplicationGroup_Read"						{$Results.Add("View Application Groups", "Application Groups")}
+			"ApplicationGroup_RemoveApplication"				{$Results.Add("Remove Application from Application Group", "Application Groups")}
+			"ApplicationGroup_RemoveFolder"					{$Results.Add("Remove Application Group Folder", "Application Groups")}
+			"ApplicationGroup_RemoveFromDesktopGroup"			{$Results.Add("Remove Delivery Group from Application Group", "Application Groups")}
+			"ApplicationGroup_RemoveScope"					{$Results.Add("Remove Application Group from Scope", "Application Groups")}
 			
-			"AppLib_AddApplication"										{$Results.Add("Add App-V applications", "App-V")}
-			"AppLib_AddPackage"											{$Results.Add("Add App-V Application Libraries and Packages", "App-V")}
-			"AppLib_IsolationGroup_Create"								{$Results.Add("Create App-V Isolation Group", "App-V")}
-			"AppLib_IsolationGroup_Remove"								{$Results.Add("Remove App-V Isolation Groups", "App-V")}
-			"AppLib_PackageDiscovery_Create"							{$Results.Add("Create Application Package Discovery Sessions", "App-V")} #new in 2212
-			"AppLib_PackageDiscoveryProfile_Create"						{$Results.Add("Create Application Package Discovery Profiles", "App-V")} #new in 2212
-			"AppLib_PackageDiscoveryProfile_Remove"						{$Results.Add("Remove Application Package Discovery Profiles", "App-V")} #new in 2212
-			"AppLib_Read"												{$Results.Add("Read App-V Application Libraries and Packages", "App-V")}
-			"AppLib_RemoveApplication"									{$Results.Add("Remove App-V applications", "App-V")}
-			"AppLib_RemovePackage"										{$Results.Add("Remove App-V Application Libraries and Packages", "App-V")}
-			"AppV_AddServer"											{$Results.Add("Add App-V publishing server", "App-V")}
-			"AppV_DeleteServer"											{$Results.Add("Delete App-V publishing server", "App-V")}
-			"AppV_Read"													{$Results.Add("Read App-V servers", "App-V")}
+			"AppLib_AddApplication"						{$Results.Add("Add App-V applications", "App-V")}
+			"AppLib_AddPackage"						{$Results.Add("Add App-V Application Libraries and Packages", "App-V")}
+			"AppLib_IsolationGroup_Create"					{$Results.Add("Create App-V Isolation Group", "App-V")}
+			"AppLib_IsolationGroup_Remove"					{$Results.Add("Remove App-V Isolation Groups", "App-V")}
+			"AppLib_PackageDiscovery_Create"				{$Results.Add("Create Application Package Discovery Sessions", "App-V")} #new in 2212
+			"AppLib_PackageDiscoveryProfile_Create"				{$Results.Add("Create Application Package Discovery Profiles", "App-V")} #new in 2212
+			"AppLib_PackageDiscoveryProfile_Remove"				{$Results.Add("Remove Application Package Discovery Profiles", "App-V")} #new in 2212
+			"AppLib_Read"							{$Results.Add("Read App-V Application Libraries and Packages", "App-V")}
+			"AppLib_RemoveApplication"					{$Results.Add("Remove App-V applications", "App-V")}
+			"AppLib_RemovePackage"						{$Results.Add("Remove App-V Application Libraries and Packages", "App-V")}
+			"AppV_AddServer"						{$Results.Add("Add App-V publishing server", "App-V")}
+			"AppV_DeleteServer"						{$Results.Add("Delete App-V publishing server", "App-V")}
+			"AppV_Read"							{$Results.Add("Read App-V servers", "App-V")}
 			
-			"Controller_EditProperties"									{$Results.Add("Edit Controller", "Controllers")}
-			"Controllers_Remove"										{$Results.Add("Remove Delivery Controller", "Controllers")}
+			"Controller_EditProperties"					{$Results.Add("Edit Controller", "Controllers")}
+			"Controllers_Remove"						{$Results.Add("Remove Delivery Controller", "Controllers")}
 
 			"Applications_AttachClientHostedApplicationToDesktopGroup"	{$Results.Add("Attach Local Access Application to Delivery Group", "Delivery Groups")}
-			"Applications_ChangeMaintenanceMode"						{$Results.Add("Enable/disable maintenance mode of an Application", "Delivery Groups")}
-			"Applications_ChangeTags"									{$Results.Add("Edit Application tags", "Delivery Groups")}
-			"Applications_ChangeUserAssignment"							{$Results.Add("Change users assigned to an application", "Delivery Groups")}
-			"Applications_Create"										{$Results.Add("Create Application", "Delivery Groups")}
-			"Applications_CreateFolder"									{$Results.Add("Create Application Folder", "Delivery Groups")}
-			"Applications_Delete"										{$Results.Add("Delete Application", "Delivery Groups")}
+			"Applications_ChangeMaintenanceMode"				{$Results.Add("Enable/disable maintenance mode of an Application", "Delivery Groups")}
+			"Applications_ChangeTags"					{$Results.Add("Edit Application tags", "Delivery Groups")}
+			"Applications_ChangeUserAssignment"				{$Results.Add("Change users assigned to an application", "Delivery Groups")}
+			"Applications_Create"						{$Results.Add("Create Application", "Delivery Groups")}
+			"Applications_CreateFolder"					{$Results.Add("Create Application Folder", "Delivery Groups")}
+			"Applications_Delete"						{$Results.Add("Delete Application", "Delivery Groups")}
 			"Applications_DetachClientHostedApplicationToDesktopGroup"	{$Results.Add("Detach Local Access Application from Delivery Group", "Delivery Groups")}
-			"Applications_EditFolder"									{$Results.Add("Edit Application Folder", "Delivery Groups")}
-			"Applications_EditProperties"								{$Results.Add("Edit Application Properties", "Delivery Groups")}
-			"Applications_MoveFolder"									{$Results.Add("Move Application Folder", "Delivery Groups")}
-			"Applications_Read"											{$Results.Add("View Applications", "Delivery Groups")}
-			"Applications_RemoveFolder"									{$Results.Add("Remove Application Folder", "Delivery Groups")}
-			"DesktopGroup_AddApplication"								{$Results.Add("Add Application to Delivery Group", "Delivery Groups")}
-			"DesktopGroup_AddApplicationGroup"							{$Results.Add("Add Application Group to Delivery Group", "Delivery Groups")}
-			"DesktopGroup_AddMachines"									{$Results.Add("Add Machines to Delivery Group", "Delivery Groups")}
-			"DesktopGroup_AddScope"										{$Results.Add("Add Delivery Group to Scope", "Delivery Groups")}
-			"DesktopGroup_AddWebhook"									{$Results.Add("Add Webhooks to Delivery Group", "Delivery Groups")}
-			"DesktopGroup_ChangeMachineMaintenanceMode"					{$Results.Add("Enable/disable maintenance mode of a machine via Delivery Group membership", "Delivery Groups")}
-			"DesktopGroup_ChangeMaintenanceMode"						{$Results.Add("Enable/disable maintenance mode of a Delivery Group", "Delivery Groups")}
-			"DesktopGroup_ChangeTags"									{$Results.Add("Edit Delivery Group tags", "Delivery Groups")}
-			"DesktopGroup_ChangeUserAssignment"							{$Results.Add("Change users assigned to a desktop", "Delivery Groups")}
-			"DesktopGroup_Create"										{$Results.Add("Create Delivery Group", "Delivery Groups")}
-			"DesktopGroup_CreateFolder"									{$Results.Add("Create Delivery Group Folder", "Delivery Groups")} #new in 2212
-			"DesktopGroup_Delete"										{$Results.Add("Delete Delivery Group", "Delivery Groups")}
-			"DesktopGroup_EditFolder"									{$Results.Add("Edit Delivery Group Folder", "Delivery Groups")} #new in 2212
-			"DesktopGroup_EditProperties"								{$Results.Add("Edit Delivery Group Properties", "Delivery Groups")}
-			"DesktopGroup_Machine_ChangeTags"							{$Results.Add("Edit Delivery Group machine tags", "Delivery Groups")}
-			"DesktopGroup_MoveFolder"									{$Results.Add("Move Delivery Group Folder", "Delivery Groups")} #new in 2212
-			"DesktopGroup_PowerOperations_RDS"							{$Results.Add("Perform power operations on Windows Server machines via Delivery Group membership", "Delivery Groups")}
-			"DesktopGroup_PowerOperations_VDI"							{$Results.Add("Perform power operations on Windows Desktop machines via Delivery Group membership", "Delivery Groups")}
-			"DesktopGroup_Read"											{$Results.Add("View Delivery Groups", "Delivery Groups")}
-			"DesktopGroup_RemoveApplication"							{$Results.Add("Remove Application from Delivery Group", "Delivery Groups")}
-			"DesktopGroup_RemoveApplicationGroup"						{$Results.Add("Remove Application Group from Delivery Group", "Delivery Groups")}
-			"DesktopGroup_RemoveDesktop"								{$Results.Add("Remove Desktop from Delivery Group", "Delivery Groups")}
-			"DesktopGroup_RemoveFolder"									{$Results.Add("Remove Delivery Group Folder", "Delivery Groups")} #new in 2212
-			"DesktopGroup_RemoveScope"									{$Results.Add("Remove Delivery Group from Scope", "Delivery Groups")}
-			"DesktopGroup_SessionManagement"							{$Results.Add("Perform session management on machines via Delivery Group membership", "Delivery Groups")}
-			"Machine_ChangeTagsBase"									{$Results.Add("Edit machine tags", "Delivery Groups")}
+			"Applications_EditFolder"					{$Results.Add("Edit Application Folder", "Delivery Groups")}
+			"Applications_EditProperties"					{$Results.Add("Edit Application Properties", "Delivery Groups")}
+			"Applications_MoveFolder"					{$Results.Add("Move Application Folder", "Delivery Groups")}
+			"Applications_Read"						{$Results.Add("View Applications", "Delivery Groups")}
+			"Applications_RemoveFolder"					{$Results.Add("Remove Application Folder", "Delivery Groups")}
+			"DesktopGroup_AddApplication"					{$Results.Add("Add Application to Delivery Group", "Delivery Groups")}
+			"DesktopGroup_AddApplicationGroup"				{$Results.Add("Add Application Group to Delivery Group", "Delivery Groups")}
+			"DesktopGroup_AddMachines"					{$Results.Add("Add Machines to Delivery Group", "Delivery Groups")}
+			"DesktopGroup_AddScope"						{$Results.Add("Add Delivery Group to Scope", "Delivery Groups")}
+			"DesktopGroup_AddWebhook"					{$Results.Add("Add Webhooks to Delivery Group", "Delivery Groups")}
+			"DesktopGroup_ChangeMachineMaintenanceMode"			{$Results.Add("Enable/disable maintenance mode of a machine via Delivery Group membership", "Delivery Groups")}
+			"DesktopGroup_ChangeMaintenanceMode"				{$Results.Add("Enable/disable maintenance mode of a Delivery Group", "Delivery Groups")}
+			"DesktopGroup_ChangeTags"					{$Results.Add("Edit Delivery Group tags", "Delivery Groups")}
+			"DesktopGroup_ChangeUserAssignment"				{$Results.Add("Change users assigned to a desktop", "Delivery Groups")}
+			"DesktopGroup_Create"						{$Results.Add("Create Delivery Group", "Delivery Groups")}
+			"DesktopGroup_CreateFolder"					{$Results.Add("Create Delivery Group Folder", "Delivery Groups")} #new in 2212
+			"DesktopGroup_Delete"						{$Results.Add("Delete Delivery Group", "Delivery Groups")}
+			"DesktopGroup_EditFolder"					{$Results.Add("Edit Delivery Group Folder", "Delivery Groups")} #new in 2212
+			"DesktopGroup_EditProperties"					{$Results.Add("Edit Delivery Group Properties", "Delivery Groups")}
+			"DesktopGroup_Machine_ChangeTags"				{$Results.Add("Edit Delivery Group machine tags", "Delivery Groups")}
+			"DesktopGroup_MoveFolder"					{$Results.Add("Move Delivery Group Folder", "Delivery Groups")} #new in 2212
+			"DesktopGroup_PowerOperations_RDS"				{$Results.Add("Perform power operations on Windows Server machines via Delivery Group membership", "Delivery Groups")}
+			"DesktopGroup_PowerOperations_VDI"				{$Results.Add("Perform power operations on Windows Desktop machines via Delivery Group membership", "Delivery Groups")}
+			"DesktopGroup_Read"						{$Results.Add("View Delivery Groups", "Delivery Groups")}
+			"DesktopGroup_RemoveApplication"				{$Results.Add("Remove Application from Delivery Group", "Delivery Groups")}
+			"DesktopGroup_RemoveApplicationGroup"				{$Results.Add("Remove Application Group from Delivery Group", "Delivery Groups")}
+			"DesktopGroup_RemoveDesktop"					{$Results.Add("Remove Desktop from Delivery Group", "Delivery Groups")}
+			"DesktopGroup_RemoveFolder"					{$Results.Add("Remove Delivery Group Folder", "Delivery Groups")} #new in 2212
+			"DesktopGroup_RemoveScope"					{$Results.Add("Remove Delivery Group from Scope", "Delivery Groups")}
+			"DesktopGroup_SessionManagement"				{$Results.Add("Perform session management on machines via Delivery Group membership", "Delivery Groups")}
+			"Machine_ChangeTagsBase"					{$Results.Add("Edit machine tags", "Delivery Groups")}
 			
-			"Director_AlertPolicy_Edit"									{$Results.Add("Create\Edit\Delete Alert Policies", "Director")}
-			"Director_AlertPolicy_Read"									{$Results.Add("View Alert Policies", "Director")}
-			"Director_Alerts_Read"										{$Results.Add("View Alerts", "Director")}
-			"Director_ApplicationDashboard"								{$Results.Add("View Applications page", "Director")}
-			"Director_ClientDetails_Read"								{$Results.Add("View Client Details page", "Director")}
-			"Director_ClientHelpDesk_Read"								{$Results.Add("View Client Activity Manager page", "Director")}
-			"Director_CloudAnalyticsConfiguration"						{$Results.Add("Create\Edit\Remove Cloud Analytics Configurations", "Director")}
-			"Director_Configuration"									{$Results.Add("View Configurations page", "Director")}
-			"Director_Dashboard_Read"									{$Results.Add("View Dashboard page", "Director")}
-			"Director_DesktopHardwareInformation_Edit"					{$Results.Add("Edit Machine Hardware related Broker machine command properties", "Director")}
-			"Director_DiskMetrics_Edit"									{$Results.Add("Edit Disk metrics related Broker machine command properties", "Director")}
-			"Director_DismissAlerts"									{$Results.Add("Dismiss Alerts", "Director")}
-			"Director_EmailserverConfiguration_Edit"					{$Results.Add("Create\Edit\Remove Alert Email Server Configuration", "Director")}
-			"Director_GPOData_Edit"										{$Results.Add("Edit GPO Data related Broker machine command properties", "Director")}
-			"Director_GpuMetrics_Edit"									{$Results.Add("Edit Gpu metrics related Broker machine command properties", "Director")}
-			"Director_HDXInformation_Edit"								{$Results.Add("Edit HDX related Broker machine command properties", "Director")}
-			"Director_HDXProtocol_Edit"									{$Results.Add("Edit HDX Protocol related Broker machine command properties", "Director")}
-			"Director_HelpDesk_Read"									{$Results.Add("View Activity Manager page", "Director")}
-			"Director_KillApplication"									{$Results.Add("Perform Kill Application running on a machine", "Director")}
-			"Director_KillApplication_Edit"								{$Results.Add("Edit Kill Application related Broker machine command properties", "Director")}
-			"Director_KillProcess"										{$Results.Add("Perform Kill Process running on a machine", "Director")}
-			"Director_KillProcess_Edit"									{$Results.Add("Edit Kill Process related Broker machine command properties", "Director")}
-			"Director_LatencyInformation_Edit"							{$Results.Add("Edit Latency related Broker machine command properties", "Director")}
-			"Director_MachineDetails_Read"								{$Results.Add("View Machine Details page", "Director")}
-			"Director_MachineMetricValues_Edit"							{$Results.Add("Edit Machine metric related Broker machine command properties", "Director")}
-			"Director_PersonalizationInformation_Edit"					{$Results.Add("Edit Personalization related Broker machine command properties", "Director")}
-			"Director_PoliciesInformation_Edit"							{$Results.Add("Edit Policies related Broker machine command properties", "Director")}
-			"Director_ProbeConfigurationActions"						{$Results.Add("Create\Edit\Remove Probe Configurations", "Director")}
-			"Director_ProfileLoadData_Edit"								{$Results.Add("Edit Profile Load Data related Broker machine command properties", "Director")}
-			"Director_ResetVDisk"										{$Results.Add("Perform Reset VDisk operation", "Director")}
-			"Director_ResetVDisk_Edit"									{$Results.Add("Edit Reset VDisk related Broker machine command properties", "Director")}
-			"Director_RoundTripInformation_Edit"						{$Results.Add("Edit Roundtrip Time related Broker machine command properties", "Director")}
-			"Director_SCOM_Read"										{$Results.Add("View SCOM Notifications", "Director")}
-			"Director_ShadowSession"									{$Results.Add("Perform Remote Assistance on a machine", "Director")}
-			"Director_ShadowSession_Edit"								{$Results.Add("Edit Remote Assistance related Broker machine command properties", "Director")}
-			"Director_SliceAndDice_Read"								{$Results.Add("View Filters page", "Director")}
-			"Director_StartupMetrics_Edit"								{$Results.Add("Edit Startup related Broker machine command properties", "Director")}
-			"Director_TaskManagerInformation_Edit"						{$Results.Add("Edit Task Manager related Broker machine command properties", "Director")}
-			"Director_Trends_Read"										{$Results.Add("View Trends page", "Director")}
-			"Director_UserDetails_Read"									{$Results.Add("View User Details page", "Director")}
-			"Director_WindowsSessionId_Edit"							{$Results.Add("Edit Windows Sessionid related Broker machine command properties", "Director")}
-			"UPM_Reset_Profiles"										{$Results.Add("Reset user profiles", "Director")}
-			"UPM_Reset_Profiles_Edit"									{$Results.Add("Edit Reset User Profiles related Broker machine command properties", "Director")}
+			"Director_AlertPolicy_Edit"					{$Results.Add("Create\Edit\Delete Alert Policies", "Director")}
+			"Director_AlertPolicy_Read"					{$Results.Add("View Alert Policies", "Director")}
+			"Director_Alerts_Read"						{$Results.Add("View Alerts", "Director")}
+			"Director_ApplicationDashboard"					{$Results.Add("View Applications page", "Director")}
+			"Director_ClientDetails_Read"					{$Results.Add("View Client Details page", "Director")}
+			"Director_ClientHelpDesk_Read"					{$Results.Add("View Client Activity Manager page", "Director")}
+			"Director_CloudAnalyticsConfiguration"				{$Results.Add("Create\Edit\Remove Cloud Analytics Configurations", "Director")}
+			"Director_Configuration"					{$Results.Add("View Configurations page", "Director")}
+			"Director_Dashboard_Read"					{$Results.Add("View Dashboard page", "Director")}
+			"Director_DesktopHardwareInformation_Edit"			{$Results.Add("Edit Machine Hardware related Broker machine command properties", "Director")}
+			"Director_DiskMetrics_Edit"					{$Results.Add("Edit Disk metrics related Broker machine command properties", "Director")}
+			"Director_DismissAlerts"					{$Results.Add("Dismiss Alerts", "Director")}
+			"Director_EmailserverConfiguration_Edit"			{$Results.Add("Create\Edit\Remove Alert Email Server Configuration", "Director")}
+			"Director_GPOData_Edit"						{$Results.Add("Edit GPO Data related Broker machine command properties", "Director")}
+			"Director_GpuMetrics_Edit"					{$Results.Add("Edit Gpu metrics related Broker machine command properties", "Director")}
+			"Director_HDXInformation_Edit"					{$Results.Add("Edit HDX related Broker machine command properties", "Director")}
+			"Director_HDXProtocol_Edit"					{$Results.Add("Edit HDX Protocol related Broker machine command properties", "Director")}
+			"Director_HelpDesk_Read"					{$Results.Add("View Activity Manager page", "Director")}
+			"Director_KillApplication"					{$Results.Add("Perform Kill Application running on a machine", "Director")}
+			"Director_KillApplication_Edit"					{$Results.Add("Edit Kill Application related Broker machine command properties", "Director")}
+			"Director_KillProcess"						{$Results.Add("Perform Kill Process running on a machine", "Director")}
+			"Director_KillProcess_Edit"					{$Results.Add("Edit Kill Process related Broker machine command properties", "Director")}
+			"Director_LatencyInformation_Edit"				{$Results.Add("Edit Latency related Broker machine command properties", "Director")}
+			"Director_MachineDetails_Read"					{$Results.Add("View Machine Details page", "Director")}
+			"Director_MachineMetricValues_Edit"				{$Results.Add("Edit Machine metric related Broker machine command properties", "Director")}
+			"Director_MTOPInformation_Edit"					{$Results.Add("Edit MTOP related Broker machine command properties", "Director")} #new in 2311
+			"Director_PersonalizationInformation_Edit"			{$Results.Add("Edit Personalization related Broker machine command properties", "Director")}
+			"Director_PoliciesInformation_Edit"				{$Results.Add("Edit Policies related Broker machine command properties", "Director")}
+			"Director_ProbeConfigurationActions"				{$Results.Add("Create\Edit\Remove Probe Configurations", "Director")}
+			"Director_ProfileLoadData_Edit"					{$Results.Add("Edit Profile Load Data related Broker machine command properties", "Director")}
+			"Director_ResetVDisk"						{$Results.Add("Perform Reset VDisk operation", "Director")}
+			"Director_ResetVDisk_Edit"					{$Results.Add("Edit Reset VDisk related Broker machine command properties", "Director")}
+			"Director_RoundTripInformation_Edit"				{$Results.Add("Edit Roundtrip Time related Broker machine command properties", "Director")}
+			"Director_SCOM_Read"						{$Results.Add("View SCOM Notifications", "Director")}
+			"Director_ShadowSession"					{$Results.Add("Perform Remote Assistance on a machine", "Director")}
+			"Director_ShadowSession_Edit"					{$Results.Add("Edit Remote Assistance related Broker machine command properties", "Director")}
+			"Director_SliceAndDice_Read"					{$Results.Add("View Filters page", "Director")}
+			"Director_StartupMetrics_Edit"					{$Results.Add("Edit Startup related Broker machine command properties", "Director")}
+			"Director_TaskManagerInformation_Edit"				{$Results.Add("Edit Task Manager related Broker machine command properties", "Director")}
+			"Director_Trends_Read"						{$Results.Add("View Trends page", "Director")}
+			"Director_UserDetails_Read"					{$Results.Add("View User Details page", "Director")}
+			"Director_WindowsSessionId_Edit"				{$Results.Add("Edit Windows Sessionid related Broker machine command properties", "Director")}
+			"UPM_Reset_Profiles"						{$Results.Add("Reset user profiles", "Director")}
+			"UPM_Reset_Profiles_Edit"					{$Results.Add("Edit Reset User Profiles related Broker machine command properties", "Director")}
 			
-			"Hosts_AddScope"											{$Results.Add("Add Host Connection to Scope", "Hosts")}
-			"Hosts_AddStorage"											{$Results.Add("Add storage to Resources", "Hosts")}
-			"Hosts_ChangeMaintenanceMode"								{$Results.Add("Enable/disable maintenance mode of a Host Connection", "Hosts")}
-			"Hosts_Consume"												{$Results.Add("Use Host Connection or Resources to Create Catalog", "Hosts")}
-			"Hosts_CreateHost"											{$Results.Add("Add Host Connection or Resources", "Hosts")}
-			"Hosts_DeleteConnection"									{$Results.Add("Delete Host Connection", "Hosts")}
-			"Hosts_DeleteHost"											{$Results.Add("Delete Resources", "Hosts")}
-			"Hosts_EditConnectionProperties"							{$Results.Add("Edit Host Connection properties", "Hosts")}
-			"Hosts_EditHostProperties"									{$Results.Add("Edit Resources", "Hosts")}
-			"Hosts_Read"												{$Results.Add("View Host Connections and Resources", "Hosts")}
-			"Hosts_RemoveScope"											{$Results.Add("Remove Host Connection from Scope", "Hosts")}
+			"Hosts_AddScope"						{$Results.Add("Add Host Connection to Scope", "Hosts")}
+			"Hosts_AddStorage"						{$Results.Add("Add storage to Resources", "Hosts")}
+			"Hosts_ChangeMaintenanceMode"					{$Results.Add("Enable/disable maintenance mode of a Host Connection", "Hosts")}
+			"Hosts_Consume"							{$Results.Add("Use Host Connection or Resources to Create Catalog", "Hosts")}
+			"Hosts_CreateHost"						{$Results.Add("Add Host Connection or Resources", "Hosts")}
+			"Hosts_DeleteConnection"					{$Results.Add("Delete Host Connection", "Hosts")}
+			"Hosts_DeleteHost"						{$Results.Add("Delete Resources", "Hosts")}
+			"Hosts_EditConnectionProperties"				{$Results.Add("Edit Host Connection properties", "Hosts")}
+			"Hosts_EditHostProperties"					{$Results.Add("Edit Resources", "Hosts")}
+			"Hosts_Read"							{$Results.Add("View Host Connections and Resources", "Hosts")}
+			"Hosts_RemoveScope"						{$Results.Add("Remove Host Connection from Scope", "Hosts")}
 
-			"Image_Create"												{$Results.Add("Create Images", "Images")} #new in 2303
-			"Image_Delete"												{$Results.Add("Delete Images", "Images")} #new in 2303
-			"Image_EditProperties"										{$Results.Add("Edit Images", "Images")} #new in 2303
-			"Image_Read"												{$Results.Add("Read Images", "Images")} #new in 2303
+			"Image_Create"							{$Results.Add("Create Images", "Images")} #new in 2303
+			"Image_Delete"							{$Results.Add("Delete Images", "Images")} #new in 2303
+			"Image_EditProperties"						{$Results.Add("Edit Images", "Images")} #new in 2303
+			"Image_Read"							{$Results.Add("Read Images", "Images")} #new in 2303
 
-			"Licensing_ChangeLicenseServer"								{$Results.Add("Change licensing server", "Licensing")}
-			"Licensing_EditLicensingProperties"							{$Results.Add("Edit product edition", "Licensing")}
-			"Licensing_Read"											{$Results.Add("View Licensing", "Licensing")}
+			"Licensing_ChangeLicenseServer"					{$Results.Add("Change licensing server", "Licensing")}
+			"Licensing_EditLicensingProperties"				{$Results.Add("Edit product edition", "Licensing")}
+			"Licensing_Read"						{$Results.Add("View Licensing", "Licensing")}
 
-			"Logging_Delete"											{$Results.Add("Delete Configuration Logs", "Logging")}
-			"Logging_EditPreferences"									{$Results.Add("Edit Logging Preferences", "Logging")}
-			"Logging_Read"												{$Results.Add("View Configuration Logs", "Logging")}
+			"Logging_Delete"						{$Results.Add("Delete Configuration Logs", "Logging")}
+			"Logging_EditPreferences"					{$Results.Add("Edit Logging Preferences", "Logging")}
+			"Logging_Read"							{$Results.Add("View Configuration Logs", "Logging")}
 
-			"Catalog_AddMachines"										{$Results.Add("Add Machines to Machine Catalog", "Machine Catalogs")}
-			"Catalog_AddScope"											{$Results.Add("Add Machine Catalog to Scope", "Machine Catalogs")}
-			"Catalog_CancelProvTask"									{$Results.Add("Cancel Provisioning Task", "Machine Catalogs")}
-			"Catalog_ChangeMachineMaintenanceMode"						{$Results.Add("Enable/disable maintenance mode of a machine via Machine Catalog membership", "Machine Catalogs")}
-			"Catalog_ChangeMaintenanceMode"								{$Results.Add("Enable/disable maintenance mode on Desktop via Machine Catalog membership", "Machine Catalogs")}
-			"Catalog_ChangeTags"										{$Results.Add("Edit Catalog tags", "Machine Catalogs")}
-			"Catalog_ChangeUserAssignment"								{$Results.Add("Change users assigned to a machine", "Machine Catalogs")}
-			"Catalog_ConsumeMachines"									{$Results.Add("Allow machines to be consumed by a Delivery Group", "Machine Catalogs")}
-			"Catalog_Create"											{$Results.Add("Create Machine Catalog", "Machine Catalogs")}
-			"Catalog_CreateFolder"										{$Results.Add("Create Machine Catalog Folder", "Machine Catalogs")} #new in 2212
-			"Catalog_Delete"											{$Results.Add("Delete Machine Catalog", "Machine Catalogs")}
-			"Catalog_EditFolder"										{$Results.Add("Edit Machine Catalog Folder", "Machine Catalogs")} #new in 2212
-			"Catalog_EditProperties"									{$Results.Add("Edit Machine Catalog Properties", "Machine Catalogs")}
-			"Catalog_Manage_ChangeTags"									{$Results.Add("Edit Catalog machine tags", "Machine Catalogs")}
-			"Catalog_ManageAccounts"									{$Results.Add("Manage Active Directory Accounts", "Machine Catalogs")}
-			"Catalog_MoveFolder"										{$Results.Add("Move Machine Catalog Folder", "Machine Catalogs")} #new in 2212
-			"Catalog_PowerOperations_RDS"								{$Results.Add("Perform power operations on Windows Server machines via Machine Catalog membership", "Machine Catalogs")}
-			"Catalog_PowerOperations_VDI"								{$Results.Add("Perform power operations on Windows Desktop machines via Machine Catalog membership", "Machine Catalogs")}
-			"Catalog_Read"												{$Results.Add("View Machine Catalogs", "Machine Catalogs")}
-			"Catalog_RemoveFolder"										{$Results.Add("Remove Machine Catalog Folder", "Machine Catalogs")} #new in 2212
-			"Catalog_RemoveMachine"										{$Results.Add("Remove Machines from Machine Catalog", "Machine Catalogs")}
-			"Catalog_RemoveScope"										{$Results.Add("Remove Machine Catalog from Scope", "Machine Catalogs")}
-			"Catalog_SessionManagement"									{$Results.Add("Perform session management on machines via Machine Catalog membership", "Machine Catalogs")}
-			"Catalog_UpdateMasterImage"									{$Results.Add("Perform Machine update", "Machine Catalogs")}
+			"Catalog_AddMachines"						{$Results.Add("Add Machines to Machine Catalog", "Machine Catalogs")}
+			"Catalog_AddScope"						{$Results.Add("Add Machine Catalog to Scope", "Machine Catalogs")}
+			"Catalog_CancelProvTask"					{$Results.Add("Cancel Provisioning Task", "Machine Catalogs")}
+			"Catalog_ChangeMachineMaintenanceMode"				{$Results.Add("Enable/disable maintenance mode of a machine via Machine Catalog membership", "Machine Catalogs")}
+			"Catalog_ChangeMaintenanceMode"					{$Results.Add("Enable/disable maintenance mode on Desktop via Machine Catalog membership", "Machine Catalogs")}
+			"Catalog_ChangeTags"						{$Results.Add("Edit Catalog tags", "Machine Catalogs")}
+			"Catalog_ChangeUserAssignment"					{$Results.Add("Change users assigned to a machine", "Machine Catalogs")}
+			"Catalog_ConsumeMachines"					{$Results.Add("Allow machines to be consumed by a Delivery Group", "Machine Catalogs")}
+			"Catalog_Create"						{$Results.Add("Create Machine Catalog", "Machine Catalogs")}
+			"Catalog_CreateFolder"						{$Results.Add("Create Machine Catalog Folder", "Machine Catalogs")} #new in 2212
+			"Catalog_Delete"						{$Results.Add("Delete Machine Catalog", "Machine Catalogs")}
+			"Catalog_EditFolder"						{$Results.Add("Edit Machine Catalog Folder", "Machine Catalogs")} #new in 2212
+			"Catalog_EditProperties"					{$Results.Add("Edit Machine Catalog Properties", "Machine Catalogs")}
+			"Catalog_Manage_ChangeTags"					{$Results.Add("Edit Catalog machine tags", "Machine Catalogs")}
+			"Catalog_ManageAccounts"					{$Results.Add("Manage Active Directory Accounts", "Machine Catalogs")}
+			"Catalog_MoveFolder"						{$Results.Add("Move Machine Catalog Folder", "Machine Catalogs")} #new in 2212
+			"Catalog_PowerOperations_RDS"					{$Results.Add("Perform power operations on Windows Server machines via Machine Catalog membership", "Machine Catalogs")}
+			"Catalog_PowerOperations_VDI"					{$Results.Add("Perform power operations on Windows Desktop machines via Machine Catalog membership", "Machine Catalogs")}
+			"Catalog_Read"							{$Results.Add("View Machine Catalogs", "Machine Catalogs")}
+			"Catalog_RemoveFolder"						{$Results.Add("Remove Machine Catalog Folder", "Machine Catalogs")} #new in 2212
+			"Catalog_RemoveMachine"						{$Results.Add("Remove Machines from Machine Catalog", "Machine Catalogs")}
+			"Catalog_RemoveScope"						{$Results.Add("Remove Machine Catalog from Scope", "Machine Catalogs")}
+			"Catalog_SessionManagement"					{$Results.Add("Perform session management on machines via Machine Catalog membership", "Machine Catalogs")}
+			"Catalog_UpdateMasterImage"					{$Results.Add("Perform Machine update", "Machine Catalogs")}
 
-			"AutoTagRule_Create"										{$Results.Add("Create AutoTagRule", "Other permissions")}
-			"AutoTagRule_Delete"										{$Results.Add("Delete AutoTagRule", "Other permissions")}
-			"AutoTagRule_Edit"											{$Results.Add("Edit AutoTagRule", "Other permissions")}
-			"AutoTagRule_Read"											{$Results.Add("Read AutoTagRule", "Other permissions")}
-			"Configuration_Read"										{$Results.Add("Read Site Configuration (Configuration_Read)", "Other permissions")}
-			"Configuration_Write"										{$Results.Add("Update Site Configuration (Configuration_Write)", "Other permissions")}
-			"EnvTest"													{$Results.Add("Run environment tests", "Other permissions")}
-			"Global_Read"												{$Results.Add("Read Site Configuration (Global_Read)", "Other permissions")}
-			"Global_Write"												{$Results.Add("Update Site Configuration (Global_Write)", "Other permissions")}
-			"Orchestration_RestApi"										{$Results.Add("Manage Orchestration Service REST API", "Other permissions")}
-			"PerformUpgrade"											{$Results.Add("Perform upgrade", "Other permissions")}
-			"Tag_Create"												{$Results.Add("Create tags", "Other permissions")}
-			"Tag_Delete"												{$Results.Add("Delete tags", "Other permissions")}
-			"Tag_Edit"													{$Results.Add("Edit tags", "Other permissions")}
-			"Tag_Read"													{$Results.Add("Read tags", "Other permissions")}
-			"Trust_ServiceKeys"											{$Results.Add("Manage Trust Service Keys", "Other permissions")}
-			"VdaUpgrade_CatalogManage"									{$Results.Add("Manage VDA Upgrade Catalog Schedules", "Other permissions")}
-			"VdaUpgrade_MachineManage"									{$Results.Add("Manage VDA Upgrade Machine Schedules", "Other permissions")}
+			"AutoTagRule_Create"						{$Results.Add("Create AutoTagRule", "Other permissions")}
+			"AutoTagRule_Delete"						{$Results.Add("Delete AutoTagRule", "Other permissions")}
+			"AutoTagRule_Edit"						{$Results.Add("Edit AutoTagRule", "Other permissions")}
+			"AutoTagRule_Read"						{$Results.Add("Read AutoTagRule", "Other permissions")}
+			"Configuration_Read"						{$Results.Add("Read Site Configuration (Configuration_Read)", "Other permissions")}
+			"Configuration_Write"						{$Results.Add("Update Site Configuration (Configuration_Write)", "Other permissions")}
+			"EnvTest"							{$Results.Add("Run environment tests", "Other permissions")}
+			"Global_Read"							{$Results.Add("Read Site Configuration (Global_Read)", "Other permissions")}
+			"Global_Write"							{$Results.Add("Update Site Configuration (Global_Write)", "Other permissions")}
+			"Orchestration_RestApi"						{$Results.Add("Manage Orchestration Service REST API", "Other permissions")}
+			"PerformUpgrade"						{$Results.Add("Perform upgrade", "Other permissions")}
+			"Tag_Create"							{$Results.Add("Create tags", "Other permissions")}
+			"Tag_Delete"							{$Results.Add("Delete tags", "Other permissions")}
+			"Tag_Edit"							{$Results.Add("Edit tags", "Other permissions")}
+			"Tag_Read"							{$Results.Add("Read tags", "Other permissions")}
+			"Trust_ServiceKeys"						{$Results.Add("Manage Trust Service Keys", "Other permissions")}
+			"Trust_VdaEnrollment"						{$Results.Add("", "Other permissions")} #new in 2311
+			"VdaUpgrade_CatalogManage"					{$Results.Add("Manage VDA Upgrade Catalog Schedules", "Other permissions")}
+			"VdaUpgrade_MachineManage"					{$Results.Add("Manage VDA Upgrade Machine Schedules", "Other permissions")}
 
-			"Policies_Manage"											{$Results.Add("Manage Policies", "Policies")}
-			"Policies_Read"												{$Results.Add("View Policies", "Policies")}
+			"Policies_Manage"						{$Results.Add("Manage Policies", "Policies")}
+			"Policies_Read"							{$Results.Add("View Policies", "Policies")}
+			"PolicySets_AddScope"						{$Results.Add("Add Policy Set to Scope", "Policies")} #new in 2308
+			"PolicySets_RemoveScope"					{$Results.Add("Remove Policy Set from Scope", "Policies")} #new in 2308
 
-			"PolicySets_AddScope"										{$Results.Add("Add Policy Set to Scope", "Policy Sets")} #new in 2212
-			"PolicySets_Manage"											{$Results.Add("Manage Policy Sets", "Policy Sets")} #new in 2212
-			"PolicySets_Read"											{$Results.Add("View Policy Sets", "Policy Sets")} #new in 2212
-			"PolicySets_RemoveScope"									{$Results.Add("Remove Policy Set from Scope", "Policy Sets")} #new in 2212
+			"PolicySets_AddScope"						{$Results.Add("Add Policy Set to Scope", "Policy Sets")} #new in 2212
+			"PolicySets_Manage"						{$Results.Add("Manage Policy Sets", "Policy Sets")} #new in 2212
+			"PolicySets_Read"						{$Results.Add("View Policy Sets", "Policy Sets")} #new in 2212
+			"PolicySets_RemoveScope"					{$Results.Add("Remove Policy Set from Scope", "Policy Sets")} #new in 2212
 
-			"Setting_Edit"												{$Results.Add("Edit Settings", "Settings")} #new in 2212
-			"Setting_Read"												{$Results.Add("View Settings", "Settings")} #new in 2212
+			"Setting_Edit"							{$Results.Add("Edit Settings", "Settings")} #new in 2212
+			"Setting_Read"							{$Results.Add("View Settings", "Settings")} #new in 2212
 
-			"Storefront_Create"											{$Results.Add("Create a new StoreFront definition", "StoreFronts")}
-			"Storefront_Delete"											{$Results.Add("Delete a StoreFront definition", "StoreFronts")}
-			"Storefront_Read"											{$Results.Add("Read StoreFront definitions", "StoreFronts")}
-			"Storefront_Update"											{$Results.Add("Update a StoreFront definition", "StoreFronts")}
+			"Storefront_Create"						{$Results.Add("Create a new StoreFront definition", "StoreFronts")}
+			"Storefront_Delete"						{$Results.Add("Delete a StoreFront definition", "StoreFronts")}
+			"Storefront_Read"						{$Results.Add("Read StoreFront definitions", "StoreFronts")}
+			"Storefront_Update"						{$Results.Add("Update a StoreFront definition", "StoreFronts")}
 
-			"EdgeServer_Manage"											{$Results.Add("Manage Citrix Cloud Connector", "Zones")}
-			"EdgeServer_Read"											{$Results.Add("View Citrix Cloud Connector", "Zones")}
-			"Zone_Create"												{$Results.Add("Create Zone", "Zones")}
-			"Zone_Delete"												{$Results.Add("Delete Zone", "Zones")}
-			"Zone_EditProperties"										{$Results.Add("Edit Zone", "Zones")}
-			"Zone_Read"													{$Results.Add("View Zones", "Zones")}
+			"EdgeServer_Manage"						{$Results.Add("Manage Citrix Cloud Connector", "Zones")}
+			"EdgeServer_Read"						{$Results.Add("View Citrix Cloud Connector", "Zones")}
+			"Zone_Create"							{$Results.Add("Create Zone", "Zones")}
+			"Zone_Delete"							{$Results.Add("Delete Zone", "Zones")}
+			"Zone_EditProperties"						{$Results.Add("Edit Zone", "Zones")}
+			"Zone_Read"							{$Results.Add("View Zones", "Zones")}
 		}
 	}
 
@@ -35612,6 +36746,7 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "AutoTagRuleIntervalsTimeSecs" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "BrokerStartupRetryPeriodLimitMs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "BrokerStartupRetryPeriodStartMaxMs" $ComputerName
+	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "CheckLicensesWithExpiredSwmPeriodHours" $ComputerName #added in 3.42
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "DisableActiveSessionReconnect" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "DisablePerformanceCounters" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "DisconnectOperationTimeOutSecs" $ComputerName #Added in 3.29
@@ -35632,6 +36767,7 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "LogonToleranceIsHardLimit" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "MachineSinBinStayTimeSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "MaxConcurrentRegistrationUpgrades" $ComputerName
+	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "MaxConsecutiveFailedRegistrationsBeforeSinBin" $ComputerName #Added in 3.42
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "MaxDisconnectWaitTimeSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "MaxHeartbeatIntervalMs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "MaxLogoffWaitTimeSecs" $ComputerName
@@ -35648,9 +36784,12 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "MinVdaStatusUpdatePeriodMs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "NonContactableSessionGracePeriodSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "PhantomRegistrationSecs" $ComputerName #added in 3.31
+	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "PiiDataRetentionDays" $ComputerName #added in 3.42
+	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "RegistrationSinbinPeriodSecs" $ComputerName #added in 3.42
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "ProtectedSessionReconnectSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "RoTPublicKeysUpdateMaxDelayHours" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "SaaSLicenseComponentCheckPeriodHours" $ComputerName #Added in 3.33
+	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "ScrambleLicensingData" $ComputerName #Added in 3.42
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "SetSiteDataPeriodSecs" $ComputerName #Added in 3.41
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "SettleTimeForVdaStatusUpdateMs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "SiteDynamicDataRefreshMaxShutdownMs" $ComputerName
@@ -35663,6 +36802,7 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "UserDrivenResetDebounceTimeSecs" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "UserDrivenResetTimeoutMs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "UserDrivenShutDownTimeoutMs" $ComputerName #Added in 3.29
+	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "UserDrivenSuspendTimeoutMs" $ComputerName #added in 3.42
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "UserNotify2SigningKeyLifetimeHours" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "WIRetryIntervalDuringRegistrationStateChangeSec" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "WIRetryIntervalDuringSessionStateChangeSec" $ComputerName
@@ -35674,6 +36814,7 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "AutoTagRuleIntervalsTimeSecs" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "BrokerStartupRetryPeriodLimitMs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "BrokerStartupRetryPeriodStartMaxMs" $ComputerName
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "CheckLicensesWithExpiredSwmPeriodHours" $ComputerName #added in 3.42
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "DisableActiveSessionReconnect" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "DisablePerformanceCounters" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "DisconnectOperationTimeOutSecs" $ComputerName #Added in 3.29
@@ -35694,6 +36835,7 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "LogonToleranceIsHardLimit" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "MachineSinBinStayTimeSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "MaxConcurrentRegistrationUpgrades" $ComputerName
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "MaxConsecutiveFailedRegistrationsBeforeSinBin" $ComputerName #Added in 3.42
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "MaxDisconnectWaitTimeSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "MaxHeartbeatIntervalMs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "MaxLogoffWaitTimeSecs" $ComputerName
@@ -35710,9 +36852,12 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "MinVdaStatusUpdatePeriodMs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "NonContactableSessionGracePeriodSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "PhantomRegistrationSecs" $ComputerName #added in 3.31
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "PiiDataRetentionDays" $ComputerName #added in 3.42
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "RegistrationSinbinPeriodSecs" $ComputerName #added in 3.42
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "ProtectedSessionReconnectSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "RoTPublicKeysUpdateMaxDelayHours" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "SaaSLicenseComponentCheckPeriodHours" $ComputerName #Added in 3.33
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "ScrambleLicensingData" $ComputerName #Added in 3.42
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "SetSiteDataPeriodSecs" $ComputerName #Added in 3.41
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "SettleTimeForVdaStatusUpdateMs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "SiteDynamicDataRefreshMaxShutdownMs" $ComputerName
@@ -35725,6 +36870,7 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "UserDrivenResetDebounceTimeSecs" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "UserDrivenResetTimeoutMs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "UserDrivenShutDownTimeoutMs" $ComputerName #Added in 3.29
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "UserDrivenSuspendTimeoutMs" $ComputerName #added in 3.42
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "UserNotify2SigningKeyLifetimeHours" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "WIRetryIntervalDuringRegistrationStateChangeSec" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "WIRetryIntervalDuringSessionStateChangeSec" $ComputerName
@@ -35755,6 +36901,8 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\DataStore\Connections\Controller" "ReaperDeferralPeriodSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\DataStore\Connections\Controller" "ResourceLimitRetryDelaySecs" $ComputerName #Added in 3.40
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\DataStore\Connections\Controller" "SdkSqlQueryTimeoutSecs" $ComputerName
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\DataStore\Connections\Controller" "SqlLogin" $ComputerName #added in 3.42
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\DataStore\Connections\Controller" "SqlPassword" $ComputerName #added in 3.42
 	
 	#DBConnectionState
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\DatabaseConnection" "State" $ComputerName
@@ -35862,6 +37010,7 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "EarliestOutageModeEndTime" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "Enabled" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "IsElected" $ComputerName #Added in 3.29
+	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "IsElectedLastUpdatedAt" $ComputerName #Added in 3.42
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "IsOnPremStoreFrontPresent" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "IsStaRequestReceived" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "LastOutageModeEndTime" $ComputerName
@@ -35869,6 +37018,7 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "LeaderConnectorId" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "LeaderFqdn" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "LeaderInHAMode" $ComputerName #Added in 3.40
+	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "LeaderInHAModeLastUpdatedAt" $ComputerName #Added in 3.42
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "OutageModeEntered" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "OutageModeThresholdReached" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "PeerStatus" $ComputerName #Added in 3.41
@@ -38885,6 +40035,8 @@ Function ProcessScriptSetup
 			$CVADSiteVersionReal = "Unknown"
 			Switch ($CVADSiteVersion)
 			{
+				"7.40"	{$CVADSiteVersionReal = "CVAD 2311"; Break}
+				"7.39"	{$CVADSiteVersionReal = "CVAD 2308"; Break}
 				"7.38"	{$CVADSiteVersionReal = "CVAD 2305"; Break}
 				"7.37"	{$CVADSiteVersionReal = "CVAD 2303"; Break}
 				"7.36"	{$CVADSiteVersionReal = "CVAD 2212"; Break}
@@ -39102,6 +40254,8 @@ Script cannot continue
 	$Script:CVADSiteVersionReal = "Unknown"
 	Switch ($Script:CVADSiteVersion)
 	{
+		"7.40"	{$Script:CVADSiteVersionReal = "CVAD 2311"; Break}
+		"7.39"	{$Script:CVADSiteVersionReal = "CVAD 2308"; Break}
 		"7.38"	{$Script:CVADSiteVersionReal = "CVAD 2305"; Break}
 		"7.37"	{$Script:CVADSiteVersionReal = "CVAD 2303"; Break}
 		"7.36"	{$Script:CVADSiteVersionReal = "CVAD 2212"; Break}
