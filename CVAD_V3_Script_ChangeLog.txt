@@ -6,6 +6,164 @@
 
 # This script is based on the 2.36 script
 
+#Version 3.43
+#	Added Broker Registry Keys:
+#		HKLM:\Software\Policies\Citrix\DesktopServer\AlternateSkipAlgorithmThreshold
+#			Type: int
+#			Default: 10
+#			Info: Minimum=0
+#			Summary: When using the -Skip parameter with various Broker SDK Get- cmdlets, this is the skip value above which 
+#					 an alternative optimized algorithm is used for fetching values from the database. 
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\AutoTagRuleIdleIntervalsTimeSecs
+#			Type: int
+#			Default: 7200
+#			Info: Seconds Minimum=60
+#			Summary: Time interval that Auto Tag Rule site service will run auto tagging process when the site is idle. 
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\MachineUnusedTokenExpiryHours
+#			Type: int
+#			Default: 48
+#			Info: Hours
+#			Summary: The time period for which the Machine Unused Token is valid. 
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\MachineUnusedTokenMaxDelaySecs
+#			Type: int
+#			Default: 300
+#			Info: Seconds
+#			Summary: Maximum period between a VDA being powered-on and it registering for it to be trusted as being clean 
+#					 (previously unused) once registered. 
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\ServiceIdleIntervalSeconds
+#			Type: int
+#			Default: 180
+#			Info: Seconds Minimum=1
+#			Summary: How long to wait between not idle reports before assuming that this service is idle. 
+#					 Typically this should be equivalent to the SiteNotIdleTimerInterval since the timer mostly compares 
+#					 against this value at that interval.
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\SetSiteDataWhenIdlePeriodSecs
+#			Type: int
+#			Default: 3600
+#			Info: Seconds Minimum=30
+#			Summary: The period in seconds for polling for updates to the site data when the site is idle. 
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\SiteIdleTimerIntervalSeconds
+#			Type: int
+#			Default: 30
+#			Info: Seconds Minimum=1
+#			Summary: How often idle state is processed if the site is idle. We need a shorter timer interval for when the site 
+#					 is idle to ensure that we recover from being idle as fast as possible. 
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\SiteNotIdleTimerIntervalSeconds
+#			Type: int
+#			Default: 180
+#			Info: Seconds Minimum=1
+#			Summary: How often idle state is processed if the site is active. We need a shorter timer interval for when the site 
+#					 is idle to ensure that we recover from being idle as fast as possible.
+#
+#		HKLM\Software\Citrix\Broker\Service\State\DatabaseConnection\MaxConcurrentScheduleOverrideQueries
+#			Type: int
+#			Default: 5
+#			Info: Minimum=1, Maximum=30
+#			Summary: The maximum number of schedule override queries to autoscale plugins that are allowed to run concurrently. 
+#					 If there are more plugins to be queried at any given time than this limit allows, the additional queries 
+#					 are queued and start as soon as earlier ones complete.
+#
+#					 This limit exists to restrict the number of threads required to obtain all required schedule overrides. 
+#					 The number of threads used is typically double the number of concurrent schedule override queries.
+#
+#					 This setting requires the Broker services to be restarted before a new value takes effect.
+#					 
+#		HKLM\Software\Citrix\Broker\Service\State\DatabaseConnection\NoPowerActionsPeriodBeforeSlowPollSecs
+#			Type: int
+#			Default: 100
+#			Info: Seconds Minimum=30, Maximum=300
+#			Summary: This value determines how long the service will wait before delaying calls to the database when there 
+#					 been no power actions found.
+#
+#		HKLM\Software\Citrix\Broker\Service\State\DatabaseConnection\NoPowerActionsSlowPollIntervalSecs
+#			Type: int
+#			Default: 15
+#			Info: Seconds Minimum=5, Maximum=30
+#			Summary: The interval between calls to the database when there have been no power actions.
+#
+#		HKLM\Software\Citrix\Broker\Service\State\DatabaseConnection\NoWorkersPeriodBeforeSlowPollSecs
+#			Type: int
+#			Default: 100
+#			Info: Seconds Minimum=30, Maximum=300
+#			Summary: This value determines how long the service will wait before delaying calls to the database when there 
+#					 been no machines found.
+#
+#		HKLM\Software\Citrix\Broker\Service\State\DatabaseConnection\NoWorkersSlowPollIntervalSecs
+#			Type: int
+#			Default: 60
+#			Info: Seconds Minimum=5, Maximum=120
+#			Summary: The interval between calls to the database when there have been no machines found.
+#
+#		HKLM\Software\Citrix\Broker\Service\State\DatabaseConnection\ScheduleOverrideGenerationHour
+#			Type: int
+#			Default: 22
+#			Info: Seconds Minimum=1, Maximum=23
+#			Summary: The hour of the day when autoscale schedule overrides are generated for the following day. 
+#					 The hour is a 24-hour clock integer value and is evaluated in the time zone of the desktop group to which 
+#					 the generation relates.
+#
+#		HKLM\Software\Citrix\Broker\Service\State\DatabaseConnection\ScheduleOverrideQueryTimeoutSecs
+#			Type: int
+#			Default: 60
+#			Info: Seconds Minimum=10, Maximum=120
+#			Summary: The maximum number of seconds for which a single schedule override query to an autoscale plugin is allowed 
+#					 to run before being timed-out and cancelled. A cancelled query is treated as though the plugin returned no 
+#					 schedule override, thus the next plugin in the sequence for the desktop group (if any) is then queried for 
+#					 a schedule override.
+#		HKLM\Software\Citrix\DesktopServer\MachineCommandQueues\MachineCommandForPingSuppressionSecs
+#			Type: Int
+#			Default: 30
+#			Info: Seconds Minimum=0, Maximum=120
+#			Summary: Period during which checks for pending machine commands to send in Ping responses are suppressed when no 
+#					 such pending commands are currently queued. This setting reduces database load at the potential cost of 
+#					 slight delays in sending commands.
+#
+#					 This setting only impacts commands sent using New-BrokerMachineCommand with a SendTrigger of NextContact.
+#
+#	Added Computer policy
+#		ICA\Session metrics collection (2407) in 2402 this was named "Usage data collection through client"
+#		ICA\Usage data collection through client (2402)
+#		ICA\Virtual channel allow list for DVC (2407)
+#		ICA\End User Monitoring\Client statistics interval (2407)
+#		ICA\Graphics\Allow windows screen lock (2402)
+#		User Personalization Layer\Enable user layer compaction (2407)
+#
+#	Added User policy
+#		ICA\SANE scanner redirection (2407)
+#		ICA\Virtual channel plugin manager (2407)
+#		ICA\Audio\Loss tolerant mode for audio (2402)
+#
+#	In Function GetControllerRegistryKeys, for the HostingManagementSettings section:
+#		Comment out the Policies lines as there is no Policies node for these settings
+#		Change the registry location
+#			From: HKLM:\Software\Citrix\DesktopServer
+#			To: HKLM:\Software\Citrix\Broker\Service\State\DatabaseConnection
+#		
+#			I had misread, for years, the data Citrix sent me
+#
+#	In Function GetRolePermissions:
+#		Added new permissions
+#			Cost_Read (2407)
+#			Director_CostSavings (2407)
+#			Director_InfrastructureMonitor (2407)
+#			Director_IntegrationsAndDataExport (2407)
+#			Director_Settings (2407)
+#			DirectorAgent_Registration (2407)
+#			ServiceAccount_AddScope (2407)
+#			ServiceAccount_Create (2407)
+#			ServiceAccount_Delete (2407) 
+#			ServiceAccount_EditProperties (2407)
+#			ServiceAccount_Read (2407)
+#			ServiceAccount_RemoveScope (2407)
+#	Updated for CVAD 2402 (7.41) and 2407 (7.42)
+
 #Version 3.42 20-Jan-2024
 #	Added Broker Registry Keys:
 #		HKLM:\Software\Policies\Citrix\DesktopServer\CheckLicensesWithExpiredSwmPeriodHours
