@@ -1054,7 +1054,7 @@
 	NAME: CVAD_Inventory_V3.ps1
 	VERSION: 3.43
 	AUTHOR: Carl Webster
-	LASTEDIT: August 16, 2024
+	LASTEDIT: August 20, 2024
 #>
 
 #endregion
@@ -1380,6 +1380,20 @@ Param(
 #		ICA\SANE scanner redirection (2407)
 #		ICA\Virtual channel plugin manager (2407)
 #		ICA\Audio\Loss tolerant mode for audio (2402)
+#
+#	Added to Function OutputSiteSettings and the output of Site Settings:
+#		https://developer-docs.citrix.com/en-us/citrix-virtual-apps-desktops-sdk/2407/broker/set-brokersite
+#		CloudSiteLicense: Used to override the Product, Edition and LicensingModel set during provisioning at CCS level
+#		CloudValidLicenses: List of license SKUs purchased by the customer needs to be set a provisioning time every time 
+#			Ptah re-provisions the customer because of SKU changes for the customer. This will be used for validation purposes. (SIC)
+#			[Webster: https://www.merriam-webster.com/wordplay/sic-meaning-usage-editorial-citation]
+#			[Webster: The format or possible contents of this string are not documented]
+#		PreferredAccountName: Determines if SAM name or UPN should be displayed for default name of user/group account
+#		RequireXmlServiceKeyForNFuse: Determines whether an XML Service Key header is required for the NFuse, MCP, 
+#			and Admin XML interfaces. (Webster: NFuse hasn't been around since the early 2000s. Strange how Citrix keeps
+#			old product names hanging around.
+#		RequireXmlServiceKeyForSta: Determines whether an XML Service Key header is required for the STA interface
+#		UseADLookupEnabled: Determines whether to use the AD directory context for lookup
 #
 #	In Function GetControllerRegistryKeys, for the HostingManagementSettings section:
 #		Comment out the Policies lines as there is no Policies node for these settings
@@ -2452,7 +2466,7 @@ $ErrorActionPreference    = 'SilentlyContinue'
 #stuff for report footer
 $script:MyVersion   = '3.43'
 $Script:ScriptName  = "CVAD_Inventory_V3.ps1"
-$tmpdate            = [datetime] "08/16/2024"
+$tmpdate            = [datetime] "08/20/2024"
 $Script:ReleaseDate = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($Null -eq $HTML)
@@ -18547,7 +18561,7 @@ Function ProcessCitrixPolicies
 									}
 									If($Text)
 									{
-										OutputPolicySetting "`t`t`t      " $tmp
+										OutputPolicySetting "`t`t`t`t      " $tmp
 									}
 								}
 								$txt = ""
@@ -18663,7 +18677,7 @@ Function ProcessCitrixPolicies
 									}
 									If($Text)
 									{
-										OutputPolicySetting "`t`t`t`t`t   " $tmp
+										OutputPolicySetting "`t`t`t`t  " $tmp
 									}
 								}
 								$txt = ""
@@ -33051,6 +33065,54 @@ Function OutputSiteSettings
 			Continue
 		}
 	}
+	
+	#new stuff for 3.43
+	$CloudSiteLicense = "N/A"
+	$CloudValidLicenses = "N/A"
+	$PreferredAccountName = "N/A"
+	$RequireXmlServiceKeyForNFuse = "N/A"
+	$RequireXmlServiceKeyForSta = "N/A"
+	$UseADLookupEnabled = "N/A"
+	If(validObject $Script:CVADSite1 CloudSiteLicense)
+	{
+		$CloudSiteLicense = $Script:CVADSite1.CloudSiteLicense
+	}
+
+	If(validObject $Script:CVADSite1 CloudValidLicenses)
+	{
+		$CloudValidLicenses = $Script:CVADSite1.CloudValidLicenses
+	}
+
+	If(validObject $Script:CVADSite1 PreferredAccountName)
+	{
+		#SamNameFallbackToUpn, SamName, Upn
+		Switch ($Script:CVADSite1.PreferredAccountName)
+		{
+			"SamNameFallbackToUpn"	{$PreferredAccountName = "SAM with fallback to UPN"; Break}
+			"SamName"				{$PreferredAccountName = "SAM"; Break}
+			"Upn"					{$PreferredAccountName = "UPN"; Break}
+			Default					{$PreferredAccountName = "Unable to determine Preferred Account Name: $($Script:CVADSite1.PreferredAccountName)"; Break}
+		}
+	}
+
+	If(validObject $Script:CVADSite1 RequireXmlServiceKeyForNFuse)
+	{
+		$RequireXmlServiceKeyForNFuse = $Script:CVADSite1.RequireXmlServiceKeyForNFuse.ToString()
+	}
+
+	If(validObject $Script:CVADSite1 RequireXmlServiceKeyForSta)
+	{
+		$RequireXmlServiceKeyForSta = $Script:CVADSite1.RequireXmlServiceKeyForSta.ToString()
+	}
+
+	If(validObject $Script:CVADSite1 UseADLookupEnabled)
+	{
+		$UseADLookupEnabled = $Script:CVADSite1.UseADLookupEnabled.ToString()
+	}
+
+	#If(validObject $Script:CVADSite1 )
+	#{
+	#}
 
 	Write-Verbose "$(Get-Date -Format G): `tOutput Site Settings"
 	If($MSWord -or $PDF)
@@ -33064,6 +33126,8 @@ Function OutputSiteSettings
 		$ScriptInformation.Add(@{Data = "Always Bypass Authentication for Cached Resources"; Value = $Script:CVADSite1.AlwaysBypassAuthForCachedResources.ToString(); }) > $Null #new in 3.42
 		$ScriptInformation.Add(@{Data = "Base OU"; Value = $Script:CVADSite1.BaseOU; }) > $Null
 		$ScriptInformation.Add(@{Data = "Bypass Authentication for Cached Resources"; Value = $Script:CVADSite1.BypassAuthForCachedResources.ToString(); }) > $Null #new in 1.15
+		$ScriptInformation.Add(@{Data = "Cloud Site License"; Value = $CloudSiteLicense; }) > $Null #new in 3.43
+		$ScriptInformation.Add(@{Data = "Cloud Valid Licenses"; Value = $CloudValidLicenses; }) > $Null #new in 3.43
 		$ScriptInformation.Add(@{Data = "Color Depth"; Value = $xColorDepth; }) > $Null
 		$ScriptInformation.Add(@{Data = "Connection Leasing Enabled"; Value = $Script:CVADSite1.ConnectionLeasingEnabled.ToString(); }) > $Null #new in 3.42
 		$ScriptInformation.Add(@{Data = "Credential Forwarding to Cloud Allowed"; Value = $Script:CVADSite1.CredentialForwardingToCloudAllowed.ToString(); }) > $Null #new in 1.15
@@ -33073,6 +33137,9 @@ Function OutputSiteSettings
 		$ScriptInformation.Add(@{Data = "DNS Resolution Enabled"; Value = $Script:CVADSite1.DnsResolutionEnabled.ToString(); }) > $Null
 		$ScriptInformation.Add(@{Data = "Load Balancing Sessions on Machines"; Value = $LoadBalancingSessionsonMachines; }) > $Null #new in 3.42
 		$ScriptInformation.Add(@{Data = "Local Host Cache Enabled"; Value = $Script:CVADSite1.LocalHostCacheEnabled.ToString(); }) > $Null
+		$ScriptInformation.Add(@{Data = "Preferred Account Name"; Value = $PreferredAccountName; }) > $Null #new in 3.43
+		$ScriptInformation.Add(@{Data = "Require XML Service Key for NFuse"; Value = $RequireXmlServiceKeyForNFuse; }) > $Null #new in 3.43
+		$ScriptInformation.Add(@{Data = "Require XML Service Key for STA"; Value = $RequireXmlServiceKeyForSta; }) > $Null #new in 3.43
 		$ScriptInformation.Add(@{Data = "Resource Lease Validity Period in Days"; Value = $Script:CVADSite1.ResourceLeaseValidityPeriodInDays.ToString(); }) > $Null #new in 1.15
 		$ScriptInformation.Add(@{Data = "Resource Leasing Enabled"; Value = $Script:CVADSite1.ResourceLeasingEnabled.ToString(); }) > $Null #new in 1.15
 		$ScriptInformation.Add(@{Data = "Reuse Machines Without Shutdown in Outage Allowed"; Value = $Script:CVADSite1.ReuseMachinesWithoutShutdownInOutageAllowed.ToString(); }) > $Null
@@ -33083,6 +33150,7 @@ Function OutputSiteSettings
 		$ScriptInformation.Add(@{Data = "Telemetry Launch Shadow Delay in Minutes"; Value = $Script:CVADSite1.TelemetryLaunchShadowDelayMins.ToString(); }) > $Null #new in 1.15
 		$ScriptInformation.Add(@{Data = "Trust Managed Anonymous XML Service Requests"; Value = $Script:CVADSite1.TrustManagedAnonymousXmlServiceRequests.ToString(); }) > $Null
 		$ScriptInformation.Add(@{Data = "Trust Requests Sent to the XML Service Port"; Value = $Script:CVADSite1.TrustRequestsSentToTheXmlServicePort.ToString(); }) > $Null
+		$ScriptInformation.Add(@{Data = "Use AD Lookup Enabled"; Value = $UseADLookupEnabled; }) > $Null #new in 3.43
 		$Table = AddWordTable -Hashtable $ScriptInformation `
 		-Columns Data,Value `
 		-List `
@@ -33105,9 +33173,11 @@ Function OutputSiteSettings
 		Line 0 ""
 		Line 1 "Site name`t`t`t`t`t`t: " $CVADSiteName
 		Line 1 "Default StoreFront address`t`t`t`t: " $DefaultStoreFrontAddress
-		Line 1 "Always Bypass Authentication for Cached Resources`t`t: " $Script:CVADSite1.AlwaysBypassAuthForCachedResources.ToString() #new in 3.42
+		Line 1 "Always Bypass Authentication for Cached Resources`t: " $Script:CVADSite1.AlwaysBypassAuthForCachedResources.ToString() #new in 3.42
 		Line 1 "Base OU`t`t`t`t`t`t`t: " $Script:CVADSite1.BaseOU
 		Line 1 "Bypass Authentication for Cached Resources`t`t: " $Script:CVADSite1.BypassAuthForCachedResources.ToString() #new in 1.15
+		Line 1 "Cloud Site License`t`t`t`t`t: " $CloudSiteLicense #new in 3.43
+		Line 1 "Cloud Valid Licenses`t`t`t`t`t: " $CloudValidLicenses #new in 3.43
 		Line 1 "Color Depth`t`t`t`t`t`t: " $xColorDepth
 		Line 1 "Connection Leasing Enabled`t`t`t`t: " $Script:CVADSite1.ConnectionLeasingEnabled.ToString() #new in 3.42
 		Line 1 "Credential Forwarding to Cloud Allowed`t`t`t: " $Script:CVADSite1.CredentialForwardingToCloudAllowed.ToString() #new in 1.15
@@ -33117,6 +33187,9 @@ Function OutputSiteSettings
 		Line 1 "DNS Resolution Enabled`t`t`t`t`t: " $Script:CVADSite1.DnsResolutionEnabled.ToString()
 		Line 1 "Load Balancing Sessions on Machines`t`t`t: " $LoadBalancingSessionsonMachines #new in 3.42
 		Line 1 "Local Host Cache Enabled`t`t`t`t: " $Script:CVADSite1.LocalHostCacheEnabled.ToString()
+		Line 1 "Preferred Account Name`t`t`t`t`t: " $PreferredAccountName #new in 3.43
+		Line 1 "Require XML Service Key for NFuse`t`t`t: " $RequireXmlServiceKeyForNFuse #new in 3.43
+		Line 1 "Require XML Service Key for STA`t`t`t`t: " $RequireXmlServiceKeyForSta #new in 3.43
 		Line 1 "Resource Lease Validity Period in Days`t`t`t: " $Script:CVADSite1.ResourceLeaseValidityPeriodInDays.ToString() #new in 1.15
 		Line 1 "Resource Leasing Enabled`t`t`t`t: "  $Script:CVADSite1.ResourceLeasingEnabled.ToString() #new in 1.15
 		Line 1 "Reuse Machines Without Shutdown in Outage Allowed`t: " $Script:CVADSite1.ReuseMachinesWithoutShutdownInOutageAllowed.ToString()
@@ -33127,6 +33200,7 @@ Function OutputSiteSettings
 		Line 1 "Telemetry Launch Shadow Delay in Minutes`t`t: " $Script:CVADSite1.TelemetryLaunchShadowDelayMins.ToString() #new in 1.15
 		Line 1 "Trust Managed Anonymous XML Service Requests`t`t: " $Script:CVADSite1.TrustManagedAnonymousXmlServiceRequests.ToString()
 		Line 1 "Trust Requests Sent to the XML Service Port`t`t: " $Script:CVADSite1.TrustRequestsSentToTheXmlServicePort.ToString()
+		Line 1 "Use AD Lookup Enabled`t`t`t`t`t: " $UseADLookupEnabled #new in 3.43
 		Line 0 ""
 	}
 	If($HTML)
@@ -33139,6 +33213,8 @@ Function OutputSiteSettings
 		$rowdata += @(,("Always Bypass Authentication for Cached Resources",($global:htmlsb),$Script:CVADSite1.AlwaysBypassAuthForCachedResources.ToString(),$htmlwhite)) #new in 3.42
 		$rowdata += @(,("Base OU",($global:htmlsb),$Script:CVADSite1.BaseOU,$htmlwhite))
 		$rowdata += @(,("Bypass Authentication for Cached Resources",($global:htmlsb),$Script:CVADSite1.BypassAuthForCachedResources.ToString(),$htmlwhite)) #new in 1.15
+		$rowdata += @(,("Cloud Site License",($global:htmlsb),$CloudSiteLicense,$htmlwhite)) #new in 3.43
+		$rowdata += @(,("Cloud Valid Licenses",($global:htmlsb),$CloudValidLicenses,$htmlwhite)) #new in 3.43
 		$rowdata += @(,("Color Depth",($global:htmlsb),$xColorDepth,$htmlwhite))
 		$rowdata += @(,("Connection Leasing Enabled",($global:htmlsb),$Script:CVADSite1.ConnectionLeasingEnabled.ToString(),$htmlwhite)) #new in 3.42
 		$rowdata += @(,("Credential Forwarding to Cloud Allowed",($global:htmlsb),$Script:CVADSite1.CredentialForwardingToCloudAllowed.ToString(),$htmlwhite)) #new in 1.15
@@ -33148,6 +33224,9 @@ Function OutputSiteSettings
 		$rowdata += @(,("DNS Resolution Enabled",($global:htmlsb),$Script:CVADSite1.DnsResolutionEnabled.ToString(),$htmlwhite))
 		$rowdata += @(,("Load Balancing Sessions on Machines",($global:htmlsb),$LoadBalancingSessionsonMachines,$htmlwhite)) #new in 3.42
 		$rowdata += @(,("Local Host Cache Enabled",($global:htmlsb),$Script:CVADSite1.LocalHostCacheEnabled.ToString(),$htmlwhite))
+		$rowdata += @(,("Preferred Account Name",($global:htmlsb),$PreferredAccountName,$htmlwhite)) #new in 3.43
+		$rowdata += @(,("Require XML Service Key for NFuse",($global:htmlsb),$RequireXmlServiceKeyForNFuse,$htmlwhite)) #new in 3.43
+		$rowdata += @(,("Require XML Service Key for STA",($global:htmlsb),$RequireXmlServiceKeyForSta,$htmlwhite)) #new in 3.43
 		$rowdata += @(,("Resource Lease Validity Period in Days",($global:htmlsb),$Script:CVADSite1.ResourceLeaseValidityPeriodInDays.ToString(),$htmlwhite)) #new in 1.15
 		$rowdata += @(,("Resource Leasing Enabled",($global:htmlsb),$Script:CVADSite1.ResourceLeasingEnabled.ToString(),$htmlwhite)) #new in 1.15
 		$rowdata += @(,("Reuse Machines Without Shutdown in Outage Allowed",($global:htmlsb),$Script:CVADSite1.ReuseMachinesWithoutShutdownInOutageAllowed.ToString(),$htmlwhite))
@@ -33158,6 +33237,7 @@ Function OutputSiteSettings
 		$rowdata += @(,("Telemetry Launch Shadow Delay in Minutes",($global:htmlsb),$Script:CVADSite1.TelemetryLaunchShadowDelayMins.ToString(),$htmlwhite)) #new in 1.15
 		$rowdata += @(,("Trust Managed Anonymous XML Service Requests",($global:htmlsb),$Script:CVADSite1.TrustManagedAnonymousXmlServiceRequests.ToString(),$htmlwhite))
 		$rowdata += @(,("Trust Requests Sent to the XML Service Port",($global:htmlsb),$Script:CVADSite1.TrustRequestsSentToTheXmlServicePort.ToString(),$htmlwhite))
+		$rowdata += @(,("Use AD Lookup Enabled",($global:htmlsb),$UseADLookupEnabled,$htmlwhite)) #new in 3.43
 		
 		$msg = ""
 		FormatHTMLTable $msg "auto" -rowArray $rowdata -columnArray $columnHeaders
@@ -36609,9 +36689,9 @@ Function GetRolePermissions
 			"Catalog_Manage_ChangeTags"					{$Results.Add("Edit Catalog machine tags", "Machine Catalogs")}
 			"Catalog_ManageAccounts"					{$Results.Add("Manage Active Directory Accounts", "Machine Catalogs")}
 			"Catalog_MoveFolder"						{$Results.Add("Move Machine Catalog Folder", "Machine Catalogs")} #new in 2212
-			"Catalog_PowerOperations_RDS"					{$Results.Add("Perform power operations on Windows Server machines via Machine Catalog membership", "Machine Catalogs")}
-			"Catalog_PowerOperations_VDI"					{$Results.Add("Perform power operations on Windows Desktop machines via Machine Catalog membership", "Machine Catalogs")}
-			"Catalog_Read"							{$Results.Add("View Machine Catalogs", "Machine Catalogs")}
+			"Catalog_PowerOperations_RDS"				{$Results.Add("Perform power operations on Windows Server machines via Machine Catalog membership", "Machine Catalogs")}
+			"Catalog_PowerOperations_VDI"				{$Results.Add("Perform power operations on Windows Desktop machines via Machine Catalog membership", "Machine Catalogs")}
+			"Catalog_Read"								{$Results.Add("View Machine Catalogs", "Machine Catalogs")}
 			"Catalog_RemoveFolder"						{$Results.Add("Remove Machine Catalog Folder", "Machine Catalogs")} #new in 2212
 			"Catalog_RemoveMachine"						{$Results.Add("Remove Machines from Machine Catalog", "Machine Catalogs")}
 			"Catalog_RemoveScope"						{$Results.Add("Remove Machine Catalog from Scope", "Machine Catalogs")}
@@ -36620,34 +36700,31 @@ Function GetRolePermissions
 
 			"AutoTagRule_Create"						{$Results.Add("Create AutoTagRule", "Other permissions")}
 			"AutoTagRule_Delete"						{$Results.Add("Delete AutoTagRule", "Other permissions")}
-			"AutoTagRule_Edit"						{$Results.Add("Edit AutoTagRule", "Other permissions")}
-			"AutoTagRule_Read"						{$Results.Add("Read AutoTagRule", "Other permissions")}
+			"AutoTagRule_Edit"							{$Results.Add("Edit AutoTagRule", "Other permissions")}
+			"AutoTagRule_Read"							{$Results.Add("Read AutoTagRule", "Other permissions")}
 			"Configuration_Read"						{$Results.Add("Read Site Configuration (Configuration_Read)", "Other permissions")}
 			"Configuration_Write"						{$Results.Add("Update Site Configuration (Configuration_Write)", "Other permissions")}
-			"DirectorAgent_Registration"						{$Results.Add("(1)", "Other permissions")}	#2407
-			"EnvTest"							{$Results.Add("Run environment tests", "Other permissions")}
-			"Global_Read"							{$Results.Add("Read Site Configuration (Global_Read)", "Other permissions")}
-			"Global_Write"							{$Results.Add("Update Site Configuration (Global_Write)", "Other permissions")}
+			"DirectorAgent_Registration"				{$Results.Add("(1)", "Other permissions")}	#2407
+			"EnvTest"									{$Results.Add("Run environment tests", "Other permissions")}
+			"Global_Read"								{$Results.Add("Read Site Configuration (Global_Read)", "Other permissions")}
+			"Global_Write"								{$Results.Add("Update Site Configuration (Global_Write)", "Other permissions")}
 			"Orchestration_RestApi"						{$Results.Add("Manage Orchestration Service REST API", "Other permissions")}
-			"PerformUpgrade"						{$Results.Add("Perform upgrade", "Other permissions")}
-			"Tag_Create"							{$Results.Add("Create tags", "Other permissions")}
-			"Tag_Delete"							{$Results.Add("Delete tags", "Other permissions")}
-			"Tag_Edit"							{$Results.Add("Edit tags", "Other permissions")}
-			"Tag_Read"							{$Results.Add("Read tags", "Other permissions")}
-			"Trust_ServiceKeys"						{$Results.Add("Manage Trust Service Keys", "Other permissions")}
+			"PerformUpgrade"							{$Results.Add("Perform upgrade", "Other permissions")}
+			"Tag_Create"								{$Results.Add("Create tags", "Other permissions")}
+			"Tag_Delete"								{$Results.Add("Delete tags", "Other permissions")}
+			"Tag_Edit"									{$Results.Add("Edit tags", "Other permissions")}
+			"Tag_Read"									{$Results.Add("Read tags", "Other permissions")}
+			"Trust_ServiceKeys"							{$Results.Add("Manage Trust Service Keys", "Other permissions")}
 			"Trust_VdaEnrollment"						{$Results.Add("", "Other permissions")} #new in 2311
 			"VdaUpgrade_CatalogManage"					{$Results.Add("Manage VDA Upgrade Catalog Schedules", "Other permissions")}
 			"VdaUpgrade_MachineManage"					{$Results.Add("Manage VDA Upgrade Machine Schedules", "Other permissions")}
 
-			"Policies_Manage"						{$Results.Add("Manage Policies", "Policies")}
-			"Policies_Read"							{$Results.Add("View Policies", "Policies")}
+			"Policies_Manage"							{$Results.Add("Manage Policies", "Policies")}
+			"Policies_Read"								{$Results.Add("View Policies", "Policies")}
+
 			"PolicySets_AddScope"						{$Results.Add("Add Policy Set to Scope", "Policies")} #new in 2308
 			"PolicySets_RemoveScope"					{$Results.Add("Remove Policy Set from Scope", "Policies")} #new in 2308
-
-			"PolicySets_AddScope"						{$Results.Add("Add Policy Set to Scope", "Policy Sets")} #new in 2212
-			"PolicySets_Manage"						{$Results.Add("Manage Policy Sets", "Policy Sets")} #new in 2212
-			"PolicySets_Read"						{$Results.Add("View Policy Sets", "Policy Sets")} #new in 2212
-			"PolicySets_RemoveScope"					{$Results.Add("Remove Policy Set from Scope", "Policy Sets")} #new in 2212
+			"PolicySets_Read"							{$Results.Add("View Policy Sets", "Policy Sets")} #new in 2212
 
 			"ServiceAccount_AddScope"					{$Results.Add("Add Service Account to Scope", "Service Accounts")}	#2407
 			"ServiceAccount_Create"						{$Results.Add("Create Service Account", "Service Accounts")}	#2407
@@ -36656,20 +36733,20 @@ Function GetRolePermissions
 			"ServiceAccount_Read"						{$Results.Add("Read Service Account", "Service Accounts")}	#2407
 			"ServiceAccount_RemoveScope"				{$Results.Add("Remove Service Account from Scope", "Service Accounts")}	#2407
 
-			"Setting_Edit"							{$Results.Add("Edit Settings", "Settings")} #new in 2212
-			"Setting_Read"							{$Results.Add("View Settings", "Settings")} #new in 2212
+			"Setting_Edit"								{$Results.Add("Edit Settings", "Settings")} #new in 2212
+			"Setting_Read"								{$Results.Add("View Settings", "Settings")} #new in 2212
 
-			"Storefront_Create"						{$Results.Add("Create a new StoreFront definition", "StoreFronts")}
-			"Storefront_Delete"						{$Results.Add("Delete a StoreFront definition", "StoreFronts")}
-			"Storefront_Read"						{$Results.Add("Read StoreFront definitions", "StoreFronts")}
-			"Storefront_Update"						{$Results.Add("Update a StoreFront definition", "StoreFronts")}
+			"Storefront_Create"							{$Results.Add("Create a new StoreFront definition", "StoreFronts")}
+			"Storefront_Delete"							{$Results.Add("Delete a StoreFront definition", "StoreFronts")}
+			"Storefront_Read"							{$Results.Add("Read StoreFront definitions", "StoreFronts")}
+			"Storefront_Update"							{$Results.Add("Update a StoreFront definition", "StoreFronts")}
 
-			"EdgeServer_Manage"						{$Results.Add("Manage Citrix Cloud Connector", "Zones")}
-			"EdgeServer_Read"						{$Results.Add("View Citrix Cloud Connector", "Zones")}
-			"Zone_Create"							{$Results.Add("Create Zone", "Zones")}
-			"Zone_Delete"							{$Results.Add("Delete Zone", "Zones")}
+			"EdgeServer_Manage"							{$Results.Add("Manage Citrix Cloud Connector", "Zones")}
+			"EdgeServer_Read"							{$Results.Add("View Citrix Cloud Connector", "Zones")}
+			"Zone_Create"								{$Results.Add("Create Zone", "Zones")}
+			"Zone_Delete"								{$Results.Add("Delete Zone", "Zones")}
 			"Zone_EditProperties"						{$Results.Add("Edit Zone", "Zones")}
-			"Zone_Read"							{$Results.Add("View Zones", "Zones")}
+			"Zone_Read"									{$Results.Add("View Zones", "Zones")}
 		}
 	}
 

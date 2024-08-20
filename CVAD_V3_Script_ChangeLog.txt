@@ -140,6 +140,20 @@
 #		ICA\Virtual channel plugin manager (2407)
 #		ICA\Audio\Loss tolerant mode for audio (2402)
 #
+#	Added to Function OutputSiteSettings and the output of Site Settings:
+#		https://developer-docs.citrix.com/en-us/citrix-virtual-apps-desktops-sdk/2407/broker/set-brokersite
+#		CloudSiteLicense: Used to override the Product, Edition and LicensingModel set during provisioning at CCS level
+#		CloudValidLicenses: List of license SKUs purchased by the customer needs to be set a provisioning time every time 
+#			Ptah re-provisions the customer because of SKU changes for the customer. This will be used for validation purposes. (SIC)
+#			[Webster: https://www.merriam-webster.com/wordplay/sic-meaning-usage-editorial-citation]
+#			[Webster: The format or possible contents of this string are not documented]
+#		PreferredAccountName: Determines if SAM name or UPN should be displayed for default name of user/group account
+#		RequireXmlServiceKeyForNFuse: Determines whether an XML Service Key header is required for the NFuse, MCP, 
+#			and Admin XML interfaces. (Webster: NFuse hasn't been around since the early 2000s. Strange how Citrix keeps
+#			old product names hanging around.
+#		RequireXmlServiceKeyForSta: Determines whether an XML Service Key header is required for the STA interface
+#		UseADLookupEnabled: Determines whether to use the AD directory context for lookup
+#
 #	In Function GetControllerRegistryKeys, for the HostingManagementSettings section:
 #		Comment out the Policies lines as there is no Policies node for these settings
 #		Change the registry location
