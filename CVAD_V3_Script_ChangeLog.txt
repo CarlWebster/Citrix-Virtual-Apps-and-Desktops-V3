@@ -176,6 +176,24 @@
 #			ServiceAccount_EditProperties (2407)
 #			ServiceAccount_Read (2407)
 #			ServiceAccount_RemoveScope (2407)
+#
+#	In Function OutputLicensingOverview:
+#		Added:
+#			LicenseGraceSessionsRemaining
+#			LicensingGraceHoursLeft
+#			LicensingGracePeriodActive
+#			LicensingOutOfBoxGracePeriodActive
+#		Change text label from "CVAD license use" to "The number of active, licensed sessions"
+#		Updated product editions (Thanks Steven G.)
+#			If ProductCode is XDT
+#				"Platinum Edition" is now "Citrix Virtual Desktops 7 Premium"
+#				"Enterprise Edition" is now "Citrix Virtual Desktops 7 Advanced"
+#				"VDI Edition" is now "Citrix Virtual Desktops 7 Standard"
+#			If ProductCode is MPS
+#				"Platinum Edition" is now "Citrix Virtual Apps 7 Premium"
+#				"Enterprise Edition" is now "Citrix Virtual Desktops 7 Advanced"
+#				"Advanced Edition" is now "Citrix Virtual Desktops 7 Standard"
+#
 #	Updated for CVAD 2402 (7.41) and 2407 (7.42)
 
 #Version 3.42 20-Jan-2024

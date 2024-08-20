@@ -1417,6 +1417,24 @@ Param(
 #			ServiceAccount_EditProperties (2407)
 #			ServiceAccount_Read (2407)
 #			ServiceAccount_RemoveScope (2407)
+#
+#	In Function OutputLicensingOverview:
+#		Added:
+#			LicenseGraceSessionsRemaining
+#			LicensingGraceHoursLeft
+#			LicensingGracePeriodActive
+#			LicensingOutOfBoxGracePeriodActive
+#		Change text label from "CVAD license use" to "The number of active, licensed sessions"
+#		Updated product editions (Thanks Steven G.)
+#			If ProductCode is XDT
+#				"Platinum Edition" is now "Citrix Virtual Desktops 7 Premium"
+#				"Enterprise Edition" is now "Citrix Virtual Desktops 7 Advanced"
+#				"VDI Edition" is now "Citrix Virtual Desktops 7 Standard"
+#			If ProductCode is MPS
+#				"Platinum Edition" is now "Citrix Virtual Apps 7 Premium"
+#				"Enterprise Edition" is now "Citrix Virtual Desktops 7 Advanced"
+#				"Advanced Edition" is now "Citrix Virtual Desktops 7 Standard"
+#
 #	Updated for CVAD 2402 (7.41) and 2407 (7.42)
 
 #
@@ -39099,6 +39117,23 @@ Function OutputLicensingOverview
 		}
 	}
 	
+	<#
+		LicensingModel - Sets the licensing model to use. Values can be ‘Concurrent’ or ‘UserDevice’.
+		ProductCode - Specifies which product license is supported by the site. Values can be MPS for XenApp licenses or XDT for XenDesktop licenses.
+		ProductEdition - Sets the licensing edition to use.
+		
+		
+		Licensing State
+		The broker site contains the following properties related to licensing state:
+
+		LicensingGracePeriodActive Reports if the broker is in licensing grace period.
+		LicensingOutOfBoxGracePeriodActive Reports if the broker is in out-of-box grace period.
+		LicensingGraceHoursLeft The number of grace hours remaining, if the broker is in grace period, else it is null.
+		LicensedSessionsActive The number of active, licensed sessions.
+		LicenseGraceSessionsRemaining The number of concurrent grace sessions available for the site Product Code, if the broker is in licensing grace period, else it is null.
+		These properties are part of the site object returned by the Get-BrokerSite cmdlet.
+	#>
+	
 	$LicenseEditionType = ""
 	$LicenseModelType = ""
 
@@ -39106,10 +39141,9 @@ Function OutputLicensingOverview
 	{
 		Switch ($Script:CVADSite2.ProductEdition)
 		{
-			"PLT" 	{$LicenseEditionType = "Platinum Edition"; Break}
-			"ENT" 	{$LicenseEditionType = "Enterprise Edition"; Break}
-			"APP" 	{$LicenseEditionType = "App Edition"; Break}
-			"STD" 	{$LicenseEditionType = "VDI Edition"; Break}
+			"PLT" 	{$LicenseEditionType = "Citrix Virtual Desktops 7 Premium"; Break}
+			"ENT" 	{$LicenseEditionType = "Citrix Virtual Desktops 7 Advanced"; Break}
+			"STD" 	{$LicenseEditionType = "Citrix Virtual Desktops 7 Standard"; Break}
 			Default {$LicenseEditionType = "License edition could not be determined: $($Script:CVADSite2.ProductEdition)"; Break}
 		}
 	}
@@ -39117,9 +39151,9 @@ Function OutputLicensingOverview
 	{
 		Switch ($Script:CVADSite2.ProductEdition)
 		{
-			"PLT" 	{$LicenseEditionType = "Platinum Edition"; Break}
-			"ENT" 	{$LicenseEditionType = "Enterprise Edition"; Break}
-			"ADV" 	{$LicenseEditionType = "Advanced Edition"; Break}
+			"PLT" 	{$LicenseEditionType = "Citrix Virtual Apps 7 Premium"; Break}
+			"ENT" 	{$LicenseEditionType = "Citrix Virtual Apps 7 Advanced"; Break}
+			"ADV" 	{$LicenseEditionType = "Citrix Virtual Apps 7 Standard"; Break}
 			Default {$LicenseEditionType = "License edition could not be determined: $($Script:CVADSite2.ProductEdition)"; Break}
 		}
 	}
@@ -39133,6 +39167,32 @@ Function OutputLicensingOverview
 		$LicenseModelType = $Script:CVADSite1.LicenseModel.ToString()
 	}
 	$tmpdate = '{0:yyyy\.MMdd}' -f $Script:CVADSite1.LicensingBurnInDate
+	
+	<#
+		added in 3.43
+		LicenseGraceSessionsRemaining               : null value if empty
+		LicensingGraceHoursLeft                     : null value if empty
+		LicensingGracePeriodActive                  : False
+		LicensingOutOfBoxGracePeriodActive          : False	
+	#>
+	$LicensingGracePeriodActive = $Script:CVADSite1.LicensingGracePeriodActive.ToString()
+	$LicensingOutOfBoxGracePeriodActive = $Script:CVADSite1.LicensingOutOfBoxGracePeriodActive.ToString()
+	If($null -eq $Script:CVADSite1.LicensingGraceHoursLeft)
+	{
+		$LicensingGraceHoursLeft = ""
+	}
+	ELse
+	{
+		$LicensingGraceHoursLeft = $Script:CVADSite1.LicensingGraceHoursLeft.ToString()
+	}
+	If($null -eq $Script:CVADSite1.LicenseGraceSessionsRemaining)
+	{
+		$LicenseGraceSessionsRemaining = ""
+	}
+	ELse
+	{
+		$LicenseGraceSessionsRemaining = $Script:CVADSite1.LicenseGraceSessionsRemaining.ToString()
+	}
 	
 	If($MSWord -or $PDF)
 	{
@@ -39148,8 +39208,13 @@ Function OutputLicensingOverview
 		$ScriptInformation.Add(@{Data = "Edition"; Value = $LicenseEditionType; }) > $Null
 		$ScriptInformation.Add(@{Data = "License model"; Value = $LicenseModelType; }) > $Null
 		$ScriptInformation.Add(@{Data = "Required SA date"; Value = $tmpdate; }) > $Null
-		$ScriptInformation.Add(@{Data = "CVAD license use"; Value = $Script:CVADSite1.LicensedSessionsActive; }) > $Null
+		$ScriptInformation.Add(@{Data = "The number of active, licensed sessions"; Value = $Script:CVADSite1.LicensedSessionsActive; }) > $Null
 		$ScriptInformation.Add(@{Data = "Version"; Value = $LicenseServerVersion; }) > $Null
+		$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
+		$ScriptInformation.Add(@{Data = "Licensing Grace Period Active"; Value = $LicensingGracePeriodActive; }) > $Null
+		$ScriptInformation.Add(@{Data = "Licensing out of Box Grace Period Active"; Value = $LicensingOutOfBoxGracePeriodActive; }) > $Null
+		$ScriptInformation.Add(@{Data = "Licensing Grace Hours Left"; Value = $LicensingGraceHoursLeft; }) > $Null
+		$ScriptInformation.Add(@{Data = "License Grace Sessions Remaining"; Value = $LicenseGraceSessionsRemaining; }) > $Null
 		$Table = AddWordTable -Hashtable $ScriptInformation `
 		-Columns Data,Value `
 		-List `
@@ -39158,8 +39223,8 @@ Function OutputLicensingOverview
 
 		SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
 
-		$Table.Columns.Item(1).Width = 150;
-		$Table.Columns.Item(2).Width = 150;
+		$Table.Columns.Item(1).Width = 225;
+		$Table.Columns.Item(2).Width = 200;
 
 		$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
 
@@ -39171,15 +39236,20 @@ Function OutputLicensingOverview
 		Line 0 "Licensing"
 		Line 0 "Licensing Overview"
 		Line 0 ""
-		Line 0 "Site`t`t`t: " $Script:CVADSite1.Name
-		Line 0 "Server`t`t`t: " $Script:CVADSite1.LicenseServerName
-		Line 0 "IP Address`t`t: " $LicenseServerIPAddress
-		Line 0 "Port`t`t`t: " $Script:CVADSite1.LicenseServerPort
-		Line 0 "Edition`t`t`t: " $LicenseEditionType
-		Line 0 "License model`t`t: " $LicenseModelType
-		Line 0 "Required SA date`t: " $tmpdate
-		Line 0 "CVAD license use`t: " $Script:CVADSite1.LicensedSessionsActive
-		Line 0 "Version`t`t`t: " $LicenseServerVersion
+		Line 0 "Site`t`t`t`t`t: " $Script:CVADSite1.Name
+		Line 0 "Server`t`t`t`t`t: " $Script:CVADSite1.LicenseServerName
+		Line 0 "IP Address`t`t`t`t: " $LicenseServerIPAddress
+		Line 0 "Port`t`t`t`t`t: " $Script:CVADSite1.LicenseServerPort
+		Line 0 "Edition`t`t`t`t`t: " $LicenseEditionType
+		Line 0 "License model`t`t`t`t: " $LicenseModelType
+		Line 0 "Required SA date`t`t`t: " $tmpdate
+		Line 0 "The number of active, licensed sessions`t: " $Script:CVADSite1.LicensedSessionsActive
+		Line 0 "Version`t`t`t`t`t: " $LicenseServerVersion
+		Line 0 ""
+		Line 0 "Licensing Grace Period Active`t`t: " $LicensingGracePeriodActive
+		Line 0 "Licensing out of Box Grace Period Active: " $LicensingOutOfBoxGracePeriodActive
+		Line 0 "Licensing Grace Hours Left`t`t: " $LicensingGraceHoursLeft
+		Line 0 "License Grace Sessions Remaining`t: " $LicenseGraceSessionsRemaining
 		Line 0 ""
 	}
 	If($HTML)
@@ -39194,12 +39264,17 @@ Function OutputLicensingOverview
 		$rowdata += @(,('Edition',($global:htmlsb),$LicenseEditionType,$htmlwhite))
 		$rowdata += @(,('License model',($global:htmlsb),$LicenseModelType,$htmlwhite))
 		$rowdata += @(,('Required SA date',($global:htmlsb),$tmpdate,$htmlwhite))
-		$rowdata += @(,('CVAD license use',($global:htmlsb),$Script:CVADSite1.LicensedSessionsActive.ToString(),$htmlwhite))
+		$rowdata += @(,('The number of active, licensed sessions',($global:htmlsb),$Script:CVADSite1.LicensedSessionsActive.ToString(),$htmlwhite))
 		$rowdata += @(,('Version',($global:htmlsb),$LicenseServerVersion,$htmlwhite))
+		$rowdata += @(,('',($global:htmlsb),"",$htmlwhite))
+		$rowdata += @(,('Licensing Grace Period Active',($global:htmlsb),$LicensingGracePeriodActive,$htmlwhite))
+		$rowdata += @(,('Licensing out of Box Grace Period Active',($global:htmlsb),$LicensingOutOfBoxGracePeriodActive,$htmlwhite))
+		$rowdata += @(,('Licensing Grace Hours Left',($global:htmlsb),$LicensingGraceHoursLeft,$htmlwhite))
+		$rowdata += @(,('License Grace Sessions Remaining',($global:htmlsb),$LicenseGraceSessionsRemaining,$htmlwhite))
 
 		$msg = ""
-		$columnWidths = @("175","125")
-		FormatHTMLTable $msg -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths -tablewidth "300"
+		$columnWidths = @("250","200")
+		FormatHTMLTable $msg -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths -tablewidth "450"
 	}
 	
 	If($Hardware)
@@ -42057,8 +42132,8 @@ ProcessScriptEnd
 # SIG # Begin signature block
 # MIItTgYJKoZIhvcNAQcCoIItPzCCLTsCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUO0TRZ5LLRiFTK9NBtRTHZ+2H
-# ZcuggiauMIIFjTCCBHWgAwIBAgIQDpsYjvnQLefv21DiCEAYWjANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUHVzt8+dXOqkFy8CMP8n2PB7i
+# 9nOggiauMIIFjTCCBHWgAwIBAgIQDpsYjvnQLefv21DiCEAYWjANBgkqhkiG9w0B
 # AQwFADBlMQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYD
 # VQQLExB3d3cuZGlnaWNlcnQuY29tMSQwIgYDVQQDExtEaWdpQ2VydCBBc3N1cmVk
 # IElEIFJvb3QgQ0EwHhcNMjIwODAxMDAwMDAwWhcNMzExMTA5MjM1OTU5WjBiMQsw
@@ -42268,33 +42343,33 @@ ProcessScriptEnd
 # MRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFBMD8GA1UEAxM4RGlnaUNlcnQgVHJ1
 # c3RlZCBHNCBDb2RlIFNpZ25pbmcgUlNBNDA5NiBTSEEzODQgMjAyMSBDQTECEAts
 # 37ZngQ4q58taEbodSXAwCQYFKw4DAhoFAKBAMBkGCSqGSIb3DQEJAzEMBgorBgEE
-# AYI3AgEEMCMGCSqGSIb3DQEJBDEWBBRKo9XZSIuTSV2LRIsbSJSqMbtRhTANBgkq
-# hkiG9w0BAQEFAASCAgA580h7OgrLNE0iOY4iOdxvrQVc9tbLEQ9FeAh3rpOcCYKG
-# HbdBdQl1bFGiyseHnOVNm7tsfx1g8n5AcgNI17tdxmbzK17HllUZ+C3gFeWwShue
-# VbH0fzll8+yGbm71vzBpOQJ2Q5QsUUPOeh8dEOKqOMkekfRWdhnFE+wj+AkxSr4Y
-# rzTVrbw1Unp7SIUlGIgLS5pDAVgHYOOjETuCqjDxjv8qx1RShh13x5hZQlXkNlnV
-# AmsEL/18gGfiXym7WGrqmLeyarC3aBeTpO3vbr6pt/Jh9PH5g7d+0QrLt7A6rzQq
-# tpGPErcdxjaaDzQmjITkSAodfwh3ka9MZyFCACYYECTgLWCZDRq9M+9CYQF8FTK6
-# Dg1fVCkbhelEPKvQZMZA0IVMZZKtCrpbKPoIkTfuIH/1hQwQcIY/9VonUzSk+Aoa
-# jYGfAemH8r1mblUL50+DLKoN4jEis876JoxnWHTAtW6jCXqi7ARgzIEX8Fx+/OQb
-# bM7zsVgwKZzJgMAp+gPz0493TNqqgk/69e4LXLz02iswiiRZDtI83yPyRYnP1zWt
-# a007B7LxmlHjgaf9Dm3ygwmEpbvoeQ7zRfEWc/Ptg1sO99iKIazrD1qoBzroFke+
-# RVAoll2ZDX/Npb0KwygtWLz5A6BIP9IgJlJCtdOYEISremVk72MrlTl8rUUXd6GC
+# AYI3AgEEMCMGCSqGSIb3DQEJBDEWBBTdJs3+75BKQez2UgulrPRCb5yyyjANBgkq
+# hkiG9w0BAQEFAASCAgBLLhKuQ+RQaa981SVGsJiadcXSXV1YvhlSntmwP21LSE3V
+# ak6E6Eu9h3ypzTzdrHkVv37JQJZC8qzrxSH/xOIO7SEgOuIdtLjBuKEGnuJKl4XH
+# ql6k1NKS6nvI5KbaMX+jTQHbOeNmjxmlj0/m/0+bWCLAuKdQqSxGSJDn9uLNTs/H
+# f7WYUp0uXfOFMwKtmeHaHOReQEJK140aJ+9jgF7Bu1efICWBcugcIo5SdLGpgfSl
+# syDAZjNFMs0yRx8RP2bEPdFHGZJp4gqIO0nNILu5juDxot2L0N5zD6pWNrrGBU5d
+# z5VpXMuNh2+//61krzzcRKW2qstSwv/vHBd2HTmD92fNpQPmSpgGZcjROOqY7PLp
+# 38zhNFcrPPWq+wumpxN5bI8vrbfn5o3i7yNNbBGFGhFe27E6085EpllogqJxpmMH
+# Uw3WfoXIgnJRthCB5N58f2QhfhohkFVh+G1LQb4zH8TkENp+NYj7TdcIcwWnf26o
+# VTUw8hHdg5Qixsq2qu58woaLxOgaHddp4Os19luA6+zhZMNIufaDAfjeA5WXoslX
+# DpHh3tYW0d51/ACdCSTewkTN3fznCq7WAuLV5xlgYDBkCb1zNMLpzaumYbKprG+6
+# wkFg5+INjAfrR5P5/m299tJXDm8k++rQCeelEmG0vyr0ah1/ng7TRvobjU93RqGC
 # AyAwggMcBgkqhkiG9w0BCQYxggMNMIIDCQIBATB3MGMxCzAJBgNVBAYTAlVTMRcw
 # FQYDVQQKEw5EaWdpQ2VydCwgSW5jLjE7MDkGA1UEAxMyRGlnaUNlcnQgVHJ1c3Rl
 # ZCBHNCBSU0E0MDk2IFNIQTI1NiBUaW1lU3RhbXBpbmcgQ0ECEAVEr/OUnQg5pr/b
 # P1/lYRYwDQYJYIZIAWUDBAIBBQCgaTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcB
-# MBwGCSqGSIb3DQEJBTEPFw0yNDA4MjAxMjE5MDlaMC8GCSqGSIb3DQEJBDEiBCCW
-# Dj7kuvGof5uHEBWiM5qdBHvnPaANW794S0210Lq08TANBgkqhkiG9w0BAQEFAASC
-# AgCacZqriRRvfpVN/vyYoIAEcTBoyz9x0M0gtBgRH5729vpy6GDbzzZcT9s4ULje
-# vtIDe5uK34+ITJajtp8NVH/D8ZbT1idMduz3iubXpFVzGScrhrpeO9S34p0N6DV6
-# nb46hf+akXwVd1G6+n3Aep6GQgv01fv4Bed548nkH1c7bpBbyTx9mPXRoqiXi/CB
-# nEDY4KvCPl9qXiPurYv1lc/MtElQHBeU2g7sDrtI/L8zjjeL/1wBBuDOeS0oRfe3
-# TrEK5vuWJhhDLCa+dhiU0kr/8fgDuPuHgLrT0rk/UBRkAJQ0ovQxpNH4N2ktRTdf
-# BFTvmY6EbDI2t8aZyZ2ch/lSlyyynxzsA69NMCVzNdNuxyaPnxFO/Oj+8BaiAOEA
-# Sfd0ijTB/IfSVLzhIem8Lncu6QTwf+bixJ9GTwerUuJmPu4K+FSYugN3GvxahUH7
-# xYVc/2xlsdtp/IV6ci9lT/uItlqPkxLNWbVf2ssvGF2foPtGjAIqfr9hz5S/+Ksz
-# qZZYom9fKncMpbEA2V4olFU00yMYcVmLxuWYPMMrQwPBZoYmHHtZm89+DhEwRcCI
-# Co5f2M/Ij0SyUaQhZswYhGjTKacLi55o2Q9bGi40SICc7tR3pqvd6FM6rc8D5PiL
-# j/7HsdHoAehwrRqOQoT8MRoYZ0/BSZzOY74PD3Jg7BAXeQ==
+# MBwGCSqGSIb3DQEJBTEPFw0yNDA4MjAxNjI2NTVaMC8GCSqGSIb3DQEJBDEiBCBP
+# d555P/WnZ0i2wfLYBnaMBqZINMjIi3L4vo9KQ1o+PzANBgkqhkiG9w0BAQEFAASC
+# AgBo3uIhmrPJifqD4+gKl7auIsI+ipIxTVy7bpuezR+xq+3a3xkkHol6fM4FZhll
+# JP7nlVb1aiGnA2wDuW3SKmZRK7UYyPlSdjwlgqOM7cTxqc+JjkCzKpHKucGI44vY
+# YGYNxLkMp43KMAsUKyaTY6JFXd76zwQG9Qsl8iorM34u3HYXs04WyYrsY8WfaxvI
+# mIYN24UlOaS+U/vsgYxxiOawyWcrE1QMue9iYhj4ykMTqpCz12BaYXZRscDQ6rjn
+# 6/xLGydoCx74XrdOGNTfbn3ccy0deFXh72L5EdIQ5AdPh1tn6ekObbHWdBVNNWA/
+# ydlqajl9Bkeo7BCTgQJ5gM4czAzqeWWc024QmplzmslU2OpFHPoxdA4zon3mOYNp
+# bMeG9on0U5CYUdi3T2LemWMwloxoV1FamXzM21WNMlJ1v7nL1uHh4G47df5r3xX1
+# MTDpfD98XoJEtx5gz9pPZoLbBQYgPdryq4MD3PDSgo/TjJEc46BjCTiBsGoZIh1U
+# /4Tj672eKSAIS2velWHIOUc4kbwBDcznqxaWfVlXRJrJi0Zei4ktSPN72dhL91hc
+# naaCH1+nBiykYuRAF3nkqPs/AEpDOmKTV8J6MxiTu9zsp/CMrL+7zr7CZ5h2Hlp+
+# V0aMOvwvWlVpWqLJu7/QtVQqj4M21JN/OGPojFxxvBSxtw==
 # SIG # End signature block

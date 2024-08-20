@@ -1417,6 +1417,24 @@ Param(
 #			ServiceAccount_EditProperties (2407)
 #			ServiceAccount_Read (2407)
 #			ServiceAccount_RemoveScope (2407)
+#
+#	In Function OutputLicensingOverview:
+#		Added:
+#			LicenseGraceSessionsRemaining
+#			LicensingGraceHoursLeft
+#			LicensingGracePeriodActive
+#			LicensingOutOfBoxGracePeriodActive
+#		Change text label from "CVAD license use" to "The number of active, licensed sessions"
+#		Updated product editions (Thanks Steven G.)
+#			If ProductCode is XDT
+#				"Platinum Edition" is now "Citrix Virtual Desktops 7 Premium"
+#				"Enterprise Edition" is now "Citrix Virtual Desktops 7 Advanced"
+#				"VDI Edition" is now "Citrix Virtual Desktops 7 Standard"
+#			If ProductCode is MPS
+#				"Platinum Edition" is now "Citrix Virtual Apps 7 Premium"
+#				"Enterprise Edition" is now "Citrix Virtual Desktops 7 Advanced"
+#				"Advanced Edition" is now "Citrix Virtual Desktops 7 Standard"
+#
 #	Updated for CVAD 2402 (7.41) and 2407 (7.42)
 
 #
@@ -39099,6 +39117,23 @@ Function OutputLicensingOverview
 		}
 	}
 	
+	<#
+		LicensingModel - Sets the licensing model to use. Values can be ‘Concurrent’ or ‘UserDevice’.
+		ProductCode - Specifies which product license is supported by the site. Values can be MPS for XenApp licenses or XDT for XenDesktop licenses.
+		ProductEdition - Sets the licensing edition to use.
+		
+		
+		Licensing State
+		The broker site contains the following properties related to licensing state:
+
+		LicensingGracePeriodActive Reports if the broker is in licensing grace period.
+		LicensingOutOfBoxGracePeriodActive Reports if the broker is in out-of-box grace period.
+		LicensingGraceHoursLeft The number of grace hours remaining, if the broker is in grace period, else it is null.
+		LicensedSessionsActive The number of active, licensed sessions.
+		LicenseGraceSessionsRemaining The number of concurrent grace sessions available for the site Product Code, if the broker is in licensing grace period, else it is null.
+		These properties are part of the site object returned by the Get-BrokerSite cmdlet.
+	#>
+	
 	$LicenseEditionType = ""
 	$LicenseModelType = ""
 
@@ -39106,10 +39141,9 @@ Function OutputLicensingOverview
 	{
 		Switch ($Script:CVADSite2.ProductEdition)
 		{
-			"PLT" 	{$LicenseEditionType = "Platinum Edition"; Break}
-			"ENT" 	{$LicenseEditionType = "Enterprise Edition"; Break}
-			"APP" 	{$LicenseEditionType = "App Edition"; Break}
-			"STD" 	{$LicenseEditionType = "VDI Edition"; Break}
+			"PLT" 	{$LicenseEditionType = "Citrix Virtual Desktops 7 Premium"; Break}
+			"ENT" 	{$LicenseEditionType = "Citrix Virtual Desktops 7 Advanced"; Break}
+			"STD" 	{$LicenseEditionType = "Citrix Virtual Desktops 7 Standard"; Break}
 			Default {$LicenseEditionType = "License edition could not be determined: $($Script:CVADSite2.ProductEdition)"; Break}
 		}
 	}
@@ -39117,9 +39151,9 @@ Function OutputLicensingOverview
 	{
 		Switch ($Script:CVADSite2.ProductEdition)
 		{
-			"PLT" 	{$LicenseEditionType = "Platinum Edition"; Break}
-			"ENT" 	{$LicenseEditionType = "Enterprise Edition"; Break}
-			"ADV" 	{$LicenseEditionType = "Advanced Edition"; Break}
+			"PLT" 	{$LicenseEditionType = "Citrix Virtual Apps 7 Premium"; Break}
+			"ENT" 	{$LicenseEditionType = "Citrix Virtual Apps 7 Advanced"; Break}
+			"ADV" 	{$LicenseEditionType = "Citrix Virtual Apps 7 Standard"; Break}
 			Default {$LicenseEditionType = "License edition could not be determined: $($Script:CVADSite2.ProductEdition)"; Break}
 		}
 	}
@@ -39133,6 +39167,32 @@ Function OutputLicensingOverview
 		$LicenseModelType = $Script:CVADSite1.LicenseModel.ToString()
 	}
 	$tmpdate = '{0:yyyy\.MMdd}' -f $Script:CVADSite1.LicensingBurnInDate
+	
+	<#
+		added in 3.43
+		LicenseGraceSessionsRemaining               : null value if empty
+		LicensingGraceHoursLeft                     : null value if empty
+		LicensingGracePeriodActive                  : False
+		LicensingOutOfBoxGracePeriodActive          : False	
+	#>
+	$LicensingGracePeriodActive = $Script:CVADSite1.LicensingGracePeriodActive.ToString()
+	$LicensingOutOfBoxGracePeriodActive = $Script:CVADSite1.LicensingOutOfBoxGracePeriodActive.ToString()
+	If($null -eq $Script:CVADSite1.LicensingGraceHoursLeft)
+	{
+		$LicensingGraceHoursLeft = ""
+	}
+	ELse
+	{
+		$LicensingGraceHoursLeft = $Script:CVADSite1.LicensingGraceHoursLeft.ToString()
+	}
+	If($null -eq $Script:CVADSite1.LicenseGraceSessionsRemaining)
+	{
+		$LicenseGraceSessionsRemaining = ""
+	}
+	ELse
+	{
+		$LicenseGraceSessionsRemaining = $Script:CVADSite1.LicenseGraceSessionsRemaining.ToString()
+	}
 	
 	If($MSWord -or $PDF)
 	{
@@ -39148,8 +39208,13 @@ Function OutputLicensingOverview
 		$ScriptInformation.Add(@{Data = "Edition"; Value = $LicenseEditionType; }) > $Null
 		$ScriptInformation.Add(@{Data = "License model"; Value = $LicenseModelType; }) > $Null
 		$ScriptInformation.Add(@{Data = "Required SA date"; Value = $tmpdate; }) > $Null
-		$ScriptInformation.Add(@{Data = "CVAD license use"; Value = $Script:CVADSite1.LicensedSessionsActive; }) > $Null
+		$ScriptInformation.Add(@{Data = "The number of active, licensed sessions"; Value = $Script:CVADSite1.LicensedSessionsActive; }) > $Null
 		$ScriptInformation.Add(@{Data = "Version"; Value = $LicenseServerVersion; }) > $Null
+		$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
+		$ScriptInformation.Add(@{Data = "Licensing Grace Period Active"; Value = $LicensingGracePeriodActive; }) > $Null
+		$ScriptInformation.Add(@{Data = "Licensing out of Box Grace Period Active"; Value = $LicensingOutOfBoxGracePeriodActive; }) > $Null
+		$ScriptInformation.Add(@{Data = "Licensing Grace Hours Left"; Value = $LicensingGraceHoursLeft; }) > $Null
+		$ScriptInformation.Add(@{Data = "License Grace Sessions Remaining"; Value = $LicenseGraceSessionsRemaining; }) > $Null
 		$Table = AddWordTable -Hashtable $ScriptInformation `
 		-Columns Data,Value `
 		-List `
@@ -39158,8 +39223,8 @@ Function OutputLicensingOverview
 
 		SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
 
-		$Table.Columns.Item(1).Width = 150;
-		$Table.Columns.Item(2).Width = 150;
+		$Table.Columns.Item(1).Width = 225;
+		$Table.Columns.Item(2).Width = 200;
 
 		$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
 
@@ -39171,15 +39236,20 @@ Function OutputLicensingOverview
 		Line 0 "Licensing"
 		Line 0 "Licensing Overview"
 		Line 0 ""
-		Line 0 "Site`t`t`t: " $Script:CVADSite1.Name
-		Line 0 "Server`t`t`t: " $Script:CVADSite1.LicenseServerName
-		Line 0 "IP Address`t`t: " $LicenseServerIPAddress
-		Line 0 "Port`t`t`t: " $Script:CVADSite1.LicenseServerPort
-		Line 0 "Edition`t`t`t: " $LicenseEditionType
-		Line 0 "License model`t`t: " $LicenseModelType
-		Line 0 "Required SA date`t: " $tmpdate
-		Line 0 "CVAD license use`t: " $Script:CVADSite1.LicensedSessionsActive
-		Line 0 "Version`t`t`t: " $LicenseServerVersion
+		Line 0 "Site`t`t`t`t`t: " $Script:CVADSite1.Name
+		Line 0 "Server`t`t`t`t`t: " $Script:CVADSite1.LicenseServerName
+		Line 0 "IP Address`t`t`t`t: " $LicenseServerIPAddress
+		Line 0 "Port`t`t`t`t`t: " $Script:CVADSite1.LicenseServerPort
+		Line 0 "Edition`t`t`t`t`t: " $LicenseEditionType
+		Line 0 "License model`t`t`t`t: " $LicenseModelType
+		Line 0 "Required SA date`t`t`t: " $tmpdate
+		Line 0 "The number of active, licensed sessions`t: " $Script:CVADSite1.LicensedSessionsActive
+		Line 0 "Version`t`t`t`t`t: " $LicenseServerVersion
+		Line 0 ""
+		Line 0 "Licensing Grace Period Active`t`t: " $LicensingGracePeriodActive
+		Line 0 "Licensing out of Box Grace Period Active: " $LicensingOutOfBoxGracePeriodActive
+		Line 0 "Licensing Grace Hours Left`t`t: " $LicensingGraceHoursLeft
+		Line 0 "License Grace Sessions Remaining`t: " $LicenseGraceSessionsRemaining
 		Line 0 ""
 	}
 	If($HTML)
@@ -39194,12 +39264,17 @@ Function OutputLicensingOverview
 		$rowdata += @(,('Edition',($global:htmlsb),$LicenseEditionType,$htmlwhite))
 		$rowdata += @(,('License model',($global:htmlsb),$LicenseModelType,$htmlwhite))
 		$rowdata += @(,('Required SA date',($global:htmlsb),$tmpdate,$htmlwhite))
-		$rowdata += @(,('CVAD license use',($global:htmlsb),$Script:CVADSite1.LicensedSessionsActive.ToString(),$htmlwhite))
+		$rowdata += @(,('The number of active, licensed sessions',($global:htmlsb),$Script:CVADSite1.LicensedSessionsActive.ToString(),$htmlwhite))
 		$rowdata += @(,('Version',($global:htmlsb),$LicenseServerVersion,$htmlwhite))
+		$rowdata += @(,('',($global:htmlsb),"",$htmlwhite))
+		$rowdata += @(,('Licensing Grace Period Active',($global:htmlsb),$LicensingGracePeriodActive,$htmlwhite))
+		$rowdata += @(,('Licensing out of Box Grace Period Active',($global:htmlsb),$LicensingOutOfBoxGracePeriodActive,$htmlwhite))
+		$rowdata += @(,('Licensing Grace Hours Left',($global:htmlsb),$LicensingGraceHoursLeft,$htmlwhite))
+		$rowdata += @(,('License Grace Sessions Remaining',($global:htmlsb),$LicenseGraceSessionsRemaining,$htmlwhite))
 
 		$msg = ""
-		$columnWidths = @("175","125")
-		FormatHTMLTable $msg -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths -tablewidth "300"
+		$columnWidths = @("250","200")
+		FormatHTMLTable $msg -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths -tablewidth "450"
 	}
 	
 	If($Hardware)
