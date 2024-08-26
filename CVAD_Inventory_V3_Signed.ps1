@@ -1435,7 +1435,9 @@ Param(
 #				"Enterprise Edition" is now "Citrix Virtual Desktops 7 Advanced"
 #				"Advanced Edition" is now "Citrix Virtual Desktops 7 Standard"
 #
-#	Updated for CVAD 2402 (7.41) and 2407 (7.42)
+#	Updated Function ProcessCitrixPolicies to match the DaaS script with all policies added/udated/renamed since version 2206
+#
+#	Updated for CVAD 2402 (7.41), 2407 (7.42), and 2409 (7.43)
 
 #
 #Version 3.42 20-Jan-2024
@@ -2482,7 +2484,7 @@ $SaveEAPreference         = $ErrorActionPreference
 $ErrorActionPreference    = 'SilentlyContinue'
 
 #stuff for report footer
-$script:MyVersion   = '3.43'
+$script:MyVersion   = "3.43 Webster's Final Update"
 $Script:ScriptName  = "CVAD_Inventory_V3.ps1"
 $tmpdate            = [datetime] "08/20/2024"
 $Script:ReleaseDate = $tmpdate.ToUniversalTime().ToShortDateString()
@@ -16885,6 +16887,15 @@ Function ProcessCitrixPolicies
 			}
 			$Script:TotalPolicies++
 			
+			If([String]::IsNullOrEmpty($Policy.Description))
+			{
+				$PolicyDescription = "-"
+			}
+			Else
+			{
+				$PolicyDescription = $Policy.Description
+			}
+			
 			If($MSWord -or $PDF)
 			{
 				$selection.InsertNewPage()
@@ -16898,7 +16909,7 @@ Function ProcessCitrixPolicies
 				}
 				[System.Collections.Hashtable[]] $ScriptInformation = @()
 			
-				$ScriptInformation += @{Data = "Description"; Value = $Policy.Description; }
+				$ScriptInformation += @{Data = "Description"; Value = $PolicyDescription; }
 				$ScriptInformation += @{Data = "Enabled"; Value = $Policy.Enabled; }
 				$ScriptInformation += @{Data = "Type"; Value = $Policy.Type; }
 				$ScriptInformation += @{Data = "Priority"; Value = $Policy.Priority; }
@@ -16918,6 +16929,7 @@ Function ProcessCitrixPolicies
 
 				FindWordDocumentEnd
 				$Table = $Null
+				WriteWordLine 0 0 ""
 			}
 			If($Text)
 			{
@@ -16929,10 +16941,7 @@ Function ProcessCitrixPolicies
 				{
 					Line 0 "$($Policy.PolicyName) (AD, $($xPolicyType), GPO: $($ADGpoName))"
 				}
-				If(![String]::IsNullOrEmpty($Policy.Description))
-				{
-					Line 1 "Description`t: " $Policy.Description
-				}
+				Line 1 "Description`t: " $PolicyDescription
 				Line 1 "Enabled`t`t: " $Policy.Enabled
 				Line 1 "Type`t`t: " $Policy.Type
 				Line 1 "Priority`t: " $Policy.Priority
@@ -17013,11 +17022,11 @@ Function ProcessCitrixPolicies
 						If($MSWord -or $PDF)
 						{
 							$FiltersWordTable += @{
-							Name = $filter.FilterName;
-							Type= $tmp;
-							Enabled = $filter.Enabled;
-							Mode = $filter.Mode;
-							Value = $filter.FilterValue;
+								Name    = $filter.FilterName;
+								Type    = $tmp;
+								Enabled = $filter.Enabled;
+								Mode    = $filter.Mode;
+								Value   = $filter.FilterValue;
 							}
 						}
 						If($Text)
@@ -17042,6 +17051,17 @@ Function ProcessCitrixPolicies
 					$tmp = $Null
 					If($MSWord -or $PDF)
 					{
+						If($FiltersWordTable.Count -eq 0)
+						{
+							$FiltersWordTable += @{
+								Name    = "None found";
+								Type    = "";
+								Enabled = "";
+								Mode    = "";
+								Value   = "";
+							}
+						}
+						
 						$Table = AddWordTable -Hashtable $FiltersWordTable `
 						-Columns  Name,Type,Enabled,Mode,Value `
 						-Headers  "Name","Type","Enabled","Mode","Value" `
@@ -17060,6 +17080,7 @@ Function ProcessCitrixPolicies
 
 						FindWordDocumentEnd
 						$Table = $Null
+						WriteWordLine 0 0 ""
 					}
 					If($HTML)
 					{
@@ -17080,6 +17101,7 @@ Function ProcessCitrixPolicies
 					If($MSWord -or $PDF)
 					{
 						WriteWordLine 0 1 "Assigned to: None"
+						WriteWordLine 0 0 ""
 					}
 					If($Text)
 					{
@@ -17098,6 +17120,7 @@ Function ProcessCitrixPolicies
 				{
 					WriteWordLine 3 0 "Assigned to"
 					WriteWordLine 0 1 $txt
+					WriteWordLine 0 0 ""
 				}
 				If($Text)
 				{
@@ -18131,11 +18154,11 @@ Function ProcessCitrixPolicies
 						$tmp = ""
 						Switch ($Setting.PrimarySelectionUpdateMode.Value)
 						{
-							"AllUpdatesAllowed"	{$tmp = "Selection changes are updated on both client and host"; Break}
-							"AllUpdatesDenied"	{$tmp = "Select changes are not updated on neither client nor host"; Break}
+							"AllUpdatesAllowed"		{$tmp = "Selection changes are updated on both client and host"; Break}
+							"AllUpdatesDenied"		{$tmp = "Select changes are not updated on neither client nor host"; Break}
 							"UpdateToClientDenied"	{$tmp = "Host selection changes are not updated to client"; Break}
 							"UpdateToHostDenied"	{$tmp = "Client selection changes are not updated to host"; Break}
-							Default			{$tmp = "Primary selection update mode: $($Setting.PrimarySelectionUpdateMode.Value)"; Break}
+							Default					{$tmp = "Primary selection update mode: $($Setting.PrimarySelectionUpdateMode.Value)"; Break}
 						}
 						
 						If($MSWord -or $PDF)
@@ -20233,27 +20256,6 @@ Function ProcessCitrixPolicies
 							OutputPolicySetting $txt $Setting.SpecialFolderRedirection.State 
 						}
 					}
-					<#If((validStateProp $Setting AllowFileUpload State ) -and ($Setting.AllowFileUpload.State -ne "NotConfigured"))
-					{
-						$txt = "ICA\File Redirection\Upload file to desktop"
-						If($MSWord -or $PDF)
-						{
-							$SettingsWordTable += @{
-							Text = $txt;
-							Value = $Setting.AllowFileUpload.State;
-							}
-						}
-						If($HTML)
-						{
-							$rowdata += @(,(
-							$txt,$htmlbold,
-							$Setting.AllowFileUpload.State,$htmlwhite))
-						}
-						If($Text)
-						{
-							OutputPolicySetting $txt $Setting.AllowFileUpload.State 
-						}
-					}#>
 					If((validStateProp $Setting AsynchronousWrites State ) -and ($Setting.AsynchronousWrites.State -ne "NotConfigured"))
 					{
 						$txt = "ICA\File Redirection\Use asynchronous writes"
@@ -21708,7 +21710,7 @@ Function ProcessCitrixPolicies
 						CTXSENS,1;	Sensor and Location                         1
 						CTXSCRD,1;	Smart Card                                  1
 						CTXTW,1;	Thinwire Graphics                           1
-						CTXDND,1;	Drag and Drop                               1
+						CTXDND,1;	Drag and Drop                               1 #updated in 2112
 						CTXNSAP,2;	App Flow                                    2
 						CTXCSB,2;	Browser Content Redirection                 2
 						CTXCDM,2;	Client Drive Mapping                        2
@@ -21818,7 +21820,7 @@ Function ProcessCitrixPolicies
 									}
 								"CTXDND"	
 									{
-										$tmp = "Virtual Channel: Drag and Drop - Stream Number: $StreamNumber"; Break #added in 2112
+										$tmp = "Virtual Channel: Drag and Drop - Stream Number: $StreamNumber"; Break #updated in 2112
 									}
 								"CTXNSAP"	
 									{
@@ -31135,6 +31137,76 @@ Function ProcessCitrixPolicies
 						}
 					}
 
+					Write-Verbose "$(Get-Date -Format G): `t`t`tProfile Management\Citrix Virtual Apps Optimization settings"
+					If((validStateProp $Setting XenAppOptimizationEnable State ) -and ($Setting.XenAppOptimizationEnable.State -ne "NotConfigured"))
+					{
+						$txt = "Profile Management\Citrix Virtual Apps Optimization settings\Enable Citrix Virtual Apps Optimization"
+						If($MSWord -or $PDF)
+						{
+							$WordTableRowHash = @{
+							Text = $txt;
+							Value = $Setting.XenAppOptimizationEnable.State;
+							}
+							$SettingsWordTable += $WordTableRowHash;
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.XenAppOptimizationEnable.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.XenAppOptimizationEnable.State
+						}
+					}
+					If((validStateProp $Setting XenAppOptimizationDefinitionPathData State ) -and ($Setting.XenAppOptimizationDefinitionPathData.State -ne "NotConfigured"))
+					{
+						$txt = "Profile Management\Citrix Virtual Apps Optimization settings\Path to Citrix Virtual Apps optimization definitions:"
+						If($Setting.XenAppOptimizationDefinitionPathData.State -eq "Enabled" -and $Setting.XenAppOptimizationDefinitionPathData.Value -eq "")
+						{
+							If($MSWord -or $PDF)
+							{
+								$WordTableRowHash = @{
+								Text = $txt;
+								Value = "Disabled";
+								}
+								$SettingsWordTable += $WordTableRowHash;
+							}
+							If($HTML)
+							{
+								$rowdata += @(,(
+								$txt,$htmlbold,
+								"Disabled",$htmlwhite))
+							}
+							If($Text)
+							{
+								OutputPolicySetting $txt "Disabled" 
+							}
+						}
+						Else
+						{
+							If($MSWord -or $PDF)
+							{
+								$WordTableRowHash = @{
+								Text = $txt;
+								Value = $Setting.XenAppOptimizationDefinitionPathData.Value;
+								}
+								$SettingsWordTable += $WordTableRowHash;
+							}
+							If($HTML)
+							{
+								$rowdata += @(,(
+								$txt,$htmlbold,
+								$Setting.XenAppOptimizationDefinitionPathData.Value,$htmlwhite))
+							}
+							If($Text)
+							{
+								OutputPolicySetting $txt $Setting.XenAppOptimizationDefinitionPathData.Value 
+							}
+						}
+					}
+
 					Write-Verbose "$(Get-Date -Format G): `t`t`tReceiver"
 					If((validStateProp $Setting StorefrontAccountsList State ) -and ($Setting.StorefrontAccountsList.State -ne "NotConfigured"))
 					{
@@ -32105,7 +32177,7 @@ Function ProcessCitrixPolicies
 				Write-Verbose "$(Get-Date -Format G): `t`t`tWorkspace Environment Management"
 				If((validStateProp $Setting WemCloudConnectorList State ) -and ($Setting.WemCloudConnectorList.State -ne "NotConfigured"))
 				{
-					$txt = "Workspace Environment Management\Citrix Cloud Connectors" #addedin 2103
+					$txt = "Workspace Environment Management\Citrix Cloud Connectors" #added in 2103
 					If($Setting.WemCloudConnectorList.State -eq "Enabled")
 					{
 						If(validStateProp $Setting WemCloudConnectorList Values )
@@ -40682,6 +40754,7 @@ Function ProcessScriptSetup
 			$CVADSiteVersionReal = "Unknown"
 			Switch ($CVADSiteVersion)
 			{
+				"7.43"	{$CVADSiteVersionReal = "CVAD 2409"; Break}
 				"7.42"	{$CVADSiteVersionReal = "CVAD 2407"; Break}
 				"7.41"	{$CVADSiteVersionReal = "CVAD 2402"; Break}
 				"7.40"	{$CVADSiteVersionReal = "CVAD 2311"; Break}
@@ -40903,6 +40976,7 @@ Script cannot continue
 	$Script:CVADSiteVersionReal = "Unknown"
 	Switch ($Script:CVADSiteVersion)
 	{
+		"7.43"	{$Script:CVADSiteVersionReal = "CVAD 2409"; Break}
 		"7.42"	{$Script:CVADSiteVersionReal = "CVAD 2407"; Break}
 		"7.41"	{$Script:CVADSiteVersionReal = "CVAD 2402"; Break}
 		"7.40"	{$Script:CVADSiteVersionReal = "CVAD 2311"; Break}
@@ -42132,8 +42206,8 @@ ProcessScriptEnd
 # SIG # Begin signature block
 # MIItTgYJKoZIhvcNAQcCoIItPzCCLTsCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUHVzt8+dXOqkFy8CMP8n2PB7i
-# 9nOggiauMIIFjTCCBHWgAwIBAgIQDpsYjvnQLefv21DiCEAYWjANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUNAx8Cu9GAlnpXEmWXWe51pKF
+# ytyggiauMIIFjTCCBHWgAwIBAgIQDpsYjvnQLefv21DiCEAYWjANBgkqhkiG9w0B
 # AQwFADBlMQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYD
 # VQQLExB3d3cuZGlnaWNlcnQuY29tMSQwIgYDVQQDExtEaWdpQ2VydCBBc3N1cmVk
 # IElEIFJvb3QgQ0EwHhcNMjIwODAxMDAwMDAwWhcNMzExMTA5MjM1OTU5WjBiMQsw
@@ -42343,33 +42417,33 @@ ProcessScriptEnd
 # MRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFBMD8GA1UEAxM4RGlnaUNlcnQgVHJ1
 # c3RlZCBHNCBDb2RlIFNpZ25pbmcgUlNBNDA5NiBTSEEzODQgMjAyMSBDQTECEAts
 # 37ZngQ4q58taEbodSXAwCQYFKw4DAhoFAKBAMBkGCSqGSIb3DQEJAzEMBgorBgEE
-# AYI3AgEEMCMGCSqGSIb3DQEJBDEWBBTdJs3+75BKQez2UgulrPRCb5yyyjANBgkq
-# hkiG9w0BAQEFAASCAgBLLhKuQ+RQaa981SVGsJiadcXSXV1YvhlSntmwP21LSE3V
-# ak6E6Eu9h3ypzTzdrHkVv37JQJZC8qzrxSH/xOIO7SEgOuIdtLjBuKEGnuJKl4XH
-# ql6k1NKS6nvI5KbaMX+jTQHbOeNmjxmlj0/m/0+bWCLAuKdQqSxGSJDn9uLNTs/H
-# f7WYUp0uXfOFMwKtmeHaHOReQEJK140aJ+9jgF7Bu1efICWBcugcIo5SdLGpgfSl
-# syDAZjNFMs0yRx8RP2bEPdFHGZJp4gqIO0nNILu5juDxot2L0N5zD6pWNrrGBU5d
-# z5VpXMuNh2+//61krzzcRKW2qstSwv/vHBd2HTmD92fNpQPmSpgGZcjROOqY7PLp
-# 38zhNFcrPPWq+wumpxN5bI8vrbfn5o3i7yNNbBGFGhFe27E6085EpllogqJxpmMH
-# Uw3WfoXIgnJRthCB5N58f2QhfhohkFVh+G1LQb4zH8TkENp+NYj7TdcIcwWnf26o
-# VTUw8hHdg5Qixsq2qu58woaLxOgaHddp4Os19luA6+zhZMNIufaDAfjeA5WXoslX
-# DpHh3tYW0d51/ACdCSTewkTN3fznCq7WAuLV5xlgYDBkCb1zNMLpzaumYbKprG+6
-# wkFg5+INjAfrR5P5/m299tJXDm8k++rQCeelEmG0vyr0ah1/ng7TRvobjU93RqGC
+# AYI3AgEEMCMGCSqGSIb3DQEJBDEWBBRafABxoxAmyRR28+xvJBrlILERujANBgkq
+# hkiG9w0BAQEFAASCAgAxPhSbLUscXqCZOYSTpnvuHXtqbDww2DK4RFGiTjTP3tYm
+# 2fAjTC8Bm4WMy4eLhYrXwUzfNEzwDYTf62CSV2b5/LvNQiuOLy8u+wI1YwposcOC
+# n3dNsd2uU6R8D4J/3MvVuDi3N8oL4+jYDWO7/XlRI34065VQU7hJAvMDtENP2Rdc
+# xZA/s4n31wHiVjuFghk+OrkubhHv6TuEK886pDt8BX3l4H0ekf14AVg0PdsbwCC2
+# Bd0qRZo9T0aBqpDjAyitlaBuBVIeOHZhD0Gngkx+0Q8QKoANPVYlD6NmIeoBnnbu
+# BDhmN/QITdY87FuzmAkhSViayZIyzwbMBHNsOhXwIVKdrBvcqCOGAelpqp5XRvi1
+# RLEPFC8dxsmPKosz3i839IMB6pu5yKKnB/5D/TemSyb6NFxwxOtWflxfwJfBydZM
+# EjV9m9qCY6GBpokRuynFOv0Ff+IZiQ2G7uVnrxwx4NOwQxYbqfPLjLLRHfNwgmUQ
+# PAeQl26fHC5ldTjMQK71BhLu087MxvFPpU63LH50CGyo3eEg3mo/fms0JVdKXekl
+# a9Se2jaGlVutuWGshvKDO7RAwNOHGooUkbJjY0wzZFu0CM49CTE9oKDV0yjcasA1
+# hKi9fU8JsW21L2da8GPu9xelPPDROE1K2H4QQXu18dGpWNxJn1eyptB+AjzrAKGC
 # AyAwggMcBgkqhkiG9w0BCQYxggMNMIIDCQIBATB3MGMxCzAJBgNVBAYTAlVTMRcw
 # FQYDVQQKEw5EaWdpQ2VydCwgSW5jLjE7MDkGA1UEAxMyRGlnaUNlcnQgVHJ1c3Rl
 # ZCBHNCBSU0E0MDk2IFNIQTI1NiBUaW1lU3RhbXBpbmcgQ0ECEAVEr/OUnQg5pr/b
 # P1/lYRYwDQYJYIZIAWUDBAIBBQCgaTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcB
-# MBwGCSqGSIb3DQEJBTEPFw0yNDA4MjAxNjI2NTVaMC8GCSqGSIb3DQEJBDEiBCBP
-# d555P/WnZ0i2wfLYBnaMBqZINMjIi3L4vo9KQ1o+PzANBgkqhkiG9w0BAQEFAASC
-# AgBo3uIhmrPJifqD4+gKl7auIsI+ipIxTVy7bpuezR+xq+3a3xkkHol6fM4FZhll
-# JP7nlVb1aiGnA2wDuW3SKmZRK7UYyPlSdjwlgqOM7cTxqc+JjkCzKpHKucGI44vY
-# YGYNxLkMp43KMAsUKyaTY6JFXd76zwQG9Qsl8iorM34u3HYXs04WyYrsY8WfaxvI
-# mIYN24UlOaS+U/vsgYxxiOawyWcrE1QMue9iYhj4ykMTqpCz12BaYXZRscDQ6rjn
-# 6/xLGydoCx74XrdOGNTfbn3ccy0deFXh72L5EdIQ5AdPh1tn6ekObbHWdBVNNWA/
-# ydlqajl9Bkeo7BCTgQJ5gM4czAzqeWWc024QmplzmslU2OpFHPoxdA4zon3mOYNp
-# bMeG9on0U5CYUdi3T2LemWMwloxoV1FamXzM21WNMlJ1v7nL1uHh4G47df5r3xX1
-# MTDpfD98XoJEtx5gz9pPZoLbBQYgPdryq4MD3PDSgo/TjJEc46BjCTiBsGoZIh1U
-# /4Tj672eKSAIS2velWHIOUc4kbwBDcznqxaWfVlXRJrJi0Zei4ktSPN72dhL91hc
-# naaCH1+nBiykYuRAF3nkqPs/AEpDOmKTV8J6MxiTu9zsp/CMrL+7zr7CZ5h2Hlp+
-# V0aMOvwvWlVpWqLJu7/QtVQqj4M21JN/OGPojFxxvBSxtw==
+# MBwGCSqGSIb3DQEJBTEPFw0yNDA4MjYxNjIzMjRaMC8GCSqGSIb3DQEJBDEiBCDe
+# cPjGccMGY+9J5ljQ/Ai1Ih1umvPiXb4ELF5Y7MBlTjANBgkqhkiG9w0BAQEFAASC
+# AgCT3vVBHYTVdDkT4UQpUoBDUNuYcj3tlWMxdAxKNmGZGWVe7Fe34L7wqTiDw/L7
+# cTZ6dSAUxJDLNM6KOmzSpf3pd9FCYsC1Gre9LmrjtnqkAfBlpezCDqOa5HzJp40o
+# D1K8E449R0p3ezPIG/f2J5bgBzemisNxMqPYUkPJoOP309uyEn6XsyhcJWQzwDeQ
+# XI/+JIqGLrvb+eg3PB6dXu1rc7z4LuYfZArG10Tbf5F3b8arHdfJssimd5TsClI3
+# zCf27ZxpNO5aaTfq5GZsntz8N0g+hc77XLjzzBxBEdiI9MPYIpcBr0PFKy5tB0RA
+# T8/U5C6oKA/TNc2hQ3jlPmiaH+XzXl4pEZPaq4j7ayXvE+IeXJh0PKNaotKZiKuh
+# ayO5VL3HB1KuX14Cj0G6rG6+2qhGyjo2o+frYyk04bFc8a/ysbVSNPUL5EEvMNck
+# K6CeroeP3fgKl5cMI6B1tTGUuC7iGbhJGV/8Y2ntWxgpYbIALWekWoDIedFLQ7aM
+# /DxzWhZ+1pxVyL2icI6Yim2nxM9qHdbRGjfL+QgAKifruJeEw54vHK83OLhuCEl2
+# g8MdXJlsIAuZMx3eUvUct3Sndqyy7M7aOs/aDR+GU1nZJPM4PDGmcO0JHojwbeGE
+# PKzURQiR3NNSZJsqbqdlylQ14V2A4QgCF/JEyxj0p684YA==
 # SIG # End signature block

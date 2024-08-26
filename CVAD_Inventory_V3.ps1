@@ -1435,7 +1435,9 @@ Param(
 #				"Enterprise Edition" is now "Citrix Virtual Desktops 7 Advanced"
 #				"Advanced Edition" is now "Citrix Virtual Desktops 7 Standard"
 #
-#	Updated for CVAD 2402 (7.41) and 2407 (7.42)
+#	Updated Function ProcessCitrixPolicies to match the DaaS script with all policies added/udated/renamed since version 2206
+#
+#	Updated for CVAD 2402 (7.41), 2407 (7.42), and 2409 (7.43)
 
 #
 #Version 3.42 20-Jan-2024
@@ -2482,7 +2484,7 @@ $SaveEAPreference         = $ErrorActionPreference
 $ErrorActionPreference    = 'SilentlyContinue'
 
 #stuff for report footer
-$script:MyVersion   = '3.43'
+$script:MyVersion   = "3.43 Webster's Final Update"
 $Script:ScriptName  = "CVAD_Inventory_V3.ps1"
 $tmpdate            = [datetime] "08/20/2024"
 $Script:ReleaseDate = $tmpdate.ToUniversalTime().ToShortDateString()
@@ -16885,6 +16887,15 @@ Function ProcessCitrixPolicies
 			}
 			$Script:TotalPolicies++
 			
+			If([String]::IsNullOrEmpty($Policy.Description))
+			{
+				$PolicyDescription = "-"
+			}
+			Else
+			{
+				$PolicyDescription = $Policy.Description
+			}
+			
 			If($MSWord -or $PDF)
 			{
 				$selection.InsertNewPage()
@@ -16898,7 +16909,7 @@ Function ProcessCitrixPolicies
 				}
 				[System.Collections.Hashtable[]] $ScriptInformation = @()
 			
-				$ScriptInformation += @{Data = "Description"; Value = $Policy.Description; }
+				$ScriptInformation += @{Data = "Description"; Value = $PolicyDescription; }
 				$ScriptInformation += @{Data = "Enabled"; Value = $Policy.Enabled; }
 				$ScriptInformation += @{Data = "Type"; Value = $Policy.Type; }
 				$ScriptInformation += @{Data = "Priority"; Value = $Policy.Priority; }
@@ -16918,6 +16929,7 @@ Function ProcessCitrixPolicies
 
 				FindWordDocumentEnd
 				$Table = $Null
+				WriteWordLine 0 0 ""
 			}
 			If($Text)
 			{
@@ -16929,10 +16941,7 @@ Function ProcessCitrixPolicies
 				{
 					Line 0 "$($Policy.PolicyName) (AD, $($xPolicyType), GPO: $($ADGpoName))"
 				}
-				If(![String]::IsNullOrEmpty($Policy.Description))
-				{
-					Line 1 "Description`t: " $Policy.Description
-				}
+				Line 1 "Description`t: " $PolicyDescription
 				Line 1 "Enabled`t`t: " $Policy.Enabled
 				Line 1 "Type`t`t: " $Policy.Type
 				Line 1 "Priority`t: " $Policy.Priority
@@ -17013,11 +17022,11 @@ Function ProcessCitrixPolicies
 						If($MSWord -or $PDF)
 						{
 							$FiltersWordTable += @{
-							Name = $filter.FilterName;
-							Type= $tmp;
-							Enabled = $filter.Enabled;
-							Mode = $filter.Mode;
-							Value = $filter.FilterValue;
+								Name    = $filter.FilterName;
+								Type    = $tmp;
+								Enabled = $filter.Enabled;
+								Mode    = $filter.Mode;
+								Value   = $filter.FilterValue;
 							}
 						}
 						If($Text)
@@ -17042,6 +17051,17 @@ Function ProcessCitrixPolicies
 					$tmp = $Null
 					If($MSWord -or $PDF)
 					{
+						If($FiltersWordTable.Count -eq 0)
+						{
+							$FiltersWordTable += @{
+								Name    = "None found";
+								Type    = "";
+								Enabled = "";
+								Mode    = "";
+								Value   = "";
+							}
+						}
+						
 						$Table = AddWordTable -Hashtable $FiltersWordTable `
 						-Columns  Name,Type,Enabled,Mode,Value `
 						-Headers  "Name","Type","Enabled","Mode","Value" `
@@ -17060,6 +17080,7 @@ Function ProcessCitrixPolicies
 
 						FindWordDocumentEnd
 						$Table = $Null
+						WriteWordLine 0 0 ""
 					}
 					If($HTML)
 					{
@@ -17080,6 +17101,7 @@ Function ProcessCitrixPolicies
 					If($MSWord -or $PDF)
 					{
 						WriteWordLine 0 1 "Assigned to: None"
+						WriteWordLine 0 0 ""
 					}
 					If($Text)
 					{
@@ -17098,6 +17120,7 @@ Function ProcessCitrixPolicies
 				{
 					WriteWordLine 3 0 "Assigned to"
 					WriteWordLine 0 1 $txt
+					WriteWordLine 0 0 ""
 				}
 				If($Text)
 				{
@@ -18131,11 +18154,11 @@ Function ProcessCitrixPolicies
 						$tmp = ""
 						Switch ($Setting.PrimarySelectionUpdateMode.Value)
 						{
-							"AllUpdatesAllowed"	{$tmp = "Selection changes are updated on both client and host"; Break}
-							"AllUpdatesDenied"	{$tmp = "Select changes are not updated on neither client nor host"; Break}
+							"AllUpdatesAllowed"		{$tmp = "Selection changes are updated on both client and host"; Break}
+							"AllUpdatesDenied"		{$tmp = "Select changes are not updated on neither client nor host"; Break}
 							"UpdateToClientDenied"	{$tmp = "Host selection changes are not updated to client"; Break}
 							"UpdateToHostDenied"	{$tmp = "Client selection changes are not updated to host"; Break}
-							Default			{$tmp = "Primary selection update mode: $($Setting.PrimarySelectionUpdateMode.Value)"; Break}
+							Default					{$tmp = "Primary selection update mode: $($Setting.PrimarySelectionUpdateMode.Value)"; Break}
 						}
 						
 						If($MSWord -or $PDF)
@@ -20233,27 +20256,6 @@ Function ProcessCitrixPolicies
 							OutputPolicySetting $txt $Setting.SpecialFolderRedirection.State 
 						}
 					}
-					<#If((validStateProp $Setting AllowFileUpload State ) -and ($Setting.AllowFileUpload.State -ne "NotConfigured"))
-					{
-						$txt = "ICA\File Redirection\Upload file to desktop"
-						If($MSWord -or $PDF)
-						{
-							$SettingsWordTable += @{
-							Text = $txt;
-							Value = $Setting.AllowFileUpload.State;
-							}
-						}
-						If($HTML)
-						{
-							$rowdata += @(,(
-							$txt,$htmlbold,
-							$Setting.AllowFileUpload.State,$htmlwhite))
-						}
-						If($Text)
-						{
-							OutputPolicySetting $txt $Setting.AllowFileUpload.State 
-						}
-					}#>
 					If((validStateProp $Setting AsynchronousWrites State ) -and ($Setting.AsynchronousWrites.State -ne "NotConfigured"))
 					{
 						$txt = "ICA\File Redirection\Use asynchronous writes"
@@ -21708,7 +21710,7 @@ Function ProcessCitrixPolicies
 						CTXSENS,1;	Sensor and Location                         1
 						CTXSCRD,1;	Smart Card                                  1
 						CTXTW,1;	Thinwire Graphics                           1
-						CTXDND,1;	Drag and Drop                               1
+						CTXDND,1;	Drag and Drop                               1 #updated in 2112
 						CTXNSAP,2;	App Flow                                    2
 						CTXCSB,2;	Browser Content Redirection                 2
 						CTXCDM,2;	Client Drive Mapping                        2
@@ -21818,7 +21820,7 @@ Function ProcessCitrixPolicies
 									}
 								"CTXDND"	
 									{
-										$tmp = "Virtual Channel: Drag and Drop - Stream Number: $StreamNumber"; Break #added in 2112
+										$tmp = "Virtual Channel: Drag and Drop - Stream Number: $StreamNumber"; Break #updated in 2112
 									}
 								"CTXNSAP"	
 									{
@@ -31135,6 +31137,76 @@ Function ProcessCitrixPolicies
 						}
 					}
 
+					Write-Verbose "$(Get-Date -Format G): `t`t`tProfile Management\Citrix Virtual Apps Optimization settings"
+					If((validStateProp $Setting XenAppOptimizationEnable State ) -and ($Setting.XenAppOptimizationEnable.State -ne "NotConfigured"))
+					{
+						$txt = "Profile Management\Citrix Virtual Apps Optimization settings\Enable Citrix Virtual Apps Optimization"
+						If($MSWord -or $PDF)
+						{
+							$WordTableRowHash = @{
+							Text = $txt;
+							Value = $Setting.XenAppOptimizationEnable.State;
+							}
+							$SettingsWordTable += $WordTableRowHash;
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.XenAppOptimizationEnable.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.XenAppOptimizationEnable.State
+						}
+					}
+					If((validStateProp $Setting XenAppOptimizationDefinitionPathData State ) -and ($Setting.XenAppOptimizationDefinitionPathData.State -ne "NotConfigured"))
+					{
+						$txt = "Profile Management\Citrix Virtual Apps Optimization settings\Path to Citrix Virtual Apps optimization definitions:"
+						If($Setting.XenAppOptimizationDefinitionPathData.State -eq "Enabled" -and $Setting.XenAppOptimizationDefinitionPathData.Value -eq "")
+						{
+							If($MSWord -or $PDF)
+							{
+								$WordTableRowHash = @{
+								Text = $txt;
+								Value = "Disabled";
+								}
+								$SettingsWordTable += $WordTableRowHash;
+							}
+							If($HTML)
+							{
+								$rowdata += @(,(
+								$txt,$htmlbold,
+								"Disabled",$htmlwhite))
+							}
+							If($Text)
+							{
+								OutputPolicySetting $txt "Disabled" 
+							}
+						}
+						Else
+						{
+							If($MSWord -or $PDF)
+							{
+								$WordTableRowHash = @{
+								Text = $txt;
+								Value = $Setting.XenAppOptimizationDefinitionPathData.Value;
+								}
+								$SettingsWordTable += $WordTableRowHash;
+							}
+							If($HTML)
+							{
+								$rowdata += @(,(
+								$txt,$htmlbold,
+								$Setting.XenAppOptimizationDefinitionPathData.Value,$htmlwhite))
+							}
+							If($Text)
+							{
+								OutputPolicySetting $txt $Setting.XenAppOptimizationDefinitionPathData.Value 
+							}
+						}
+					}
+
 					Write-Verbose "$(Get-Date -Format G): `t`t`tReceiver"
 					If((validStateProp $Setting StorefrontAccountsList State ) -and ($Setting.StorefrontAccountsList.State -ne "NotConfigured"))
 					{
@@ -32105,7 +32177,7 @@ Function ProcessCitrixPolicies
 				Write-Verbose "$(Get-Date -Format G): `t`t`tWorkspace Environment Management"
 				If((validStateProp $Setting WemCloudConnectorList State ) -and ($Setting.WemCloudConnectorList.State -ne "NotConfigured"))
 				{
-					$txt = "Workspace Environment Management\Citrix Cloud Connectors" #addedin 2103
+					$txt = "Workspace Environment Management\Citrix Cloud Connectors" #added in 2103
 					If($Setting.WemCloudConnectorList.State -eq "Enabled")
 					{
 						If(validStateProp $Setting WemCloudConnectorList Values )
@@ -40682,6 +40754,7 @@ Function ProcessScriptSetup
 			$CVADSiteVersionReal = "Unknown"
 			Switch ($CVADSiteVersion)
 			{
+				"7.43"	{$CVADSiteVersionReal = "CVAD 2409"; Break}
 				"7.42"	{$CVADSiteVersionReal = "CVAD 2407"; Break}
 				"7.41"	{$CVADSiteVersionReal = "CVAD 2402"; Break}
 				"7.40"	{$CVADSiteVersionReal = "CVAD 2311"; Break}
@@ -40903,6 +40976,7 @@ Script cannot continue
 	$Script:CVADSiteVersionReal = "Unknown"
 	Switch ($Script:CVADSiteVersion)
 	{
+		"7.43"	{$Script:CVADSiteVersionReal = "CVAD 2409"; Break}
 		"7.42"	{$Script:CVADSiteVersionReal = "CVAD 2407"; Break}
 		"7.41"	{$Script:CVADSiteVersionReal = "CVAD 2402"; Break}
 		"7.40"	{$Script:CVADSiteVersionReal = "CVAD 2311"; Break}
