@@ -1052,9 +1052,9 @@
 	This script creates a Word, PDF, plain text, or HTML document.
 .NOTES
 	NAME: CVAD_Inventory_V3.ps1
-	VERSION: 3.43
+	VERSION: 3.43 Webster's Last Update
 	AUTHOR: Carl Webster
-	LASTEDIT: August 20, 2024
+	LASTEDIT: October 7, 2024
 #>
 
 #endregion
@@ -1247,20 +1247,20 @@ Param(
 
 # This script is based on the 2.36 script
 #
-#Version 3.43
+#Version 3.43 7-Oct-2024 Webster's Last Update
 #	Added Broker Registry Keys:
 #		HKLM:\Software\Policies\Citrix\DesktopServer\AlternateSkipAlgorithmThreshold
 #			Type: int
 #			Default: 10
 #			Info: Minimum=0
 #			Summary: When using the -Skip parameter with various Broker SDK Get- cmdlets, this is the skip value above which 
-#					 an alternative optimized algorithm is used for fetching values from the database. 
+#					 an alternative optimized algorithm is used to fetch values from the database. 
 #
 #		HKLM:\Software\Policies\Citrix\DesktopServer\AutoTagRuleIdleIntervalsTimeSecs
 #			Type: int
 #			Default: 7200
 #			Info: Seconds Minimum=60
-#			Summary: Time interval that Auto Tag Rule site service will run auto tagging process when the site is idle. 
+#			Summary: The time interval at which the Auto Tag Rule site service will run an auto-tagging process when the site is idle. 
 #
 #		HKLM:\Software\Policies\Citrix\DesktopServer\MachineUnusedTokenExpiryHours
 #			Type: int
@@ -1280,7 +1280,7 @@ Param(
 #			Default: 180
 #			Info: Seconds Minimum=1
 #			Summary: How long to wait between not idle reports before assuming that this service is idle. 
-#					 Typically this should be equivalent to the SiteNotIdleTimerInterval since the timer mostly compares 
+#					 Typically, this should be equivalent to the SiteNotIdleTimerInterval since the timer mostly compares 
 #					 against this value at that interval.
 #
 #		HKLM:\Software\Policies\Citrix\DesktopServer\SetSiteDataWhenIdlePeriodSecs
@@ -1294,25 +1294,25 @@ Param(
 #			Default: 30
 #			Info: Seconds Minimum=1
 #			Summary: How often idle state is processed if the site is idle. We need a shorter timer interval for when the site 
-#					 is idle to ensure that we recover from being idle as fast as possible. 
+#					 is idle to ensure we recover from idle as fast as possible. 
 #
 #		HKLM:\Software\Policies\Citrix\DesktopServer\SiteNotIdleTimerIntervalSeconds
 #			Type: int
 #			Default: 180
 #			Info: Seconds Minimum=1
 #			Summary: How often idle state is processed if the site is active. We need a shorter timer interval for when the site 
-#					 is idle to ensure that we recover from being idle as fast as possible.
+#					 is idle to ensure we recover from idle as fast as possible.
 #
 #		HKLM\Software\Citrix\Broker\Service\State\DatabaseConnection\MaxConcurrentScheduleOverrideQueries
 #			Type: int
 #			Default: 5
 #			Info: Minimum=1, Maximum=30
-#			Summary: The maximum number of schedule override queries to autoscale plugins that are allowed to run concurrently. 
+#			Summary: The maximum number of schedule override queries to autoscale plugins allowed to run concurrently. 
 #					 If there are more plugins to be queried at any given time than this limit allows, the additional queries 
-#					 are queued and start as soon as earlier ones complete.
+#					 are queued and start as soon as earlier ones are complete.
 #
-#					 This limit exists to restrict the number of threads required to obtain all required schedule overrides. 
-#					 The number of threads used is typically double the number of concurrent schedule override queries.
+#					 This limit restricts the number of threads required to obtain all required schedule overrides. 
+#					 The number of threads used typically doubles the number of concurrent schedule override queries.
 #
 #					 This setting requires the Broker services to be restarted before a new value takes effect.
 #					 
@@ -1355,8 +1355,8 @@ Param(
 #			Default: 60
 #			Info: Seconds Minimum=10, Maximum=120
 #			Summary: The maximum number of seconds for which a single schedule override query to an autoscale plugin is allowed 
-#					 to run before being timed-out and cancelled. A cancelled query is treated as though the plugin returned no 
-#					 schedule override, thus the next plugin in the sequence for the desktop group (if any) is then queried for 
+#					 to run before being timed out and canceled. A canceled query is treated as though the plugin returned no 
+#					 schedule override; thus the next plugin in the sequence for the desktop group (if any) is then queried for 
 #					 a schedule override.
 #		HKLM\Software\Citrix\DesktopServer\MachineCommandQueues\MachineCommandForPingSuppressionSecs
 #			Type: Int
@@ -1383,25 +1383,27 @@ Param(
 #
 #	Added to Function OutputSiteSettings and the output of Site Settings:
 #		https://developer-docs.citrix.com/en-us/citrix-virtual-apps-desktops-sdk/2407/broker/set-brokersite
-#		CloudSiteLicense: Used to override the Product, Edition and LicensingModel set during provisioning at CCS level
-#		CloudValidLicenses: List of license SKUs purchased by the customer needs to be set a provisioning time every time 
+#		CloudSiteLicense: Used to override the Product, Edition, and LicensingModel set during provisioning at the CCS level
+#		CloudValidLicenses: A list of license SKUs purchased by the customer needs to be set a provisioning time every time 
 #			Ptah re-provisions the customer because of SKU changes for the customer. This will be used for validation purposes. (SIC)
 #			[Webster: https://www.merriam-webster.com/wordplay/sic-meaning-usage-editorial-citation]
 #			[Webster: The format or possible contents of this string are not documented]
-#		PreferredAccountName: Determines if SAM name or UPN should be displayed for default name of user/group account
+#		PreferredAccountName: Determines if SAM name or UPN should be displayed for the default name of user/group account
 #		RequireXmlServiceKeyForNFuse: Determines whether an XML Service Key header is required for the NFuse, MCP, 
-#			and Admin XML interfaces. (Webster: NFuse hasn't been around since the early 2000s. Strange how Citrix keeps
+#			and Admin XML interfaces. (Webster: NFuse hasn't been around since the early 2000s. It's strange how Citrix keeps
 #			old product names hanging around.
 #		RequireXmlServiceKeyForSta: Determines whether an XML Service Key header is required for the STA interface
 #		UseADLookupEnabled: Determines whether to use the AD directory context for lookup
 #
 #	In Function GetControllerRegistryKeys, for the HostingManagementSettings section:
-#		Comment out the Policies lines as there is no Policies node for these settings
+#		Comment out the Policies lines, as there is no Policies node for these settings
 #		Change the registry location
 #			From: HKLM:\Software\Citrix\DesktopServer
 #			To: HKLM:\Software\Citrix\Broker\Service\State\DatabaseConnection
 #		
 #			I had misread, for years, the data Citrix sent me
+#
+#	In Function GetDBCompatibilityLevel, added missing Version160 for SQL Server 2022
 #
 #	In Function GetRolePermissions:
 #		Added new permissions
@@ -1424,7 +1426,7 @@ Param(
 #			LicensingGraceHoursLeft
 #			LicensingGracePeriodActive
 #			LicensingOutOfBoxGracePeriodActive
-#		Change text label from "CVAD license use" to "The number of active, licensed sessions"
+#		Change the text label from "CVAD license use" to "The number of active, licensed sessions"
 #		Updated product editions (Thanks Steven G.)
 #			If ProductCode is XDT
 #				"Platinum Edition" is now "Citrix Virtual Desktops 7 Premium"
@@ -1435,9 +1437,9 @@ Param(
 #				"Enterprise Edition" is now "Citrix Virtual Desktops 7 Advanced"
 #				"Advanced Edition" is now "Citrix Virtual Desktops 7 Standard"
 #
-#	Updated Function ProcessCitrixPolicies to match the DaaS script with all policies added/udated/renamed since version 2206
+#	Updated Function ProcessCitrixPolicies to match the DaaS script with all policies added/updated/renamed since version 2206
 #
-#	Updated for CVAD 2402 (7.41), 2407 (7.42), and 2409 (7.43)
+#	Updated for CVAD 2402 (7.41) and 2407 (7.42)
 
 #
 #Version 3.42 20-Jan-2024
@@ -2484,9 +2486,9 @@ $SaveEAPreference         = $ErrorActionPreference
 $ErrorActionPreference    = 'SilentlyContinue'
 
 #stuff for report footer
-$script:MyVersion   = "3.43 Webster's Final Update"
+$script:MyVersion   = "3.43 Webster's Last Update"
 $Script:ScriptName  = "CVAD_Inventory_V3.ps1"
-$tmpdate            = [datetime] "08/20/2024"
+$tmpdate            = [datetime] "10/07/2024"
 $Script:ReleaseDate = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($Null -eq $HTML)
@@ -33536,6 +33538,7 @@ Function GetDBCompatibilityLevel
 		"100"			{$tmp = "SQL Server 2008"; Break}
 		"90"			{$tmp = "SQL Server 2005"; Break}
 		"80"			{$tmp = "SQL Server 2000"; Break}
+		"Version160"	{$tmp = "SQL Server 2022"; Break}
 		"Version150"	{$tmp = "SQL Server 2019"; Break}
 		"Version140"	{$tmp = "SQL Server 2017"; Break}
 		"Version130"	{$tmp = "SQL Server 2016"; Break}
@@ -39247,8 +39250,22 @@ Function OutputLicensingOverview
 		LicensingGracePeriodActive                  : False
 		LicensingOutOfBoxGracePeriodActive          : False	
 	#>
-	$LicensingGracePeriodActive = $Script:CVADSite1.LicensingGracePeriodActive.ToString()
-	$LicensingOutOfBoxGracePeriodActive = $Script:CVADSite1.LicensingOutOfBoxGracePeriodActive.ToString()
+	If($null -eq $Script:CVADSite1.LicensingGracePeriodActive)
+	{
+		$LicensingGracePeriodActive = ""
+	}
+	Else
+	{
+		$LicensingGracePeriodActive = $Script:CVADSite1.LicensingGracePeriodActive.ToString()
+	}
+	If($null -eq $Script:CVADSite1.LicensingOutOfBoxGracePeriodActive)
+	{
+		$LicensingOutOfBoxGracePeriodActive = ""
+	}
+	Else
+	{
+		$LicensingOutOfBoxGracePeriodActive = $Script:CVADSite1.LicensingOutOfBoxGracePeriodActive.ToString()
+	}
 	If($null -eq $Script:CVADSite1.LicensingGraceHoursLeft)
 	{
 		$LicensingGraceHoursLeft = ""
@@ -39266,6 +39283,15 @@ Function OutputLicensingOverview
 		$LicenseGraceSessionsRemaining = $Script:CVADSite1.LicenseGraceSessionsRemaining.ToString()
 	}
 	
+	If($null -eq $Script:CVADSite1.LicensedSessionsActive)
+	{
+		$LicensedSessionsActive = ""
+	}
+	Else
+	{
+		$LicensedSessionsActive = $Script:CVADSite1.LicensedSessionsActive.ToString()
+	}
+	
 	If($MSWord -or $PDF)
 	{
 		$Selection.InsertNewPage()
@@ -39280,7 +39306,7 @@ Function OutputLicensingOverview
 		$ScriptInformation.Add(@{Data = "Edition"; Value = $LicenseEditionType; }) > $Null
 		$ScriptInformation.Add(@{Data = "License model"; Value = $LicenseModelType; }) > $Null
 		$ScriptInformation.Add(@{Data = "Required SA date"; Value = $tmpdate; }) > $Null
-		$ScriptInformation.Add(@{Data = "The number of active, licensed sessions"; Value = $Script:CVADSite1.LicensedSessionsActive; }) > $Null
+		$ScriptInformation.Add(@{Data = "The number of active, licensed sessions"; Value = $LicensedSessionsActive; }) > $Null
 		$ScriptInformation.Add(@{Data = "Version"; Value = $LicenseServerVersion; }) > $Null
 		$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
 		$ScriptInformation.Add(@{Data = "Licensing Grace Period Active"; Value = $LicensingGracePeriodActive; }) > $Null
@@ -39315,7 +39341,7 @@ Function OutputLicensingOverview
 		Line 0 "Edition`t`t`t`t`t: " $LicenseEditionType
 		Line 0 "License model`t`t`t`t: " $LicenseModelType
 		Line 0 "Required SA date`t`t`t: " $tmpdate
-		Line 0 "The number of active, licensed sessions`t: " $Script:CVADSite1.LicensedSessionsActive
+		Line 0 "The number of active, licensed sessions`t: " $LicensedSessionsActive
 		Line 0 "Version`t`t`t`t`t: " $LicenseServerVersion
 		Line 0 ""
 		Line 0 "Licensing Grace Period Active`t`t: " $LicensingGracePeriodActive
@@ -39336,7 +39362,7 @@ Function OutputLicensingOverview
 		$rowdata += @(,('Edition',($global:htmlsb),$LicenseEditionType,$htmlwhite))
 		$rowdata += @(,('License model',($global:htmlsb),$LicenseModelType,$htmlwhite))
 		$rowdata += @(,('Required SA date',($global:htmlsb),$tmpdate,$htmlwhite))
-		$rowdata += @(,('The number of active, licensed sessions',($global:htmlsb),$Script:CVADSite1.LicensedSessionsActive.ToString(),$htmlwhite))
+		$rowdata += @(,('The number of active, licensed sessions',($global:htmlsb),$LicensedSessionsActive,$htmlwhite))
 		$rowdata += @(,('Version',($global:htmlsb),$LicenseServerVersion,$htmlwhite))
 		$rowdata += @(,('',($global:htmlsb),"",$htmlwhite))
 		$rowdata += @(,('Licensing Grace Period Active',($global:htmlsb),$LicensingGracePeriodActive,$htmlwhite))

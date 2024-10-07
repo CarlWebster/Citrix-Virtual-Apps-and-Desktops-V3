@@ -1052,9 +1052,9 @@
 	This script creates a Word, PDF, plain text, or HTML document.
 .NOTES
 	NAME: CVAD_Inventory_V3.ps1
-	VERSION: 3.43
+	VERSION: 3.43 Webster's Last Update
 	AUTHOR: Carl Webster
-	LASTEDIT: August 20, 2024
+	LASTEDIT: October 7, 2024
 #>
 
 #endregion
@@ -1247,20 +1247,20 @@ Param(
 
 # This script is based on the 2.36 script
 #
-#Version 3.43
+#Version 3.43 7-Oct-2024 Webster's Last Update
 #	Added Broker Registry Keys:
 #		HKLM:\Software\Policies\Citrix\DesktopServer\AlternateSkipAlgorithmThreshold
 #			Type: int
 #			Default: 10
 #			Info: Minimum=0
 #			Summary: When using the -Skip parameter with various Broker SDK Get- cmdlets, this is the skip value above which 
-#					 an alternative optimized algorithm is used for fetching values from the database. 
+#					 an alternative optimized algorithm is used to fetch values from the database. 
 #
 #		HKLM:\Software\Policies\Citrix\DesktopServer\AutoTagRuleIdleIntervalsTimeSecs
 #			Type: int
 #			Default: 7200
 #			Info: Seconds Minimum=60
-#			Summary: Time interval that Auto Tag Rule site service will run auto tagging process when the site is idle. 
+#			Summary: The time interval at which the Auto Tag Rule site service will run an auto-tagging process when the site is idle. 
 #
 #		HKLM:\Software\Policies\Citrix\DesktopServer\MachineUnusedTokenExpiryHours
 #			Type: int
@@ -1280,7 +1280,7 @@ Param(
 #			Default: 180
 #			Info: Seconds Minimum=1
 #			Summary: How long to wait between not idle reports before assuming that this service is idle. 
-#					 Typically this should be equivalent to the SiteNotIdleTimerInterval since the timer mostly compares 
+#					 Typically, this should be equivalent to the SiteNotIdleTimerInterval since the timer mostly compares 
 #					 against this value at that interval.
 #
 #		HKLM:\Software\Policies\Citrix\DesktopServer\SetSiteDataWhenIdlePeriodSecs
@@ -1294,25 +1294,25 @@ Param(
 #			Default: 30
 #			Info: Seconds Minimum=1
 #			Summary: How often idle state is processed if the site is idle. We need a shorter timer interval for when the site 
-#					 is idle to ensure that we recover from being idle as fast as possible. 
+#					 is idle to ensure we recover from idle as fast as possible. 
 #
 #		HKLM:\Software\Policies\Citrix\DesktopServer\SiteNotIdleTimerIntervalSeconds
 #			Type: int
 #			Default: 180
 #			Info: Seconds Minimum=1
 #			Summary: How often idle state is processed if the site is active. We need a shorter timer interval for when the site 
-#					 is idle to ensure that we recover from being idle as fast as possible.
+#					 is idle to ensure we recover from idle as fast as possible.
 #
 #		HKLM\Software\Citrix\Broker\Service\State\DatabaseConnection\MaxConcurrentScheduleOverrideQueries
 #			Type: int
 #			Default: 5
 #			Info: Minimum=1, Maximum=30
-#			Summary: The maximum number of schedule override queries to autoscale plugins that are allowed to run concurrently. 
+#			Summary: The maximum number of schedule override queries to autoscale plugins allowed to run concurrently. 
 #					 If there are more plugins to be queried at any given time than this limit allows, the additional queries 
-#					 are queued and start as soon as earlier ones complete.
+#					 are queued and start as soon as earlier ones are complete.
 #
-#					 This limit exists to restrict the number of threads required to obtain all required schedule overrides. 
-#					 The number of threads used is typically double the number of concurrent schedule override queries.
+#					 This limit restricts the number of threads required to obtain all required schedule overrides. 
+#					 The number of threads used typically doubles the number of concurrent schedule override queries.
 #
 #					 This setting requires the Broker services to be restarted before a new value takes effect.
 #					 
@@ -1355,8 +1355,8 @@ Param(
 #			Default: 60
 #			Info: Seconds Minimum=10, Maximum=120
 #			Summary: The maximum number of seconds for which a single schedule override query to an autoscale plugin is allowed 
-#					 to run before being timed-out and cancelled. A cancelled query is treated as though the plugin returned no 
-#					 schedule override, thus the next plugin in the sequence for the desktop group (if any) is then queried for 
+#					 to run before being timed out and canceled. A canceled query is treated as though the plugin returned no 
+#					 schedule override; thus the next plugin in the sequence for the desktop group (if any) is then queried for 
 #					 a schedule override.
 #		HKLM\Software\Citrix\DesktopServer\MachineCommandQueues\MachineCommandForPingSuppressionSecs
 #			Type: Int
@@ -1383,25 +1383,27 @@ Param(
 #
 #	Added to Function OutputSiteSettings and the output of Site Settings:
 #		https://developer-docs.citrix.com/en-us/citrix-virtual-apps-desktops-sdk/2407/broker/set-brokersite
-#		CloudSiteLicense: Used to override the Product, Edition and LicensingModel set during provisioning at CCS level
-#		CloudValidLicenses: List of license SKUs purchased by the customer needs to be set a provisioning time every time 
+#		CloudSiteLicense: Used to override the Product, Edition, and LicensingModel set during provisioning at the CCS level
+#		CloudValidLicenses: A list of license SKUs purchased by the customer needs to be set a provisioning time every time 
 #			Ptah re-provisions the customer because of SKU changes for the customer. This will be used for validation purposes. (SIC)
 #			[Webster: https://www.merriam-webster.com/wordplay/sic-meaning-usage-editorial-citation]
 #			[Webster: The format or possible contents of this string are not documented]
-#		PreferredAccountName: Determines if SAM name or UPN should be displayed for default name of user/group account
+#		PreferredAccountName: Determines if SAM name or UPN should be displayed for the default name of user/group account
 #		RequireXmlServiceKeyForNFuse: Determines whether an XML Service Key header is required for the NFuse, MCP, 
-#			and Admin XML interfaces. (Webster: NFuse hasn't been around since the early 2000s. Strange how Citrix keeps
+#			and Admin XML interfaces. (Webster: NFuse hasn't been around since the early 2000s. It's strange how Citrix keeps
 #			old product names hanging around.
 #		RequireXmlServiceKeyForSta: Determines whether an XML Service Key header is required for the STA interface
 #		UseADLookupEnabled: Determines whether to use the AD directory context for lookup
 #
 #	In Function GetControllerRegistryKeys, for the HostingManagementSettings section:
-#		Comment out the Policies lines as there is no Policies node for these settings
+#		Comment out the Policies lines, as there is no Policies node for these settings
 #		Change the registry location
 #			From: HKLM:\Software\Citrix\DesktopServer
 #			To: HKLM:\Software\Citrix\Broker\Service\State\DatabaseConnection
 #		
 #			I had misread, for years, the data Citrix sent me
+#
+#	In Function GetDBCompatibilityLevel, added missing Version160 for SQL Server 2022
 #
 #	In Function GetRolePermissions:
 #		Added new permissions
@@ -1424,7 +1426,7 @@ Param(
 #			LicensingGraceHoursLeft
 #			LicensingGracePeriodActive
 #			LicensingOutOfBoxGracePeriodActive
-#		Change text label from "CVAD license use" to "The number of active, licensed sessions"
+#		Change the text label from "CVAD license use" to "The number of active, licensed sessions"
 #		Updated product editions (Thanks Steven G.)
 #			If ProductCode is XDT
 #				"Platinum Edition" is now "Citrix Virtual Desktops 7 Premium"
@@ -1435,9 +1437,9 @@ Param(
 #				"Enterprise Edition" is now "Citrix Virtual Desktops 7 Advanced"
 #				"Advanced Edition" is now "Citrix Virtual Desktops 7 Standard"
 #
-#	Updated Function ProcessCitrixPolicies to match the DaaS script with all policies added/udated/renamed since version 2206
+#	Updated Function ProcessCitrixPolicies to match the DaaS script with all policies added/updated/renamed since version 2206
 #
-#	Updated for CVAD 2402 (7.41), 2407 (7.42), and 2409 (7.43)
+#	Updated for CVAD 2402 (7.41) and 2407 (7.42)
 
 #
 #Version 3.42 20-Jan-2024
@@ -2484,9 +2486,9 @@ $SaveEAPreference         = $ErrorActionPreference
 $ErrorActionPreference    = 'SilentlyContinue'
 
 #stuff for report footer
-$script:MyVersion   = "3.43 Webster's Final Update"
+$script:MyVersion   = "3.43 Webster's Last Update"
 $Script:ScriptName  = "CVAD_Inventory_V3.ps1"
-$tmpdate            = [datetime] "08/20/2024"
+$tmpdate            = [datetime] "10/07/2024"
 $Script:ReleaseDate = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($Null -eq $HTML)
@@ -33536,6 +33538,7 @@ Function GetDBCompatibilityLevel
 		"100"			{$tmp = "SQL Server 2008"; Break}
 		"90"			{$tmp = "SQL Server 2005"; Break}
 		"80"			{$tmp = "SQL Server 2000"; Break}
+		"Version160"	{$tmp = "SQL Server 2022"; Break}
 		"Version150"	{$tmp = "SQL Server 2019"; Break}
 		"Version140"	{$tmp = "SQL Server 2017"; Break}
 		"Version130"	{$tmp = "SQL Server 2016"; Break}
@@ -39247,8 +39250,22 @@ Function OutputLicensingOverview
 		LicensingGracePeriodActive                  : False
 		LicensingOutOfBoxGracePeriodActive          : False	
 	#>
-	$LicensingGracePeriodActive = $Script:CVADSite1.LicensingGracePeriodActive.ToString()
-	$LicensingOutOfBoxGracePeriodActive = $Script:CVADSite1.LicensingOutOfBoxGracePeriodActive.ToString()
+	If($null -eq $Script:CVADSite1.LicensingGracePeriodActive)
+	{
+		$LicensingGracePeriodActive = ""
+	}
+	Else
+	{
+		$LicensingGracePeriodActive = $Script:CVADSite1.LicensingGracePeriodActive.ToString()
+	}
+	If($null -eq $Script:CVADSite1.LicensingOutOfBoxGracePeriodActive)
+	{
+		$LicensingOutOfBoxGracePeriodActive = ""
+	}
+	Else
+	{
+		$LicensingOutOfBoxGracePeriodActive = $Script:CVADSite1.LicensingOutOfBoxGracePeriodActive.ToString()
+	}
 	If($null -eq $Script:CVADSite1.LicensingGraceHoursLeft)
 	{
 		$LicensingGraceHoursLeft = ""
@@ -39266,6 +39283,15 @@ Function OutputLicensingOverview
 		$LicenseGraceSessionsRemaining = $Script:CVADSite1.LicenseGraceSessionsRemaining.ToString()
 	}
 	
+	If($null -eq $Script:CVADSite1.LicensedSessionsActive)
+	{
+		$LicensedSessionsActive = ""
+	}
+	Else
+	{
+		$LicensedSessionsActive = $Script:CVADSite1.LicensedSessionsActive.ToString()
+	}
+	
 	If($MSWord -or $PDF)
 	{
 		$Selection.InsertNewPage()
@@ -39280,7 +39306,7 @@ Function OutputLicensingOverview
 		$ScriptInformation.Add(@{Data = "Edition"; Value = $LicenseEditionType; }) > $Null
 		$ScriptInformation.Add(@{Data = "License model"; Value = $LicenseModelType; }) > $Null
 		$ScriptInformation.Add(@{Data = "Required SA date"; Value = $tmpdate; }) > $Null
-		$ScriptInformation.Add(@{Data = "The number of active, licensed sessions"; Value = $Script:CVADSite1.LicensedSessionsActive; }) > $Null
+		$ScriptInformation.Add(@{Data = "The number of active, licensed sessions"; Value = $LicensedSessionsActive; }) > $Null
 		$ScriptInformation.Add(@{Data = "Version"; Value = $LicenseServerVersion; }) > $Null
 		$ScriptInformation.Add(@{Data = ""; Value = ""; }) > $Null
 		$ScriptInformation.Add(@{Data = "Licensing Grace Period Active"; Value = $LicensingGracePeriodActive; }) > $Null
@@ -39315,7 +39341,7 @@ Function OutputLicensingOverview
 		Line 0 "Edition`t`t`t`t`t: " $LicenseEditionType
 		Line 0 "License model`t`t`t`t: " $LicenseModelType
 		Line 0 "Required SA date`t`t`t: " $tmpdate
-		Line 0 "The number of active, licensed sessions`t: " $Script:CVADSite1.LicensedSessionsActive
+		Line 0 "The number of active, licensed sessions`t: " $LicensedSessionsActive
 		Line 0 "Version`t`t`t`t`t: " $LicenseServerVersion
 		Line 0 ""
 		Line 0 "Licensing Grace Period Active`t`t: " $LicensingGracePeriodActive
@@ -39336,7 +39362,7 @@ Function OutputLicensingOverview
 		$rowdata += @(,('Edition',($global:htmlsb),$LicenseEditionType,$htmlwhite))
 		$rowdata += @(,('License model',($global:htmlsb),$LicenseModelType,$htmlwhite))
 		$rowdata += @(,('Required SA date',($global:htmlsb),$tmpdate,$htmlwhite))
-		$rowdata += @(,('The number of active, licensed sessions',($global:htmlsb),$Script:CVADSite1.LicensedSessionsActive.ToString(),$htmlwhite))
+		$rowdata += @(,('The number of active, licensed sessions',($global:htmlsb),$LicensedSessionsActive,$htmlwhite))
 		$rowdata += @(,('Version',($global:htmlsb),$LicenseServerVersion,$htmlwhite))
 		$rowdata += @(,('',($global:htmlsb),"",$htmlwhite))
 		$rowdata += @(,('Licensing Grace Period Active',($global:htmlsb),$LicensingGracePeriodActive,$htmlwhite))
@@ -42204,10 +42230,10 @@ ProcessDocumentOutput
 ProcessScriptEnd
 #endregionnn
 # SIG # Begin signature block
-# MIItTgYJKoZIhvcNAQcCoIItPzCCLTsCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
+# MIItSAYJKoZIhvcNAQcCoIItOTCCLTUCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUNAx8Cu9GAlnpXEmWXWe51pKF
-# ytyggiauMIIFjTCCBHWgAwIBAgIQDpsYjvnQLefv21DiCEAYWjANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUUFo7DjUiFaX5dKNjIMXoAVVD
+# kp+ggiaoMIIFjTCCBHWgAwIBAgIQDpsYjvnQLefv21DiCEAYWjANBgkqhkiG9w0B
 # AQwFADBlMQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYD
 # VQQLExB3d3cuZGlnaWNlcnQuY29tMSQwIgYDVQQDExtEaWdpQ2VydCBBc3N1cmVk
 # IElEIFJvb3QgQ0EwHhcNMjIwODAxMDAwMDAwWhcNMzExMTA5MjM1OTU5WjBiMQsw
@@ -42338,112 +42364,112 @@ ProcessScriptEnd
 # LxDEDAhkPDOPriiMPMuPiAsNvzv0zh57ju+168u38HcT5ucoP6wSrqUvImxB+YJc
 # FWbMbA7KxYbD9iYzDAdLoNMHAmpqQDBISzSoUSC7rRuFCOJZDW3KBVAr6kocnqX9
 # oKcfBnTn8tZSkP2vhUgh+Vc7tJwD7YZF9LRhbr9o4iZghurIr6n+lB3nYxs6hlZ4
-# TjCCBsIwggSqoAMCAQICEAVEr/OUnQg5pr/bP1/lYRYwDQYJKoZIhvcNAQELBQAw
+# TjCCBrwwggSkoAMCAQICEAuuZrxaun+Vh8b56QTjMwQwDQYJKoZIhvcNAQELBQAw
 # YzELMAkGA1UEBhMCVVMxFzAVBgNVBAoTDkRpZ2lDZXJ0LCBJbmMuMTswOQYDVQQD
 # EzJEaWdpQ2VydCBUcnVzdGVkIEc0IFJTQTQwOTYgU0hBMjU2IFRpbWVTdGFtcGlu
-# ZyBDQTAeFw0yMzA3MTQwMDAwMDBaFw0zNDEwMTMyMzU5NTlaMEgxCzAJBgNVBAYT
-# AlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjEgMB4GA1UEAxMXRGlnaUNlcnQg
-# VGltZXN0YW1wIDIwMjMwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQCj
-# U0WHHYOOW6w+VLMj4M+f1+XS512hDgncL0ijl3o7Kpxn3GIVWMGpkxGnzaqyat0Q
-# KYoeYmNp01icNXG/OpfrlFCPHCDqx5o7L5Zm42nnaf5bw9YrIBzBl5S0pVCB8s/L
-# B6YwaMqDQtr8fwkklKSCGtpqutg7yl3eGRiF+0XqDWFsnf5xXsQGmjzwxS55Dxtm
-# UuPI1j5f2kPThPXQx/ZILV5FdZZ1/t0QoRuDwbjmUpW1R9d4KTlr4HhZl+NEK0rV
-# lc7vCBfqgmRN/yPjyobutKQhZHDr1eWg2mOzLukF7qr2JPUdvJscsrdf3/Dudn0x
-# mWVHVZ1KJC+sK5e+n+T9e3M+Mu5SNPvUu+vUoCw0m+PebmQZBzcBkQ8ctVHNqkxm
-# g4hoYru8QRt4GW3k2Q/gWEH72LEs4VGvtK0VBhTqYggT02kefGRNnQ/fztFejKqr
-# UBXJs8q818Q7aESjpTtC/XN97t0K/3k0EH6mXApYTAA+hWl1x4Nk1nXNjxJ2VqUk
-# +tfEayG66B80mC866msBsPf7Kobse1I4qZgJoXGybHGvPrhvltXhEBP+YUcKjP7w
-# tsfVx95sJPC/QoLKoHE9nJKTBLRpcCcNT7e1NtHJXwikcKPsCvERLmTgyyIryvEo
-# EyFJUX4GZtM7vvrrkTjYUQfKlLfiUKHzOtOKg8tAewIDAQABo4IBizCCAYcwDgYD
-# VR0PAQH/BAQDAgeAMAwGA1UdEwEB/wQCMAAwFgYDVR0lAQH/BAwwCgYIKwYBBQUH
-# AwgwIAYDVR0gBBkwFzAIBgZngQwBBAIwCwYJYIZIAYb9bAcBMB8GA1UdIwQYMBaA
-# FLoW2W1NhS9zKXaaL3WMaiCPnshvMB0GA1UdDgQWBBSltu8T5+/N0GSh1VapZTGj
-# 3tXjSTBaBgNVHR8EUzBRME+gTaBLhklodHRwOi8vY3JsMy5kaWdpY2VydC5jb20v
-# RGlnaUNlcnRUcnVzdGVkRzRSU0E0MDk2U0hBMjU2VGltZVN0YW1waW5nQ0EuY3Js
-# MIGQBggrBgEFBQcBAQSBgzCBgDAkBggrBgEFBQcwAYYYaHR0cDovL29jc3AuZGln
-# aWNlcnQuY29tMFgGCCsGAQUFBzAChkxodHRwOi8vY2FjZXJ0cy5kaWdpY2VydC5j
-# b20vRGlnaUNlcnRUcnVzdGVkRzRSU0E0MDk2U0hBMjU2VGltZVN0YW1waW5nQ0Eu
-# Y3J0MA0GCSqGSIb3DQEBCwUAA4ICAQCBGtbeoKm1mBe8cI1PijxonNgl/8ss5M3q
-# XSKS7IwiAqm4z4Co2efjxe0mgopxLxjdTrbebNfhYJwr7e09SI64a7p8Xb3CYTdo
-# SXej65CqEtcnhfOOHpLawkA4n13IoC4leCWdKgV6hCmYtld5j9smViuw86e9NwzY
-# mHZPVrlSwradOKmB521BXIxp0bkrxMZ7z5z6eOKTGnaiaXXTUOREEr4gDZ6pRND4
-# 5Ul3CFohxbTPmJUaVLq5vMFpGbrPFvKDNzRusEEm3d5al08zjdSNd311RaGlWCZq
-# A0Xe2VC1UIyvVr1MxeFGxSjTredDAHDezJieGYkD6tSRN+9NUvPJYCHEVkft2hFL
-# jDLDiOZY4rbbPvlfsELWj+MXkdGqwFXjhr+sJyxB0JozSqg21Llyln6XeThIX8rC
-# 3D0y33XWNmdaifj2p8flTzU8AL2+nCpseQHc2kTmOt44OwdeOVj0fHMxVaCAEcsU
-# DH6uvP6k63llqmjWIso765qCNVcoFstp8jKastLYOrixRoZruhf9xHdsFWyuq69z
-# OuhJRrfVf8y2OMDY7Bz1tqG4QyzfTkx9HmhwwHcK1ALgXGC7KP845VJa1qwXIiNO
-# 9OzTF/tQa/8Hdx9xl0RBybhG02wyfFgvZ0dl5Rtztpn5aywGRu9BHvDwX+Db2a2Q
-# gESvgBBBijCCB1kwggVBoAMCAQICEAts37ZngQ4q58taEbodSXAwDQYJKoZIhvcN
-# AQELBQAwaTELMAkGA1UEBhMCVVMxFzAVBgNVBAoTDkRpZ2lDZXJ0LCBJbmMuMUEw
-# PwYDVQQDEzhEaWdpQ2VydCBUcnVzdGVkIEc0IENvZGUgU2lnbmluZyBSU0E0MDk2
-# IFNIQTM4NCAyMDIxIENBMTAeFw0yNDA4MTMwMDAwMDBaFw0yNjEwMTgyMzU5NTla
-# MGExCzAJBgNVBAYTAlVTMRIwEAYDVQQIEwlUZW5uZXNzZWUxEDAOBgNVBAcTB0xl
-# YmFub24xFTATBgNVBAoTDENhcmwgV2Vic3RlcjEVMBMGA1UEAxMMQ2FybCBXZWJz
-# dGVyMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA05uJKNPzfNG5N8GS
-# g4WxSPvhr+xUjqkMKZClzi4Lxc2+sShnOoovmY9APkTu6fjfFYLCqKOnC70F04aO
-# ZvVF7xdnRFsk0woY5MAOAvEMDNNeakKtx8uRA7OE8eZXpuIQ/qI4YesL0MZdGSA9
-# QysSV7GZ4Ro3X/2aguCHjaSV8k+nOUWCImeAUs0IbiZka/Opxi+SQKRq0fGXLvkb
-# 9FOb65CeyzjJyVydLAMoXAggwTVMMzr6R0l8Ed04E42vSMBzF6Qo1+QDhsb1Ahsy
-# mEelthaA2t2YKogu4ekjIerSctYyDykk2HGMWcd9uK61hA4LTCRFWS7VULpb+vFr
-# 8obEAhREvkzsGuZPBL3ZJWSv1j0cM/yUVJl0tPdkd0sDZ8OoTWvJ9Dlzbc75aNgg
-# HIi86Ua8hEedesc/wyBGB76ZMoa8F+IgKiaXxBbLJ2a8R9D7FASAo/uZF49l0Z1K
-# IA6SZ/1zB71QMItofHNl6om6UYcjpreDIuAYu/v0G1nQKBb16ETFPfaMu0o/Qp+E
-# 6C9Hh9ILQTKbJ1VbKzNIERy7PFE4J5sFw0yE3SyOejCuQOuozBt8OLrggNAmdnob
-# 7TGmN4zbS5ZrD5PcDzIZ6+kW7l+xoLPyG4kVo8StdAIQdg2ldRdCvEGCY74Ltbev
-# Mu2aVDCdI7B3HqP0HgS8MhHf5b0CAwEAAaOCAgMwggH/MB8GA1UdIwQYMBaAFGg3
-# 4Ou2O/hfEYb7/mF7CIhl9E5CMB0GA1UdDgQWBBSNdamQ8btLpf1eLKSNwU/tTh+Y
-# NTA+BgNVHSAENzA1MDMGBmeBDAEEATApMCcGCCsGAQUFBwIBFhtodHRwOi8vd3d3
-# LmRpZ2ljZXJ0LmNvbS9DUFMwDgYDVR0PAQH/BAQDAgeAMBMGA1UdJQQMMAoGCCsG
-# AQUFBwMDMIG1BgNVHR8Ega0wgaowU6BRoE+GTWh0dHA6Ly9jcmwzLmRpZ2ljZXJ0
-# LmNvbS9EaWdpQ2VydFRydXN0ZWRHNENvZGVTaWduaW5nUlNBNDA5NlNIQTM4NDIw
-# MjFDQTEuY3JsMFOgUaBPhk1odHRwOi8vY3JsNC5kaWdpY2VydC5jb20vRGlnaUNl
-# cnRUcnVzdGVkRzRDb2RlU2lnbmluZ1JTQTQwOTZTSEEzODQyMDIxQ0ExLmNybDCB
-# lAYIKwYBBQUHAQEEgYcwgYQwJAYIKwYBBQUHMAGGGGh0dHA6Ly9vY3NwLmRpZ2lj
-# ZXJ0LmNvbTBcBggrBgEFBQcwAoZQaHR0cDovL2NhY2VydHMuZGlnaWNlcnQuY29t
-# L0RpZ2lDZXJ0VHJ1c3RlZEc0Q29kZVNpZ25pbmdSU0E0MDk2U0hBMzg0MjAyMUNB
-# MS5jcnQwCQYDVR0TBAIwADANBgkqhkiG9w0BAQsFAAOCAgEAQvF7bvX7Sz9/YviN
-# L6y080hXvG6WWF7f3YwplBOHeQy4bDGHJ0003j6MdnSQ+Tebcd1AIZaKsNJajT1N
-# RF4F+23Qeh/ynFk3kRuabCJkjsGPLDZQ+UKzfhfWQKOwWCIEgsmx2Qa3EMm/NLDb
-# Z9SqtuVVWqC6+b82JWg8Eht6h1iJbMnA3MtuM8ZuiHKdjKdTi81peQ7CRu6ek8nj
-# fmZEo8d59cFWA8HEM4S/k4f3u1/hjHkTA346r+wf3DsTJl+/jDiQDjTC8UF1wRMT
-# J0yJUQlvhUYqFyEIOnMJtyEPyfEr9P47/4kIr2/iQMnt8FDz/nZvLxYDaVjB/fvF
-# Lss22wEKX4tZ59nX7Y1vXA0Yk5Bw40eoGMz6XSQuK/Cjx7oKHAJhj370emc81FSJ
-# vlJv1JVdi4iUhfn6LfVcc01i5IcuEQp8ipGVqR70Ap3HKZK3hvcUQR+bzmt0H9tL
-# D1Kj2IJZrHa5SFyhu7ARymy8qohqKWV45Dx5+nZIvjehsPT5LAmHrbzpNRi26H3A
-# iJEH90jB++5XKnAoN9IFE4zj6Tfj4mudvw+ExDi24/zXkhNn8yOZuSd4onT/IN1E
-# zA7fx9rMKdcLJAp9tyuvRcsSDiXS6yNpEu/J5xXdBbiODaoMyRdydTKXW9dvJszC
-# VjNpjmFXfGsG3GAEDkrHS+nCR68xggYKMIIGBgIBATB9MGkxCzAJBgNVBAYTAlVT
-# MRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFBMD8GA1UEAxM4RGlnaUNlcnQgVHJ1
-# c3RlZCBHNCBDb2RlIFNpZ25pbmcgUlNBNDA5NiBTSEEzODQgMjAyMSBDQTECEAts
-# 37ZngQ4q58taEbodSXAwCQYFKw4DAhoFAKBAMBkGCSqGSIb3DQEJAzEMBgorBgEE
-# AYI3AgEEMCMGCSqGSIb3DQEJBDEWBBRafABxoxAmyRR28+xvJBrlILERujANBgkq
-# hkiG9w0BAQEFAASCAgAxPhSbLUscXqCZOYSTpnvuHXtqbDww2DK4RFGiTjTP3tYm
-# 2fAjTC8Bm4WMy4eLhYrXwUzfNEzwDYTf62CSV2b5/LvNQiuOLy8u+wI1YwposcOC
-# n3dNsd2uU6R8D4J/3MvVuDi3N8oL4+jYDWO7/XlRI34065VQU7hJAvMDtENP2Rdc
-# xZA/s4n31wHiVjuFghk+OrkubhHv6TuEK886pDt8BX3l4H0ekf14AVg0PdsbwCC2
-# Bd0qRZo9T0aBqpDjAyitlaBuBVIeOHZhD0Gngkx+0Q8QKoANPVYlD6NmIeoBnnbu
-# BDhmN/QITdY87FuzmAkhSViayZIyzwbMBHNsOhXwIVKdrBvcqCOGAelpqp5XRvi1
-# RLEPFC8dxsmPKosz3i839IMB6pu5yKKnB/5D/TemSyb6NFxwxOtWflxfwJfBydZM
-# EjV9m9qCY6GBpokRuynFOv0Ff+IZiQ2G7uVnrxwx4NOwQxYbqfPLjLLRHfNwgmUQ
-# PAeQl26fHC5ldTjMQK71BhLu087MxvFPpU63LH50CGyo3eEg3mo/fms0JVdKXekl
-# a9Se2jaGlVutuWGshvKDO7RAwNOHGooUkbJjY0wzZFu0CM49CTE9oKDV0yjcasA1
-# hKi9fU8JsW21L2da8GPu9xelPPDROE1K2H4QQXu18dGpWNxJn1eyptB+AjzrAKGC
-# AyAwggMcBgkqhkiG9w0BCQYxggMNMIIDCQIBATB3MGMxCzAJBgNVBAYTAlVTMRcw
-# FQYDVQQKEw5EaWdpQ2VydCwgSW5jLjE7MDkGA1UEAxMyRGlnaUNlcnQgVHJ1c3Rl
-# ZCBHNCBSU0E0MDk2IFNIQTI1NiBUaW1lU3RhbXBpbmcgQ0ECEAVEr/OUnQg5pr/b
-# P1/lYRYwDQYJYIZIAWUDBAIBBQCgaTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcB
-# MBwGCSqGSIb3DQEJBTEPFw0yNDA4MjYxNjIzMjRaMC8GCSqGSIb3DQEJBDEiBCDe
-# cPjGccMGY+9J5ljQ/Ai1Ih1umvPiXb4ELF5Y7MBlTjANBgkqhkiG9w0BAQEFAASC
-# AgCT3vVBHYTVdDkT4UQpUoBDUNuYcj3tlWMxdAxKNmGZGWVe7Fe34L7wqTiDw/L7
-# cTZ6dSAUxJDLNM6KOmzSpf3pd9FCYsC1Gre9LmrjtnqkAfBlpezCDqOa5HzJp40o
-# D1K8E449R0p3ezPIG/f2J5bgBzemisNxMqPYUkPJoOP309uyEn6XsyhcJWQzwDeQ
-# XI/+JIqGLrvb+eg3PB6dXu1rc7z4LuYfZArG10Tbf5F3b8arHdfJssimd5TsClI3
-# zCf27ZxpNO5aaTfq5GZsntz8N0g+hc77XLjzzBxBEdiI9MPYIpcBr0PFKy5tB0RA
-# T8/U5C6oKA/TNc2hQ3jlPmiaH+XzXl4pEZPaq4j7ayXvE+IeXJh0PKNaotKZiKuh
-# ayO5VL3HB1KuX14Cj0G6rG6+2qhGyjo2o+frYyk04bFc8a/ysbVSNPUL5EEvMNck
-# K6CeroeP3fgKl5cMI6B1tTGUuC7iGbhJGV/8Y2ntWxgpYbIALWekWoDIedFLQ7aM
-# /DxzWhZ+1pxVyL2icI6Yim2nxM9qHdbRGjfL+QgAKifruJeEw54vHK83OLhuCEl2
-# g8MdXJlsIAuZMx3eUvUct3Sndqyy7M7aOs/aDR+GU1nZJPM4PDGmcO0JHojwbeGE
-# PKzURQiR3NNSZJsqbqdlylQ14V2A4QgCF/JEyxj0p684YA==
+# ZyBDQTAeFw0yNDA5MjYwMDAwMDBaFw0zNTExMjUyMzU5NTlaMEIxCzAJBgNVBAYT
+# AlVTMREwDwYDVQQKEwhEaWdpQ2VydDEgMB4GA1UEAxMXRGlnaUNlcnQgVGltZXN0
+# YW1wIDIwMjQwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQC+anOf9pUh
+# q5Ywultt5lmjtej9kR8YxIg7apnjpcH9CjAgQxK+CMR0Rne/i+utMeV5bUlYYSuu
+# M4vQngvQepVHVzNLO9RDnEXvPghCaft0djvKKO+hDu6ObS7rJcXa/UKvNminKQPT
+# v/1+kBPgHGlP28mgmoCw/xi6FG9+Un1h4eN6zh926SxMe6We2r1Z6VFZj75MU/HN
+# mtsgtFjKfITLutLWUdAoWle+jYZ49+wxGE1/UXjWfISDmHuI5e/6+NfQrxGFSKx+
+# rDdNMsePW6FLrphfYtk/FLihp/feun0eV+pIF496OVh4R1TvjQYpAztJpVIfdNsE
+# vxHofBf1BWkadc+Up0Th8EifkEEWdX4rA/FE1Q0rqViTbLVZIqi6viEk3RIySho1
+# XyHLIAOJfXG5PEppc3XYeBH7xa6VTZ3rOHNeiYnY+V4j1XbJ+Z9dI8ZhqcaDHOoj
+# 5KGg4YuiYx3eYm33aebsyF6eD9MF5IDbPgjvwmnAalNEeJPvIeoGJXaeBQjIK13S
+# lnzODdLtuThALhGtyconcVuPI8AaiCaiJnfdzUcb3dWnqUnjXkRFwLtsVAxFvGqs
+# xUA2Jq/WTjbnNjIUzIs3ITVC6VBKAOlb2u29Vwgfta8b2ypi6n2PzP0nVepsFk8n
+# lcuWfyZLzBaZ0MucEdeBiXL+nUOGhCjl+QIDAQABo4IBizCCAYcwDgYDVR0PAQH/
+# BAQDAgeAMAwGA1UdEwEB/wQCMAAwFgYDVR0lAQH/BAwwCgYIKwYBBQUHAwgwIAYD
+# VR0gBBkwFzAIBgZngQwBBAIwCwYJYIZIAYb9bAcBMB8GA1UdIwQYMBaAFLoW2W1N
+# hS9zKXaaL3WMaiCPnshvMB0GA1UdDgQWBBSfVywDdw4oFZBmpWNe7k+SH3agWzBa
+# BgNVHR8EUzBRME+gTaBLhklodHRwOi8vY3JsMy5kaWdpY2VydC5jb20vRGlnaUNl
+# cnRUcnVzdGVkRzRSU0E0MDk2U0hBMjU2VGltZVN0YW1waW5nQ0EuY3JsMIGQBggr
+# BgEFBQcBAQSBgzCBgDAkBggrBgEFBQcwAYYYaHR0cDovL29jc3AuZGlnaWNlcnQu
+# Y29tMFgGCCsGAQUFBzAChkxodHRwOi8vY2FjZXJ0cy5kaWdpY2VydC5jb20vRGln
+# aUNlcnRUcnVzdGVkRzRSU0E0MDk2U0hBMjU2VGltZVN0YW1waW5nQ0EuY3J0MA0G
+# CSqGSIb3DQEBCwUAA4ICAQA9rR4fdplb4ziEEkfZQ5H2EdubTggd0ShPz9Pce4FL
+# Jl6reNKLkZd5Y/vEIqFWKt4oKcKz7wZmXa5VgW9B76k9NJxUl4JlKwyjUkKhk3aY
+# x7D8vi2mpU1tKlY71AYXB8wTLrQeh83pXnWwwsxc1Mt+FWqz57yFq6laICtKjPIC
+# YYf/qgxACHTvypGHrC8k1TqCeHk6u4I/VBQC9VK7iSpU5wlWjNlHlFFv/M93748Y
+# TeoXU/fFa9hWJQkuzG2+B7+bMDvmgF8VlJt1qQcl7YFUMYgZU1WM6nyw23vT6QSg
+# wX5Pq2m0xQ2V6FJHu8z4LXe/371k5QrN9FQBhLLISZi2yemW0P8ZZfx4zvSWzVXp
+# Ab9k4Hpvpi6bUe8iK6WonUSV6yPlMwerwJZP/Gtbu3CKldMnn+LmmRTkTXpFIEB0
+# 6nXZrDwhCGED+8RsWQSIXZpuG4WLFQOhtloDRWGoCwwc6ZpPddOFkM2LlTbMcqFS
+# zm4cd0boGhBq7vkqI1uHRz6Fq1IX7TaRQuR+0BGOzISkcqwXu7nMpFu3mgrlgbAW
+# +BzikRVQ3K2YHcGkiKjA4gi4OA/kz1YCsdhIBHXqBzR0/Zd2QwQ/l4Gxftt/8wY3
+# grcc/nS//TVkej9nmUYu83BDtccHHXKibMs/yXHhDXNkoPIdynhVAku7aRZOwqw6
+# pDCCB1kwggVBoAMCAQICEAts37ZngQ4q58taEbodSXAwDQYJKoZIhvcNAQELBQAw
+# aTELMAkGA1UEBhMCVVMxFzAVBgNVBAoTDkRpZ2lDZXJ0LCBJbmMuMUEwPwYDVQQD
+# EzhEaWdpQ2VydCBUcnVzdGVkIEc0IENvZGUgU2lnbmluZyBSU0E0MDk2IFNIQTM4
+# NCAyMDIxIENBMTAeFw0yNDA4MTMwMDAwMDBaFw0yNjEwMTgyMzU5NTlaMGExCzAJ
+# BgNVBAYTAlVTMRIwEAYDVQQIEwlUZW5uZXNzZWUxEDAOBgNVBAcTB0xlYmFub24x
+# FTATBgNVBAoTDENhcmwgV2Vic3RlcjEVMBMGA1UEAxMMQ2FybCBXZWJzdGVyMIIC
+# IjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA05uJKNPzfNG5N8GSg4WxSPvh
+# r+xUjqkMKZClzi4Lxc2+sShnOoovmY9APkTu6fjfFYLCqKOnC70F04aOZvVF7xdn
+# RFsk0woY5MAOAvEMDNNeakKtx8uRA7OE8eZXpuIQ/qI4YesL0MZdGSA9QysSV7GZ
+# 4Ro3X/2aguCHjaSV8k+nOUWCImeAUs0IbiZka/Opxi+SQKRq0fGXLvkb9FOb65Ce
+# yzjJyVydLAMoXAggwTVMMzr6R0l8Ed04E42vSMBzF6Qo1+QDhsb1AhsymEelthaA
+# 2t2YKogu4ekjIerSctYyDykk2HGMWcd9uK61hA4LTCRFWS7VULpb+vFr8obEAhRE
+# vkzsGuZPBL3ZJWSv1j0cM/yUVJl0tPdkd0sDZ8OoTWvJ9Dlzbc75aNggHIi86Ua8
+# hEedesc/wyBGB76ZMoa8F+IgKiaXxBbLJ2a8R9D7FASAo/uZF49l0Z1KIA6SZ/1z
+# B71QMItofHNl6om6UYcjpreDIuAYu/v0G1nQKBb16ETFPfaMu0o/Qp+E6C9Hh9IL
+# QTKbJ1VbKzNIERy7PFE4J5sFw0yE3SyOejCuQOuozBt8OLrggNAmdnob7TGmN4zb
+# S5ZrD5PcDzIZ6+kW7l+xoLPyG4kVo8StdAIQdg2ldRdCvEGCY74LtbevMu2aVDCd
+# I7B3HqP0HgS8MhHf5b0CAwEAAaOCAgMwggH/MB8GA1UdIwQYMBaAFGg34Ou2O/hf
+# EYb7/mF7CIhl9E5CMB0GA1UdDgQWBBSNdamQ8btLpf1eLKSNwU/tTh+YNTA+BgNV
+# HSAENzA1MDMGBmeBDAEEATApMCcGCCsGAQUFBwIBFhtodHRwOi8vd3d3LmRpZ2lj
+# ZXJ0LmNvbS9DUFMwDgYDVR0PAQH/BAQDAgeAMBMGA1UdJQQMMAoGCCsGAQUFBwMD
+# MIG1BgNVHR8Ega0wgaowU6BRoE+GTWh0dHA6Ly9jcmwzLmRpZ2ljZXJ0LmNvbS9E
+# aWdpQ2VydFRydXN0ZWRHNENvZGVTaWduaW5nUlNBNDA5NlNIQTM4NDIwMjFDQTEu
+# Y3JsMFOgUaBPhk1odHRwOi8vY3JsNC5kaWdpY2VydC5jb20vRGlnaUNlcnRUcnVz
+# dGVkRzRDb2RlU2lnbmluZ1JTQTQwOTZTSEEzODQyMDIxQ0ExLmNybDCBlAYIKwYB
+# BQUHAQEEgYcwgYQwJAYIKwYBBQUHMAGGGGh0dHA6Ly9vY3NwLmRpZ2ljZXJ0LmNv
+# bTBcBggrBgEFBQcwAoZQaHR0cDovL2NhY2VydHMuZGlnaWNlcnQuY29tL0RpZ2lD
+# ZXJ0VHJ1c3RlZEc0Q29kZVNpZ25pbmdSU0E0MDk2U0hBMzg0MjAyMUNBMS5jcnQw
+# CQYDVR0TBAIwADANBgkqhkiG9w0BAQsFAAOCAgEAQvF7bvX7Sz9/YviNL6y080hX
+# vG6WWF7f3YwplBOHeQy4bDGHJ0003j6MdnSQ+Tebcd1AIZaKsNJajT1NRF4F+23Q
+# eh/ynFk3kRuabCJkjsGPLDZQ+UKzfhfWQKOwWCIEgsmx2Qa3EMm/NLDbZ9SqtuVV
+# WqC6+b82JWg8Eht6h1iJbMnA3MtuM8ZuiHKdjKdTi81peQ7CRu6ek8njfmZEo8d5
+# 9cFWA8HEM4S/k4f3u1/hjHkTA346r+wf3DsTJl+/jDiQDjTC8UF1wRMTJ0yJUQlv
+# hUYqFyEIOnMJtyEPyfEr9P47/4kIr2/iQMnt8FDz/nZvLxYDaVjB/fvFLss22wEK
+# X4tZ59nX7Y1vXA0Yk5Bw40eoGMz6XSQuK/Cjx7oKHAJhj370emc81FSJvlJv1JVd
+# i4iUhfn6LfVcc01i5IcuEQp8ipGVqR70Ap3HKZK3hvcUQR+bzmt0H9tLD1Kj2IJZ
+# rHa5SFyhu7ARymy8qohqKWV45Dx5+nZIvjehsPT5LAmHrbzpNRi26H3AiJEH90jB
+# ++5XKnAoN9IFE4zj6Tfj4mudvw+ExDi24/zXkhNn8yOZuSd4onT/IN1EzA7fx9rM
+# KdcLJAp9tyuvRcsSDiXS6yNpEu/J5xXdBbiODaoMyRdydTKXW9dvJszCVjNpjmFX
+# fGsG3GAEDkrHS+nCR68xggYKMIIGBgIBATB9MGkxCzAJBgNVBAYTAlVTMRcwFQYD
+# VQQKEw5EaWdpQ2VydCwgSW5jLjFBMD8GA1UEAxM4RGlnaUNlcnQgVHJ1c3RlZCBH
+# NCBDb2RlIFNpZ25pbmcgUlNBNDA5NiBTSEEzODQgMjAyMSBDQTECEAts37ZngQ4q
+# 58taEbodSXAwCQYFKw4DAhoFAKBAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEE
+# MCMGCSqGSIb3DQEJBDEWBBQ57oiciP4OCzDWhqeyzWEUctWzQDANBgkqhkiG9w0B
+# AQEFAASCAgDJifQwfehjdlbN+9QiJSFpxOjdXXcEyxHZe9MkyOhmFwUS4hfVMJeH
+# LODSxnNgKoWl2e08n43tvOYE+V79u3rS6hgtDzkZpq0mruSP3dbaSNutyx82raNN
+# 9XTU/K64tIUJaicTMForgsh276JqIke6AU1GG1vXwoHihsrLGjUyTtJKZV2PtV/2
+# CMnVZzve9K/PVYiraEWJ7Y08IiIWsQLzuBO4WKb7ItHpxJHZFSDyg8keR9hGDiVD
+# HimG9xvjnimp2QO3zIl7NbjVjYmRkA9VpkO+tSNe1nVDz38mX34QnvhXOXssx4WE
+# Zj+FB+4crmCuj2/QNIJPuc5HzLn2iJ5CeHiV1nLwHd5W+HBiVVJ6p1lcZm73r0x+
+# bZdrNnRVWqhK+yG4I331nKTODtJ8rAhcUEz6v3x9hnE84hGSRFxEhj7Uhj32S3b2
+# Cem/ky0gFVz7mXO30vnWtYHG9gUYDZp5LR/4/Z4C65l05f/W1DByo1Yx+k6xpmii
+# motariQrNo2QCFO0rwL30tfKRohOoz7gmOO9Pl510Wou1ImBBkKxvlJsKX1F5u+j
+# fX4NzRmewkllpTMqfJ6bKQdTRHddiyMGATPEU2Wzd1F9dhNQGZg4h8RTHY64Grxi
+# oSLGbdL4qMJQGe5VukCNEeXk9VJyluFkSDX+roq1hFMlyjg26C6wwaGCAyAwggMc
+# BgkqhkiG9w0BCQYxggMNMIIDCQIBATB3MGMxCzAJBgNVBAYTAlVTMRcwFQYDVQQK
+# Ew5EaWdpQ2VydCwgSW5jLjE7MDkGA1UEAxMyRGlnaUNlcnQgVHJ1c3RlZCBHNCBS
+# U0E0MDk2IFNIQTI1NiBUaW1lU3RhbXBpbmcgQ0ECEAuuZrxaun+Vh8b56QTjMwQw
+# DQYJYIZIAWUDBAIBBQCgaTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqG
+# SIb3DQEJBTEPFw0yNDEwMDcyMTA0NDlaMC8GCSqGSIb3DQEJBDEiBCChwU5tso/C
+# FRDO2WF2yzZNil1aBsRI2Yd3+Z4Gc6FvnzANBgkqhkiG9w0BAQEFAASCAgCzzqtD
+# latB96n4zMZAQXl2kTRDPmxSPyK/v/fmfq19jnBJmS1n7b3X3mZI4qOYIlPtvRqb
+# LLv5JhBk+XzG+EMi+A/y2d2XMqRkuXRK7YN01mj5MjM2jG0u4s9DIYX7KVhJTlvy
+# RWrmrYq3UELO0Lbe7bC4uSSDc4Sb1hwRU/I1cNsq0HgzSPqjkVtzDk86hODi5oBw
+# AZaHdhvfMMExo4zJd8Bw2ZgEAUCHuO9BZK4+Ai5Gb9HTaSfer43LyuUH0bbrqt79
+# DIcI8IJ3C8KAwPrfn8gvnqIt1cs3DTiwaPmDbO6kuvC60K9GYawyg4KH2ClIl0Ag
+# Bg+VnwAf1/8QgzXEaNOLx+KOsrYvjXRPFawcTl2g2SkDf2Ohm44bpx074/JCTysz
+# SMMFbNo2LT8px/KUOLFWNPq04IC+OJABo8TzYPdLkLC7pRLqGwVUhFBWQrTIWGg2
+# vzfl/bF5zmGf1V8E6IWWLK0M/HsxBLdQfo44wMRC32cia3zrdaMvAjm4Ul+B+64J
+# mhwr/nPMBb9gCVwYKSxJJ/v5ZgWA/f/GPvEpDdH7kuObUjQEOOKhjKKdFy2zDoia
+# 9yv5oH3yGEkE91kogaggX3dCI5VHxVKl3r81DUb1lMg8C0OTdYfv0T4lARxru5el
+# EI4BCjiVwghfDwL9qsxMiQOemCc6KglCZeUMwA==
 # SIG # End signature block
