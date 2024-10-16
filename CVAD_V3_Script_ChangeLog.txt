@@ -6,7 +6,7 @@
 
 # This script is based on the 2.36 script
 
-#Version 3.43 7-Oct-2024 Webster's Last Update
+#Version 3.43 16-Oct-2024 Webster's Last Update
 #	Added Broker Registry Keys:
 #		HKLM:\Software\Policies\Citrix\DesktopServer\AlternateSkipAlgorithmThreshold
 #			Type: int

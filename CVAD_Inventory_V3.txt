@@ -308,8 +308,8 @@
 .PARAMETER AddDateTime
 	Adds a date timestamp to the end of the file name.
 	The timestamp is in the format of yyyy-MM-dd_HHmm.
-	June 1, 2022, at 6PM is 2022-06-01_1800.
-	The output filename will be ReportName_2022-06-01_1800.docx (or.pdf).
+	June 1, 2025, at 6PM is 2025-06-01_1800.
+	The output filename will be ReportName_2025-06-01_1800.docx (or.pdf).
 	This parameter is disabled by default.
 	This parameter has an alias of ADT.
 .PARAMETER CSV
@@ -624,18 +624,18 @@
 	Creates an HTML report with full details on Administrator Scopes and Roles.
 	The computer running the script for the AdminAddress.
 .EXAMPLE
-	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -Logging -StartDate 09/01/2022 -EndDate 
-	09/30/2022	
+	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -Logging -StartDate 09/01/2025 -EndDate 
+	09/30/2025	
 	
-	Creates an HTML report with Configuration Logging details for the dates 09/01/2022 
-	through 09/30/2022.
+	Creates an HTML report with Configuration Logging details for the dates 09/01/2025 
+	through 09/30/2025.
 	The computer running the script for the AdminAddress.
 .EXAMPLE
-	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -Logging -StartDate "09/01/2022 10:00:00" 
-	-EndDate "09/01/2022 14:00:00" -MSWord
+	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -Logging -StartDate "09/01/2025 10:00:00" 
+	-EndDate "09/01/2025 14:00:00" -MSWord
 	
 	Creates a Microsoft Word report with Configuration Logging details for the time range 
-	09/01/2022 10:00:00AM through 09/01/2022 02:00:00PM.
+	09/01/2025 10:00:00AM through 09/01/2025 02:00:00PM.
 	
 	Narrowing the report down to seconds does not work. Seconds must be either 00 or 59.
 	
@@ -744,8 +744,8 @@
 	Creates an HTML report.
 	Adds a date time stamp to the end of the file name.
 	The timestamp is in the format of yyyy-MM-dd_HHmm.
-	June 1, 2022, at 6PM is 2022-06-01_1800.
-	The output filename will be CVADSiteName_2022-06-01_1800.docx
+	June 1, 2025, at 6PM is 2025-06-01_1800.
+	The output filename will be CVADSiteName_2025-06-01_1800.docx
 	The computer running the script for the AdminAddress.
 .EXAMPLE
 	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -PDF -AddDateTime
@@ -763,8 +763,8 @@
 
 	Adds a date time stamp to the end of the file name.
 	The timestamp is in the format of yyyy-MM-dd_HHmm.
-	June 1, 2022, at 6PM is 2022-06-01_1800.
-	The output filename will be CVADSiteName_2022-06-01_1800.pdf
+	June 1, 2025, at 6PM is 2025-06-01_1800.
+	The output filename will be CVADSiteName_2025-06-01_1800.pdf
 	The computer running the script for the AdminAddress.
 .EXAMPLE
 	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -Hardware
@@ -1054,7 +1054,7 @@
 	NAME: CVAD_Inventory_V3.ps1
 	VERSION: 3.43 Webster's Last Update
 	AUTHOR: Carl Webster
-	LASTEDIT: October 7, 2024
+	LASTEDIT: October 16, 2024
 #>
 
 #endregion
@@ -1247,7 +1247,7 @@ Param(
 
 # This script is based on the 2.36 script
 #
-#Version 3.43 7-Oct-2024 Webster's Last Update
+#Version 3.43 16-Oct-2024 Webster's Last Update
 #	Added Broker Registry Keys:
 #		HKLM:\Software\Policies\Citrix\DesktopServer\AlternateSkipAlgorithmThreshold
 #			Type: int
@@ -2488,7 +2488,7 @@ $ErrorActionPreference    = 'SilentlyContinue'
 #stuff for report footer
 $script:MyVersion   = "3.43 Webster's Last Update"
 $Script:ScriptName  = "CVAD_Inventory_V3.ps1"
-$tmpdate            = [datetime] "10/07/2024"
+$tmpdate            = [datetime] "10/16/2024"
 $Script:ReleaseDate = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($Null -eq $HTML)
@@ -40780,7 +40780,6 @@ Function ProcessScriptSetup
 			$CVADSiteVersionReal = "Unknown"
 			Switch ($CVADSiteVersion)
 			{
-				"7.43"	{$CVADSiteVersionReal = "CVAD 2409"; Break}
 				"7.42"	{$CVADSiteVersionReal = "CVAD 2407"; Break}
 				"7.41"	{$CVADSiteVersionReal = "CVAD 2402"; Break}
 				"7.40"	{$CVADSiteVersionReal = "CVAD 2311"; Break}
@@ -41002,7 +41001,6 @@ Script cannot continue
 	$Script:CVADSiteVersionReal = "Unknown"
 	Switch ($Script:CVADSiteVersion)
 	{
-		"7.43"	{$Script:CVADSiteVersionReal = "CVAD 2409"; Break}
 		"7.42"	{$Script:CVADSiteVersionReal = "CVAD 2407"; Break}
 		"7.41"	{$Script:CVADSiteVersionReal = "CVAD 2402"; Break}
 		"7.40"	{$Script:CVADSiteVersionReal = "CVAD 2311"; Break}

@@ -308,8 +308,8 @@
 .PARAMETER AddDateTime
 	Adds a date timestamp to the end of the file name.
 	The timestamp is in the format of yyyy-MM-dd_HHmm.
-	June 1, 2022, at 6PM is 2022-06-01_1800.
-	The output filename will be ReportName_2022-06-01_1800.docx (or.pdf).
+	June 1, 2025, at 6PM is 2025-06-01_1800.
+	The output filename will be ReportName_2025-06-01_1800.docx (or.pdf).
 	This parameter is disabled by default.
 	This parameter has an alias of ADT.
 .PARAMETER CSV
@@ -624,18 +624,18 @@
 	Creates an HTML report with full details on Administrator Scopes and Roles.
 	The computer running the script for the AdminAddress.
 .EXAMPLE
-	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -Logging -StartDate 09/01/2022 -EndDate 
-	09/30/2022	
+	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -Logging -StartDate 09/01/2025 -EndDate 
+	09/30/2025	
 	
-	Creates an HTML report with Configuration Logging details for the dates 09/01/2022 
-	through 09/30/2022.
+	Creates an HTML report with Configuration Logging details for the dates 09/01/2025 
+	through 09/30/2025.
 	The computer running the script for the AdminAddress.
 .EXAMPLE
-	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -Logging -StartDate "09/01/2022 10:00:00" 
-	-EndDate "09/01/2022 14:00:00" -MSWord
+	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -Logging -StartDate "09/01/2025 10:00:00" 
+	-EndDate "09/01/2025 14:00:00" -MSWord
 	
 	Creates a Microsoft Word report with Configuration Logging details for the time range 
-	09/01/2022 10:00:00AM through 09/01/2022 02:00:00PM.
+	09/01/2025 10:00:00AM through 09/01/2025 02:00:00PM.
 	
 	Narrowing the report down to seconds does not work. Seconds must be either 00 or 59.
 	
@@ -744,8 +744,8 @@
 	Creates an HTML report.
 	Adds a date time stamp to the end of the file name.
 	The timestamp is in the format of yyyy-MM-dd_HHmm.
-	June 1, 2022, at 6PM is 2022-06-01_1800.
-	The output filename will be CVADSiteName_2022-06-01_1800.docx
+	June 1, 2025, at 6PM is 2025-06-01_1800.
+	The output filename will be CVADSiteName_2025-06-01_1800.docx
 	The computer running the script for the AdminAddress.
 .EXAMPLE
 	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -PDF -AddDateTime
@@ -763,8 +763,8 @@
 
 	Adds a date time stamp to the end of the file name.
 	The timestamp is in the format of yyyy-MM-dd_HHmm.
-	June 1, 2022, at 6PM is 2022-06-01_1800.
-	The output filename will be CVADSiteName_2022-06-01_1800.pdf
+	June 1, 2025, at 6PM is 2025-06-01_1800.
+	The output filename will be CVADSiteName_2025-06-01_1800.pdf
 	The computer running the script for the AdminAddress.
 .EXAMPLE
 	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -Hardware
@@ -1054,7 +1054,7 @@
 	NAME: CVAD_Inventory_V3.ps1
 	VERSION: 3.43 Webster's Last Update
 	AUTHOR: Carl Webster
-	LASTEDIT: October 7, 2024
+	LASTEDIT: October 16, 2024
 #>
 
 #endregion
@@ -1247,7 +1247,7 @@ Param(
 
 # This script is based on the 2.36 script
 #
-#Version 3.43 7-Oct-2024 Webster's Last Update
+#Version 3.43 16-Oct-2024 Webster's Last Update
 #	Added Broker Registry Keys:
 #		HKLM:\Software\Policies\Citrix\DesktopServer\AlternateSkipAlgorithmThreshold
 #			Type: int
@@ -2488,7 +2488,7 @@ $ErrorActionPreference    = 'SilentlyContinue'
 #stuff for report footer
 $script:MyVersion   = "3.43 Webster's Last Update"
 $Script:ScriptName  = "CVAD_Inventory_V3.ps1"
-$tmpdate            = [datetime] "10/07/2024"
+$tmpdate            = [datetime] "10/16/2024"
 $Script:ReleaseDate = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($Null -eq $HTML)
@@ -40780,7 +40780,6 @@ Function ProcessScriptSetup
 			$CVADSiteVersionReal = "Unknown"
 			Switch ($CVADSiteVersion)
 			{
-				"7.43"	{$CVADSiteVersionReal = "CVAD 2409"; Break}
 				"7.42"	{$CVADSiteVersionReal = "CVAD 2407"; Break}
 				"7.41"	{$CVADSiteVersionReal = "CVAD 2402"; Break}
 				"7.40"	{$CVADSiteVersionReal = "CVAD 2311"; Break}
@@ -41002,7 +41001,6 @@ Script cannot continue
 	$Script:CVADSiteVersionReal = "Unknown"
 	Switch ($Script:CVADSiteVersion)
 	{
-		"7.43"	{$Script:CVADSiteVersionReal = "CVAD 2409"; Break}
 		"7.42"	{$Script:CVADSiteVersionReal = "CVAD 2407"; Break}
 		"7.41"	{$Script:CVADSiteVersionReal = "CVAD 2402"; Break}
 		"7.40"	{$Script:CVADSiteVersionReal = "CVAD 2311"; Break}
@@ -42232,8 +42230,8 @@ ProcessScriptEnd
 # SIG # Begin signature block
 # MIItSAYJKoZIhvcNAQcCoIItOTCCLTUCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUUFo7DjUiFaX5dKNjIMXoAVVD
-# kp+ggiaoMIIFjTCCBHWgAwIBAgIQDpsYjvnQLefv21DiCEAYWjANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUuFurKo0N0z2/KvqAbn/GDMs1
+# 32+ggiaoMIIFjTCCBHWgAwIBAgIQDpsYjvnQLefv21DiCEAYWjANBgkqhkiG9w0B
 # AQwFADBlMQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYD
 # VQQLExB3d3cuZGlnaWNlcnQuY29tMSQwIgYDVQQDExtEaWdpQ2VydCBBc3N1cmVk
 # IElEIFJvb3QgQ0EwHhcNMjIwODAxMDAwMDAwWhcNMzExMTA5MjM1OTU5WjBiMQsw
@@ -42443,33 +42441,33 @@ ProcessScriptEnd
 # VQQKEw5EaWdpQ2VydCwgSW5jLjFBMD8GA1UEAxM4RGlnaUNlcnQgVHJ1c3RlZCBH
 # NCBDb2RlIFNpZ25pbmcgUlNBNDA5NiBTSEEzODQgMjAyMSBDQTECEAts37ZngQ4q
 # 58taEbodSXAwCQYFKw4DAhoFAKBAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEE
-# MCMGCSqGSIb3DQEJBDEWBBQ57oiciP4OCzDWhqeyzWEUctWzQDANBgkqhkiG9w0B
-# AQEFAASCAgDJifQwfehjdlbN+9QiJSFpxOjdXXcEyxHZe9MkyOhmFwUS4hfVMJeH
-# LODSxnNgKoWl2e08n43tvOYE+V79u3rS6hgtDzkZpq0mruSP3dbaSNutyx82raNN
-# 9XTU/K64tIUJaicTMForgsh276JqIke6AU1GG1vXwoHihsrLGjUyTtJKZV2PtV/2
-# CMnVZzve9K/PVYiraEWJ7Y08IiIWsQLzuBO4WKb7ItHpxJHZFSDyg8keR9hGDiVD
-# HimG9xvjnimp2QO3zIl7NbjVjYmRkA9VpkO+tSNe1nVDz38mX34QnvhXOXssx4WE
-# Zj+FB+4crmCuj2/QNIJPuc5HzLn2iJ5CeHiV1nLwHd5W+HBiVVJ6p1lcZm73r0x+
-# bZdrNnRVWqhK+yG4I331nKTODtJ8rAhcUEz6v3x9hnE84hGSRFxEhj7Uhj32S3b2
-# Cem/ky0gFVz7mXO30vnWtYHG9gUYDZp5LR/4/Z4C65l05f/W1DByo1Yx+k6xpmii
-# motariQrNo2QCFO0rwL30tfKRohOoz7gmOO9Pl510Wou1ImBBkKxvlJsKX1F5u+j
-# fX4NzRmewkllpTMqfJ6bKQdTRHddiyMGATPEU2Wzd1F9dhNQGZg4h8RTHY64Grxi
-# oSLGbdL4qMJQGe5VukCNEeXk9VJyluFkSDX+roq1hFMlyjg26C6wwaGCAyAwggMc
+# MCMGCSqGSIb3DQEJBDEWBBQNZfntTpiuz18OkWJH4CuUs1LtQDANBgkqhkiG9w0B
+# AQEFAASCAgBhFCM3FSZiFWH5IJ9hmwWC6W/Rc7PBYi0NsCQrS/hA5kJMtX5fj8h4
+# disu9IQzKH8G7fvUIDShqENx1XDRxy8kWW5lFmgGuPKWpDT0Auh2b7RQKyCS1wWZ
+# gbpQqRJxi47wqLczabZPk8ljcH+1+TrKZARWTxuxrHXLUD1IE2A1lOcBI2OQtmpS
+# 6PdsqWPGxLGzdDaeXjzA4tc3DTHIaD935UXrLSaneBfdWDAa7ybvSjzmoBTw57Ye
+# tkBsJ7/i2bGbWbnatNgBcSvOIBLDhoLKdPWD/z46/xWnLGqpjD9stR76ev1M/pAD
+# f22MIlYX5puy3nzzJce0OH35M5iQ6DErU495dC9z1NOxUHm3rQpEMXeepNHRMi8J
+# UOexS3Rp4d5S3bblHhLM3hUdbWdcllhNWnA4q/AaUKmGEuoNPQQsOyYoYKavM/sh
+# d22Thqz/F6Ut/dgPuTOvVAB5WMRynsf2lborsCPZ/o6y7TDpObJMrQEGCRz2A5z3
+# fYg510yinw7PqMsPD+oL9GpFuvPpmxL6LRT1GXa8a0WXUMZSdQ431Mrf/amK06Pm
+# 4DHqyqp+oJQmv50x1G9cyrMAq72okPDopYtnm5sAhwjiwBzF7t3lhs6G74llOhwg
+# FVcONUOvdhUV9HN9K3JM31pOGx8r6yk1Icd+GflfnBuJRanekVdDa6GCAyAwggMc
 # BgkqhkiG9w0BCQYxggMNMIIDCQIBATB3MGMxCzAJBgNVBAYTAlVTMRcwFQYDVQQK
 # Ew5EaWdpQ2VydCwgSW5jLjE7MDkGA1UEAxMyRGlnaUNlcnQgVHJ1c3RlZCBHNCBS
 # U0E0MDk2IFNIQTI1NiBUaW1lU3RhbXBpbmcgQ0ECEAuuZrxaun+Vh8b56QTjMwQw
 # DQYJYIZIAWUDBAIBBQCgaTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqG
-# SIb3DQEJBTEPFw0yNDEwMDcyMTA0NDlaMC8GCSqGSIb3DQEJBDEiBCChwU5tso/C
-# FRDO2WF2yzZNil1aBsRI2Yd3+Z4Gc6FvnzANBgkqhkiG9w0BAQEFAASCAgCzzqtD
-# latB96n4zMZAQXl2kTRDPmxSPyK/v/fmfq19jnBJmS1n7b3X3mZI4qOYIlPtvRqb
-# LLv5JhBk+XzG+EMi+A/y2d2XMqRkuXRK7YN01mj5MjM2jG0u4s9DIYX7KVhJTlvy
-# RWrmrYq3UELO0Lbe7bC4uSSDc4Sb1hwRU/I1cNsq0HgzSPqjkVtzDk86hODi5oBw
-# AZaHdhvfMMExo4zJd8Bw2ZgEAUCHuO9BZK4+Ai5Gb9HTaSfer43LyuUH0bbrqt79
-# DIcI8IJ3C8KAwPrfn8gvnqIt1cs3DTiwaPmDbO6kuvC60K9GYawyg4KH2ClIl0Ag
-# Bg+VnwAf1/8QgzXEaNOLx+KOsrYvjXRPFawcTl2g2SkDf2Ohm44bpx074/JCTysz
-# SMMFbNo2LT8px/KUOLFWNPq04IC+OJABo8TzYPdLkLC7pRLqGwVUhFBWQrTIWGg2
-# vzfl/bF5zmGf1V8E6IWWLK0M/HsxBLdQfo44wMRC32cia3zrdaMvAjm4Ul+B+64J
-# mhwr/nPMBb9gCVwYKSxJJ/v5ZgWA/f/GPvEpDdH7kuObUjQEOOKhjKKdFy2zDoia
-# 9yv5oH3yGEkE91kogaggX3dCI5VHxVKl3r81DUb1lMg8C0OTdYfv0T4lARxru5el
-# EI4BCjiVwghfDwL9qsxMiQOemCc6KglCZeUMwA==
+# SIb3DQEJBTEPFw0yNDEwMTYxODU2MTRaMC8GCSqGSIb3DQEJBDEiBCBFN/12dN6R
+# 7fZw0+tOWcBo6BTT6q42AFoQWLvnsDECwzANBgkqhkiG9w0BAQEFAASCAgCveo2n
+# 24lDt26hSvaPLXzETy4Jjl2CsEJ7nOZ6ggor5ffEY7u70kGcf/yc7u/BxHRnWIZB
+# DTIy+TTcjTzZCYTh2jvcf6oEQEZyMsamRxxyVjC3H2/Qa0Ie/vVmkulLHXzPRTAT
+# 24QZHjaDMiL1FF1JHk4VKOhKSvoacL3P2tzuIx+Ug5f3vFFVBC2MByodrO5mhRe6
+# dnDXUFPoIriZNXGjkLcRX3Gqp+k/kkoM6Xl8yBCC0oyaznEYnPFYvPkK3HFMgDsc
+# 5/DY/DSlrlokZMwqwkOYeHJ22mtGOMCwQI/ZmNeh5IbczLfz85ppwfkl+dQkn9rl
+# FaRX+A0dSnnh72TdAXJSu7g72JXm6fQ+KUXn6N/7ebJdsb3Q4yMDi50tX0jBiLKl
+# sUFH/wTHAMjMmzKZpurWQ2G0v86LcCRZ06zTCk5eme5xoTRptgOWwDcfSZaq1581
+# OCR86Qwagchmlx4tSW0GM7Xzz/DfqxeKQk2UxgwqRUhlG2Oh4aem1v9TFRjUA3R8
+# T8rJKacc4ltnISoO171XqCigEAzy+5//AYEbGFs2UcsISOwaQCEDN6VzdC4BbnaC
+# V4bZRC8awVf9WE5gty8Aj8OWo8maUnPJZahNYxUyYeyAUeXgAawXAxCQOvVYhe1x
+# d/bIUyfLUo3UdwBGhjXKAFOQ8Nqz18RTh79uxQ==
 # SIG # End signature block
