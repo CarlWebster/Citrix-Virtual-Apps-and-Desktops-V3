@@ -1052,9 +1052,9 @@
 	This script creates a Word, PDF, plain text, or HTML document.
 .NOTES
 	NAME: CVAD_Inventory_V3.ps1
-	VERSION: 3.43 Webster's Last Update
+	VERSION: 3.43.001 Webster's Last Update
 	AUTHOR: Carl Webster
-	LASTEDIT: October 16, 2024
+	LASTEDIT: July 22, 2025
 #>
 
 #endregion
@@ -1246,6 +1246,10 @@ Param(
 #started updating for CVAD version 2006 on August 10, 2020
 
 # This script is based on the 2.36 script
+#
+#Version 3.43.001 22-Jul-2025
+#	Added CVAD 2411 (7.43), 2503 (7.44), and 2507 (7.45) to the version checks
+#	Nothing else was added or updated
 #
 #Version 3.43 16-Oct-2024 Webster's Last Update
 #	Added Broker Registry Keys:
@@ -40780,6 +40784,9 @@ Function ProcessScriptSetup
 			$CVADSiteVersionReal = "Unknown"
 			Switch ($CVADSiteVersion)
 			{
+				"7.45"	{$CVADSiteVersionReal = "CVAD 2507"; Break}
+				"7.44"	{$CVADSiteVersionReal = "CVAD 2503"; Break}
+				"7.43"	{$CVADSiteVersionReal = "CVAD 2411"; Break}
 				"7.42"	{$CVADSiteVersionReal = "CVAD 2407"; Break}
 				"7.41"	{$CVADSiteVersionReal = "CVAD 2402"; Break}
 				"7.40"	{$CVADSiteVersionReal = "CVAD 2311"; Break}
@@ -41001,6 +41008,9 @@ Script cannot continue
 	$Script:CVADSiteVersionReal = "Unknown"
 	Switch ($Script:CVADSiteVersion)
 	{
+		"7.45"	{$Script:CVADSiteVersionReal = "CVAD 2507"; Break}
+		"7.44"	{$Script:CVADSiteVersionReal = "CVAD 2503"; Break}
+		"7.43"	{$Script:CVADSiteVersionReal = "CVAD 2411"; Break}
 		"7.42"	{$Script:CVADSiteVersionReal = "CVAD 2407"; Break}
 		"7.41"	{$Script:CVADSiteVersionReal = "CVAD 2402"; Break}
 		"7.40"	{$Script:CVADSiteVersionReal = "CVAD 2311"; Break}
