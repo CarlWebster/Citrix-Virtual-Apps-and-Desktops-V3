@@ -6,6 +6,24 @@
 
 # This script is based on the 2.36 script
 
+#Version 3.43.002 30-Jul-2025
+#	In Function GetRolePermissions:
+#		I missed along the way that the "App-V" section was renamed to "Application Packages" prior to CVAD 2308
+#		Added new permissions
+#			AppLib_RemoveAppVServer (2411)
+#			Director_AlertWebhookProfile_Edit (2411)
+#			Director_BulkActions_Edit (2503)
+#			Director_EndpointMetrics_Edit (2411)
+#			Director_InfrastructureMonitor_Edit (2411)
+#			Director_ProbeSummaryView (2503)
+#			Director_SecurePrivateAccess (2503)
+#			SkylightBroker (2503)
+#			Director_UCaaS_Connections_Manage (2507)
+#			Director_UCaaS_RealTimeCommunications (2507)
+#			Hosts_DetectOrphanedResources (2507)
+#			Monitor_UCaaS_Connections_Manage (2507)
+#			Monitor_UCaaS_Connections_Read (2507)
+
 #Version 3.43.001 22-Jul-2025
 #	Added CVAD 2411 (7.43), 2503 (7.44), and 2507 (7.45) to the version checks
 #	Nothing else was added or updated
