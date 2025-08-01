@@ -6,6 +6,141 @@
 
 # This script is based on the 2.36 script
 
+#Version 3.43.003 1-Aug-2025
+#	Added Broker Registry Keys (Thanks to CG at Citrix for providing this information):
+#		HKLM:\Software\Policies\Citrix\DesktopServer\CheckExpiredEntitlementPeriodHours (2503)
+#			Type: int
+#			Default: 12
+#			Info: Hours Minimum=1 Maximum=24
+#			Summary: The time between checks in hours for CVAD licenses that expired.
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\CheckExpiredLicensesPeriodHours (2411)
+#			Type: int
+#			Default: 24
+#			Info: Hours Minimum=1 Maximum=24
+#			Summary: The time between checks in hours for CVAD licenses that expired in the past 30 days.
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\CheckNFRLicensesPeriodHours (2411)
+#			Type: int
+#			Default: 24
+#			Info: Hours Minimum=1 Maximum=24
+#			Summary: The time between checks in hours for NFR licenses.
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\IgnoreUnexpectedAgentShutdown (2503)
+#			Type: bool
+#			Default: true
+#			Info: 
+#			Summary: When set, indicates that unexpected AgentShutdown notifications should be treated in a 
+#					 similar way to deregistrations caused by temporary loss of connectivity, rather than 
+#					 those preceding a shutdown of the VDA itself.
+#
+#					 Unexpected shutdowns are those that do not seem to result from an immediately preceding 
+#					 shutdown request from the Broker service. Where this occurs, session data is retained 
+#					 pending an expected reregistration without the VDA having been shutdown between 
+#					 deregistration and reregistration.
+#
+#					 This setting does not apply to VDAs currently marked as 'will shutdown after use'.
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\MaxOpEventsToPurge (2411)
+#			Type: int
+#			Default: 7000
+#			Info: Minimum=1000
+#			Summary: Maximum number of already sent operational events to purge from the journal in a single 
+#					 database delete operation. The default value allows a maximum of ~20 million events per 
+#					 day to be deleted.
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\VDASignedKeyCacheValidity (2503)
+#			Type: int
+#			Default: 4
+#			Info: Hours
+#			Summary: Number of hours cached VDA signed key is valid for.
+#
+#		HKLM:\Software\Citrix\Broker\Service\State\DatabaseConnection\CancelAutoMaintenanceMode (2503)
+#			Type: bool
+#			Default: false
+#			Info: 
+#			Summary: When this setting is True, if a VDA has been automatically placed into maintenance mode 
+#					 following multiple failed registrations (see MaxFailedRegistrationsAllowed) but later 
+#					 registers successfully, the VDA is automatically removed from maintenance mode.
+#
+#					 When this setting is False, or the VDA was placed into maintenance mode by the admin, 
+#					 then the VDA remains in maintenance mode even if it later registers successfully.
+#
+#		HKLM:\Software\Citrix\DesktopServer\LHC\HigherRankedPeerElectedCheckIntervalMinutes (2411)
+#			Type: int
+#			Default: 30
+#			Info: Minimum=5
+#			Summary: The number of minutes before checking for whether a higher-ranked peer has been elected.
+#
+#		HKLM:\Software\Citrix\DesktopServer\LHC\TrustServiceKeySyncIntervalSecs (2503)
+#			Type: int
+#			Default: 20
+#			Info: Seconds Minimum=60
+#			Summary: The interval at which LHC would check with Trust service for updated service keys.
+#
+#		HKLM:\Software\Citrix\DesktopServer\LHC\WebSocketEnabledLhc (2503)
+#			Type: bool
+#			Default: false
+#			Info: 
+#			Summary: Toggle to enable WebSocket VDA support on the LHC broker. When enabled: (1) during 
+#					 normal operations, the LHC broker will sync the VDA service keys from FMA Trust, 
+#					 and (2) during LHC mode, VDA communications will be authenticated by retrieving the 
+#					 VDA service keys from the LHC broker instead of FMA Trust.
+#
+#		HKLM:\Software\Citrix\Broker\Service\State\LHC\HasHigherRankedPeerBeenElected (2411)
+#			Type: bool
+#			Default: false
+#			Info: 
+#			Summary: Indicates whether a higher-ranked peer exists and has been elected at some point 
+#					 during the current election process.
+#
+#		HKLM:\Software\Citrix\StaService\Service\State\STA\StandaloneStaEnabled (2503)
+#			Type: bool
+#			Default: false
+#			Info: 
+#			Summary: Indicates whether standalone STA is enabled on the machine.
+#
+#		HKLM:\Software\Citrix\Broker\Service\State\XmlServiceKeyAuth\PowerStateCacheEntryExpiryTimeSecs (2503)
+#			Type: int
+#			Default: 1800
+#			Info: Seconds Minimum=60
+#			Summary: Time after which a power state cache entry is expired.
+#
+#		HKLM:\Software\Citrix\Broker\Service\State\XmlServiceKeyAuth\PowerStateCacheEnumerationLifetimeSecs (2503)
+#			Type: int
+#			Default: 300
+#			Info: Seconds
+#			Summary: The maximum time for which resource enumeration results used for access to the 
+#					 power state cache are retained and reused before a new NFuse request triggers 
+#					 a new resource enumeration.
+#
+#		HKLM:\Software\Citrix\Broker\Service\State\XmlServiceKeyAuth\PowerStateCachePollingIntervalSecs (2411)
+#			Type: int
+#			Default: 300
+#			Info: Seconds Minimum=60
+#			Summary: Time after which the power state cache is refreshed from the database.
+#
+#		HKLM:\Software\Citrix\Broker\Service\State\XmlServiceKeyAuth\UniqueDeviceIdOptions (2411)
+#			Type: int
+#			Default: 0
+#			Info: Minimum=0 Maximum=3
+#			Summary: Specifies options to use when trying to ensure that the client device ID 
+#					 received from WSP/SF is unique. This setting should not be changed from its 
+#					 default value except to workaround specific issues observed in a particular site.
+#
+#					 The value is a bit mask where the bits have the following meanings:
+#
+#					 Bit 0: When set, causes the client device ID to be unconditionally qualified by the 
+#					 client's IP address. This can rectify session reconnection problems caused by non-unique 
+#					 device IDs, but can conversely cause session reconnection problems if network 
+#					 infrastructure such as firewalls or load balancers causes the IP address of a client 
+#					 device to change over time even when actively connected to a VDA.
+#
+#					 Bit 1: When set, if no device ID is received or its value is known to be non-unique, 
+#					 do not try substituting the client name for the device ID, but instead use the client 
+#					 IP address. This may avoid problems caused where multiple devices are reporting the 
+#					 same non-unique client name.
+
 #Version 3.43.002 30-Jul-2025
 #	In Function GetRolePermissions:
 #		I missed along the way that the "App-V" section was renamed to "Application Packages" prior to CVAD 2308
