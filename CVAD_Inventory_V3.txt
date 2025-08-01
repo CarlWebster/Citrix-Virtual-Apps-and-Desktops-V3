@@ -1052,9 +1052,9 @@
 	This script creates a Word, PDF, plain text, or HTML document.
 .NOTES
 	NAME: CVAD_Inventory_V3.ps1
-	VERSION: 3.43.002 Webster's Last Update
+	VERSION: 3.43.003
 	AUTHOR: Carl Webster
-	LASTEDIT: July 30, 2025
+	LASTEDIT: August 1, 2025
 #>
 
 #endregion
@@ -1246,6 +1246,141 @@ Param(
 #started updating for CVAD version 2006 on August 10, 2020
 
 # This script is based on the 2.36 script
+#
+#Version 3.43.003 1-Aug-2025
+#	Added Broker Registry Keys (Thanks to CG at Citrix for providing this information):
+#		HKLM:\Software\Policies\Citrix\DesktopServer\CheckExpiredEntitlementPeriodHours (2503)
+#			Type: int
+#			Default: 12
+#			Info: Hours Minimum=1 Maximum=24
+#			Summary: The time between checks in hours for CVAD licenses that expired.
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\CheckExpiredLicensesPeriodHours (2411)
+#			Type: int
+#			Default: 24
+#			Info: Hours Minimum=1 Maximum=24
+#			Summary: The time between checks in hours for CVAD licenses that expired in the past 30 days.
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\CheckNFRLicensesPeriodHours (2411)
+#			Type: int
+#			Default: 24
+#			Info: Hours Minimum=1 Maximum=24
+#			Summary: The time between checks in hours for NFR licenses.
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\IgnoreUnexpectedAgentShutdown (2503)
+#			Type: bool
+#			Default: true
+#			Info: 
+#			Summary: When set, indicates that unexpected AgentShutdown notifications should be treated in a 
+#					 similar way to deregistrations caused by temporary loss of connectivity, rather than 
+#					 those preceding a shutdown of the VDA itself.
+#
+#					 Unexpected shutdowns are those that do not seem to result from an immediately preceding 
+#					 shutdown request from the Broker service. Where this occurs, session data is retained 
+#					 pending an expected reregistration without the VDA having been shutdown between 
+#					 deregistration and reregistration.
+#
+#					 This setting does not apply to VDAs currently marked as 'will shutdown after use'.
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\MaxOpEventsToPurge (2411)
+#			Type: int
+#			Default: 7000
+#			Info: Minimum=1000
+#			Summary: Maximum number of already sent operational events to purge from the journal in a single 
+#					 database delete operation. The default value allows a maximum of ~20 million events per 
+#					 day to be deleted.
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\VDASignedKeyCacheValidity (2503)
+#			Type: int
+#			Default: 4
+#			Info: Hours
+#			Summary: Number of hours cached VDA signed key is valid for.
+#
+#		HKLM:\Software\Citrix\Broker\Service\State\DatabaseConnection\CancelAutoMaintenanceMode (2503)
+#			Type: bool
+#			Default: false
+#			Info: 
+#			Summary: When this setting is True, if a VDA has been automatically placed into maintenance mode 
+#					 following multiple failed registrations (see MaxFailedRegistrationsAllowed) but later 
+#					 registers successfully, the VDA is automatically removed from maintenance mode.
+#
+#					 When this setting is False, or the VDA was placed into maintenance mode by the admin, 
+#					 then the VDA remains in maintenance mode even if it later registers successfully.
+#
+#		HKLM:\Software\Citrix\DesktopServer\LHC\HigherRankedPeerElectedCheckIntervalMinutes (2411)
+#			Type: int
+#			Default: 30
+#			Info: Minimum=5
+#			Summary: The number of minutes before checking for whether a higher-ranked peer has been elected.
+#
+#		HKLM:\Software\Citrix\DesktopServer\LHC\TrustServiceKeySyncIntervalSecs (2503)
+#			Type: int
+#			Default: 20
+#			Info: Seconds Minimum=60
+#			Summary: The interval at which LHC would check with Trust service for updated service keys.
+#
+#		HKLM:\Software\Citrix\DesktopServer\LHC\WebSocketEnabledLhc (2503)
+#			Type: bool
+#			Default: false
+#			Info: 
+#			Summary: Toggle to enable WebSocket VDA support on the LHC broker. When enabled: (1) during 
+#					 normal operations, the LHC broker will sync the VDA service keys from FMA Trust, 
+#					 and (2) during LHC mode, VDA communications will be authenticated by retrieving the 
+#					 VDA service keys from the LHC broker instead of FMA Trust.
+#
+#		HKLM:\Software\Citrix\Broker\Service\State\LHC\HasHigherRankedPeerBeenElected (2411)
+#			Type: bool
+#			Default: false
+#			Info: 
+#			Summary: Indicates whether a higher-ranked peer exists and has been elected at some point 
+#					 during the current election process.
+#
+#		HKLM:\Software\Citrix\StaService\Service\State\STA\StandaloneStaEnabled (2503)
+#			Type: bool
+#			Default: false
+#			Info: 
+#			Summary: Indicates whether standalone STA is enabled on the machine.
+#
+#		HKLM:\Software\Citrix\Broker\Service\State\XmlServiceKeyAuth\PowerStateCacheEntryExpiryTimeSecs (2503)
+#			Type: int
+#			Default: 1800
+#			Info: Seconds Minimum=60
+#			Summary: Time after which a power state cache entry is expired.
+#
+#		HKLM:\Software\Citrix\Broker\Service\State\XmlServiceKeyAuth\PowerStateCacheEnumerationLifetimeSecs (2503)
+#			Type: int
+#			Default: 300
+#			Info: Seconds
+#			Summary: The maximum time for which resource enumeration results used for access to the 
+#					 power state cache are retained and reused before a new NFuse request triggers 
+#					 a new resource enumeration.
+#
+#		HKLM:\Software\Citrix\Broker\Service\State\XmlServiceKeyAuth\PowerStateCachePollingIntervalSecs (2411)
+#			Type: int
+#			Default: 300
+#			Info: Seconds Minimum=60
+#			Summary: Time after which the power state cache is refreshed from the database.
+#
+#		HKLM:\Software\Citrix\Broker\Service\State\XmlServiceKeyAuth\UniqueDeviceIdOptions (2411)
+#			Type: int
+#			Default: 0
+#			Info: Minimum=0 Maximum=3
+#			Summary: Specifies options to use when trying to ensure that the client device ID 
+#					 received from WSP/SF is unique. This setting should not be changed from its 
+#					 default value except to workaround specific issues observed in a particular site.
+#
+#					 The value is a bit mask where the bits have the following meanings:
+#
+#					 Bit 0: When set, causes the client device ID to be unconditionally qualified by the 
+#					 client's IP address. This can rectify session reconnection problems caused by non-unique 
+#					 device IDs, but can conversely cause session reconnection problems if network 
+#					 infrastructure such as firewalls or load balancers causes the IP address of a client 
+#					 device to change over time even when actively connected to a VDA.
+#
+#					 Bit 1: When set, if no device ID is received or its value is known to be non-unique, 
+#					 do not try substituting the client name for the device ID, but instead use the client 
+#					 IP address. This may avoid problems caused where multiple devices are reporting the 
+#					 same non-unique client name.
 #
 #Version 3.43.002 30-Jul-2025
 #	In Function GetRolePermissions:
@@ -37426,7 +37561,10 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "AutoTagRuleIdleIntervalsTimeSecs" $ComputerName #Added in 3.43
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "BrokerStartupRetryPeriodLimitMs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "BrokerStartupRetryPeriodStartMaxMs" $ComputerName
+	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "CheckExpiredEntitlementPeriodHours" $ComputerName #added in 3.43.003
+	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "CheckExpiredLicensesPeriodHours" $ComputerName #added in 3.43.003
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "CheckLicensesWithExpiredSwmPeriodHours" $ComputerName #added in 3.42
+	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "CheckNFRLicensesPeriodHours" $ComputerName #added in 3.43.003
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "DisableActiveSessionReconnect" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "DisablePerformanceCounters" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "DisconnectOperationTimeOutSecs" $ComputerName #Added in 3.29
@@ -37437,6 +37575,7 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "GetEntitlementTypePeriodHours" $ComputerName #Added in 3.40
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "HeartbeatDistributionWidthSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "HeartbeatPeriodMs" $ComputerName
+	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "IgnoreUnexpectedAgentShutdown" $ComputerName #added in 3.43.003
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "LaunchCheckFaultStates" $ComputerName #added in 3.31
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "LaunchDelayedRetryPeriodSec" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "LaunchLicenseCheckPeriodSec" $ComputerName
@@ -37453,6 +37592,7 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "MaxDisconnectWaitTimeSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "MaxHeartbeatIntervalMs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "MaxLogoffWaitTimeSecs" $ComputerName
+	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "MaxOpEventsToPurge" $ComputerName #added in 3.43.003
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "MaxPendingSessions" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "MaxRegistrationCompletionTimeSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "MaxSessionEstablishmentTimeSecs" $ComputerName
@@ -37490,6 +37630,7 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "UserDrivenShutDownTimeoutMs" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "UserDrivenSuspendTimeoutMs" $ComputerName #added in 3.42
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "UserNotify2SigningKeyLifetimeHours" $ComputerName #Added in 3.29
+	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "VDASignedKeyCacheValidity" $ComputerName #added in 3.43.003
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "WIRetryIntervalDuringRegistrationStateChangeSec" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "WIRetryIntervalDuringSessionStateChangeSec" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "WorkerSettingsAssessmentMinutes" $ComputerName
@@ -37502,7 +37643,10 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "AutoTagRuleIdleIntervalsTimeSecs" $ComputerName #Added in 3.43
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "BrokerStartupRetryPeriodLimitMs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "BrokerStartupRetryPeriodStartMaxMs" $ComputerName
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "CheckExpiredEntitlementPeriodHours" $ComputerName #added in 3.43.003
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "CheckExpiredLicensesPeriodHours" $ComputerName #added in 3.43.003
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "CheckLicensesWithExpiredSwmPeriodHours" $ComputerName #added in 3.42
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "CheckNFRLicensesPeriodHours" $ComputerName #added in 3.43.003
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "DisableActiveSessionReconnect" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "DisablePerformanceCounters" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "DisconnectOperationTimeOutSecs" $ComputerName #Added in 3.29
@@ -37513,6 +37657,7 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "GetEntitlementTypePeriodHours" $ComputerName #Added in 3.40
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "HeartbeatDistributionWidthSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "HeartbeatPeriodMs" $ComputerName
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "IgnoreUnexpectedAgentShutdown" $ComputerName #added in 3.43.003
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "LaunchCheckFaultStates" $ComputerName #added in 3.31
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "LaunchDelayedRetryPeriodSec" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "LaunchLicenseCheckPeriodSec" $ComputerName
@@ -37529,6 +37674,7 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "MaxDisconnectWaitTimeSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "MaxHeartbeatIntervalMs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "MaxLogoffWaitTimeSecs" $ComputerName
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "MaxOpEventsToPurge" $ComputerName #added in 3.43.003
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "MaxPendingSessions" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "MaxRegistrationCompletionTimeSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "MaxSessionEstablishmentTimeSecs" $ComputerName
@@ -37566,6 +37712,7 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "UserDrivenShutDownTimeoutMs" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "UserDrivenSuspendTimeoutMs" $ComputerName #added in 3.42
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "UserNotify2SigningKeyLifetimeHours" $ComputerName #Added in 3.29
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "VDASignedKeyCacheValidity" $ComputerName #added in 3.43.003
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "WIRetryIntervalDuringRegistrationStateChangeSec" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "WIRetryIntervalDuringSessionStateChangeSec" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "WorkerSettingsAssessmentMinutes" $ComputerName
@@ -37601,13 +37748,14 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\DataStore\Connections\Controller" "SqlPassword" $ComputerName #added in 3.42
 	
 	#DBConnectionState
+	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\DatabaseConnection" "CancelAutoMaintenanceMode" $ComputerName #added in 3.43.003
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\DatabaseConnection" "State" $ComputerName
 	
 	#HostingManagementSettings
 	<#
 		comment out these lines:
 		1. This is the wrong registry location
-		2. There is no Policies for these settings
+		2. There are no Policies for these settings
 		Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "AutoscalePowerActionQueuingPeriodSeconds" $ComputerName #Added in 3.29
 		Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "BulkPowerActionBusyBufferSecs" $ComputerName #Added in 3.29
 		Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "BulkPowerCheckingCoolOffActivePowerActionsSecs" $ComputerName
@@ -37706,6 +37854,7 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\LHC" "ElectionTimeBetweenStdev" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\LHC" "ElectionWcfSendTimeoutMS" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\LHC" "ExportConfigurationChunkSize" $ComputerName
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\LHC" "HigherRankedPeerElectedCheckIntervalMinutes" $ComputerName #Added in 3.43.003
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\LHC" "HypervisorConnectionSyncIntervalSeconds" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\LHC" "InitialOutageModeDetectionPeriod" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\LHC" "IsFirstConfigSyncSuccess" $ComputerName #Added in 3.40
@@ -37720,12 +37869,15 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\LHC" "StaRecentActivityTimespanMinutes" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\LHC" "StoreFrontRecentActivityTimespanMinutes" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\LHC" "TimeToWaitForAllPeerOutageStateInfoSeconds" $ComputerName #Added in 3.29
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\LHC" "TrustServiceKeySyncIntervalSecs" $ComputerName #Added in 3.43.003
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\LHC" "UnelectedUnregisterBatchSize" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\LHC" "UnelectedUnregisterPauseMS" $ComputerName
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\LHC" "WebSocketEnabledLhc" $ComputerName #Added in 3.43.003
 	
 	#LhcState
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "EarliestOutageModeEndTime" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "Enabled" $ComputerName
+	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "HasHigherRankedPeerBeenElected" $ComputerName #added in 3.43.003
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "IsElected" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "IsElectedLastUpdatedAt" $ComputerName #Added in 3.42
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "IsOnPremStoreFrontPresent" $ComputerName #Added in 3.29
@@ -37824,10 +37976,17 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\SiteServices" "LeaseRefreshPollSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\SiteServices" "MaxControllerInactivitySecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\SiteServices" "MaxShutdownTimeSecs" $ComputerName
+	
+	#StaState (added in CVAD 2503 and V3.43.003)
+	Get-RegKeyToObject "HKLM:\Software\Citrix\StaService\Service\State\STA" "StandaloneStaEnabled" $ComputerName #Added in 3.43.003
 
 	#XmlServiceKeyAuthSettings
+	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\XmlServiceKeyAuth" "PowerStateCacheEntryExpiryTimeSecs" $ComputerName #Added in 3.43.003
+	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\XmlServiceKeyAuth" "PowerStateCacheEnumerationLifetimeSecs" $ComputerName #Added in 3.43.003
+	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\XmlServiceKeyAuth" "PowerStateCachePollingIntervalSecs" $ComputerName #Added in 3.43.003
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\XmlServiceKeyAuth" "RequireXmlServiceKeyForNFuse" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\XmlServiceKeyAuth" "RequireXmlServiceKeyForSta" $ComputerName #Added in 3.29
+	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\XmlServiceKeyAuth" "UniqueDeviceIdOptions" $ComputerName #Added in 3.43.003
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\XmlServiceKeyAuth" "XmlServiceKey1" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\XmlServiceKeyAuth" "XmlServiceKey2" $ComputerName #Added in 3.29
 
