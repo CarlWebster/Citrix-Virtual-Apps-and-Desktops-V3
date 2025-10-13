@@ -22,13 +22,13 @@
 	This script supports versions of CVAD starting with 2006.
 	
 	If you are running XA/XD 7.0 through 7.7, please use: 
-	https://carlwebster.com/downloads/download-info/xenappxendesktop-7-x-documentation-script/
+	https://github.com/CarlWebster/Citrix-XenApp-XenDesktop-7-V1
 
 	If you are running XA/XD 7.8 through CVAD 2006, please use:
-	https://carlwebster.com/downloads/download-info/xenappxendesktop-7-8/
+	https://github.com/CarlWebster/Citrix-XenApp-XenDesktop-7-V2
 
 	If you are running Citrix Cloud, please use:
-	https://carlwebster.com/downloads/download-info/citrix-cloud-citrix-virtual-apps-and-desktops-service/
+	https://github.com/CarlWebster/Citrix-Cloud-Daas-
 	
 	NOTE: The account used to run this script must have at least Read access to the SQL 
 	Server(s) that hold(s) the Citrix Site, Monitoring, and Logging databases.
@@ -631,11 +631,11 @@
 	through 09/30/2025.
 	The computer running the script for the AdminAddress.
 .EXAMPLE
-	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -Logging -StartDate "09/01/2025 10:00:00" 
-	-EndDate "09/01/2025 14:00:00" -MSWord
+	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -Logging -StartDate "09/01/2026 10:00:00" 
+	-EndDate "09/01/2026 14:00:00" -MSWord
 	
 	Creates a Microsoft Word report with Configuration Logging details for the time range 
-	09/01/2025 10:00:00AM through 09/01/2025 02:00:00PM.
+	09/01/2026 10:00:00AM through 09/01/2026 02:00:00PM.
 	
 	Narrowing the report down to seconds does not work. Seconds must be either 00 or 59.
 	
@@ -744,8 +744,8 @@
 	Creates an HTML report.
 	Adds a date time stamp to the end of the file name.
 	The timestamp is in the format of yyyy-MM-dd_HHmm.
-	June 1, 2025, at 6PM is 2025-06-01_1800.
-	The output filename will be CVADSiteName_2025-06-01_1800.docx
+	June 1, 2026, at 6PM is 2026-06-01_1800.
+	The output filename will be CVADSiteName_2026-06-01_1800.docx
 	The computer running the script for the AdminAddress.
 .EXAMPLE
 	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -PDF -AddDateTime
@@ -763,8 +763,8 @@
 
 	Adds a date time stamp to the end of the file name.
 	The timestamp is in the format of yyyy-MM-dd_HHmm.
-	June 1, 2025, at 6PM is 2025-06-01_1800.
-	The output filename will be CVADSiteName_2025-06-01_1800.pdf
+	June 1, 2026, at 6PM is 2026-06-01_1800.
+	The output filename will be CVADSiteName_2026-06-01_1800.pdf
 	The computer running the script for the AdminAddress.
 .EXAMPLE
 	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -Hardware
@@ -1052,9 +1052,9 @@
 	This script creates a Word, PDF, plain text, or HTML document.
 .NOTES
 	NAME: CVAD_Inventory_V3.ps1
-	VERSION: 3.43.003
+	VERSION: 3.43.004
 	AUTHOR: Carl Webster
-	LASTEDIT: August 1, 2025
+	LASTEDIT: October 13, 2025
 #>
 
 #endregion
@@ -1246,6 +1246,74 @@ Param(
 #started updating for CVAD version 2006 on August 10, 2020
 
 # This script is based on the 2.36 script
+#
+#Version 3.43.004 13-Oct-2025
+#	Thanks to Citrix, Ferroque Systems, Guy Leech, Nicholas Cookendorfer, Arnaud Pain, and Prateek Anaud for their help
+#
+#	Added Computer policy
+#		ICA\FIDO2 allowed processes (2503)
+#		ICA\End User Monitoring\Endpoint location data collection (2411)
+#		ICA\End User Monitoring\Endpoint network latency measurement interval (2411)
+#		ICA\Multimedia\Screen recording for UC SDK optimized applications (2503)
+#		uberAgent\Enable uberAgent data collection (2503)
+#		uberAgent\uberAgent configuration archive path (2503)
+#		uberAgent\uberAgent license path (2503)
+#		VDA Data Collection\Multimedia\Multimedia apps data collection for session performance monitoring (2503)
+#		VDA Data Collection\uberAgent\uberAgent data collection for Application monitoring (2411)
+#		Virtual Delivery Agent Settings\Monitoring\Send end user experience data to Monitor service (2507)
+#
+#	Added User policy
+#		ICA\Graphics\Optimized Content Sharing for Teams and other platforms (2411)
+#
+#	In Function GetRolePermissions, 
+#		Updated descriptions for
+#			AppV_DeleteServer
+#			Trust_MultiTenantAccessList
+#			Trust_VdaEnrollment
+#		Removed
+#			SkylightBroker
+#
+#	In Function GetSQLVersion and Function GetDBCompatibilityLevel, add SQL Server 2025
+#
+#	In Function OutputSiteSettings, add data for Always on Tracing (AOT)
+#
+#	In Function OutputControllers
+#		Alphabetize the output
+#		Add code to support the following additions
+#			Is License Activation Service (LAS) aware
+#				LAS expiration time
+#				LAS activation status
+#				LAS connection status
+#			Last licensing server event (and code for the related Enum)
+#			Last licensing server event details
+#			Last licensing server event time
+#			Last start-up time of the Broker service time
+#
+#		Renamed "Last updated" to "Last time Broker updated"
+#
+#	Update Function OutputHosting with the latest hosting connection types and plugin types
+#		Thanks to Nicholas Cookendorfer, Arnaud Pain, and Prateek Anaud for getting this info for me
+#		For CVAD 2507 and DaaS, the values are:
+#	
+#		ConnectionType	DisplayName											PluginFactoryName
+#		AWS				Amazon EC2											AWSMachineManagerFactory
+#		SCVMM			Microsoft® System Center Virtual Machine Manager	MicrosoftPSFactory
+#		VCenter			VMware vSphere®										VmwareFactory
+#		XenServer		XenServer™											XenFactory
+#		Custom			Nutanix AHV											AcropolisFactory
+#		Custom			Nutanix AHV Prism Central							AcropolisHypervisorPCFactory
+#		Custom			Amazon WorkSpaces Core								AmazonWorkSpacesCoreMachineManagerFactory
+#		Custom			Microsoft® Azure™ Arc								AzureArcFactory
+#		Custom			Microsoft® Azure™									AzureRmFactory
+#		Custom			Google Cloud Platform								GcpPluginFactory
+#		Custom			HPE Moonshot										HPMoonshotFactory
+#		Custom			Red Hat OpenShift									OpenShiftPluginFactory
+#		Custom			Remote PC Wake on LAN								VdaWOLMachineManagerFactory
+#		Custom			Windows 365 Cloud PC								W365CloudPCFactory
+#
+#	Updated all references of ShareFile to Dropbox
+#
+#	Updated the help text
 #
 #Version 3.43.003 1-Aug-2025
 #	Added Broker Registry Keys (Thanks to CG at Citrix for providing this information):
@@ -1661,7 +1729,6 @@ Param(
 #			Default: 0
 #			Info: 
 #			Summary: Indicates when this connector was elected leader.
-#
 #
 #	Added Computer policy
 #		ICA\Enhanced domain passthrough for single sign on (2311)
@@ -2643,9 +2710,9 @@ $SaveEAPreference         = $ErrorActionPreference
 $ErrorActionPreference    = 'SilentlyContinue'
 
 #stuff for report footer
-$script:MyVersion   = "3.43 Webster's Last Update"
+$script:MyVersion   = "3.43.004"
 $Script:ScriptName  = "CVAD_Inventory_V3.ps1"
-$tmpdate            = [datetime] "10/16/2024"
+$tmpdate            = [datetime] "10/13/2025"
 $Script:ReleaseDate = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($Null -eq $HTML)
@@ -17980,6 +18047,90 @@ Function ProcessCitrixPolicies
 							OutputPolicySetting $txt $Setting.RemoteCredentialGuard.State 
 						}
 					}
+					If((validStateProp $Setting AllowedFidoProcesses State ) -and ($Setting.AllowedFidoProcesses.State -ne "NotConfigured"))
+					{
+						#added in 2503
+						$txt = "ICA\FIDO2 allowed processes"
+						If(validStateProp $Setting AllowedFidoProcesses Values )
+						{
+							$tmpArray = $Setting.AllowedFidoProcesses.Values
+							$tmp = ""
+							$cnt = 0
+							ForEach($Thing in $TmpArray)
+							{
+								If($Null -eq $Thing)
+								{
+									$Thing = ''
+								}
+								$cnt++
+								$tmp = "$($Thing) "
+								If($cnt -eq 1)
+								{
+									If($MSWord -or $PDF)
+									{
+										$SettingsWordTable += @{
+										Text = $txt;
+										Value = $tmp;
+										}
+									}
+									If($HTML)
+									{
+										$rowdata += @(,(
+										$txt,$htmlbold,
+										$tmp,$htmlwhite))
+									}
+									If($Text)
+									{
+										OutputPolicySetting $txt $tmp
+									}
+								}
+								Else
+								{
+									If($MSWord -or $PDF)
+									{
+										$SettingsWordTable += @{
+										Text = "";
+										Value = $tmp;
+										}
+									}
+									If($HTML)
+									{
+										$rowdata += @(,(
+										"",$htmlbold,
+										$tmp,$htmlwhite))
+									}
+									If($Text)
+									{
+										OutputPolicySetting "`t`t`t`t`t  " $tmp
+									}
+								}
+								$txt = ""
+							}
+							$TmpArray = $Null
+							$tmp = $Null
+						}
+						Else
+						{
+							$tmp = "No FIDO2 allowed processes were found"
+							If($MSWord -or $PDF)
+							{
+								$SettingsWordTable += @{
+								Text = $txt;
+								Value = $tmp;
+								}
+							}
+							If($HTML)
+							{
+								$rowdata += @(,(
+								$txt,$htmlbold,
+								$tmp,$htmlwhite))
+							}
+							If($Text)
+							{
+								OutputPolicySetting $txt $tmp
+							}
+						}
+					}
 					If((validStateProp $Setting AllowFidoRedirection State ) -and ($Setting.AllowFidoRedirection.State -ne "NotConfigured"))
 					{
 						$txt = "ICA\FIDO2 Redirection"
@@ -18107,27 +18258,6 @@ Function ProcessCitrixPolicies
 						}
 						$array = $Null
 						$tmp = $Null
-					}
-					If((validStateProp $Setting AllowWIARedirection State ) -and ($Setting.AllowWIARedirection.State -ne "NotConfigured"))
-					{
-						$txt = "ICA\WIA Redirection"
-						If($MSWord -or $PDF)
-						{
-							$SettingsWordTable += @{
-							Text = $txt;
-							Value = $Setting.AllowWIARedirection.State;
-							}
-						}
-						If($HTML)
-						{
-							$rowdata += @(,(
-							$txt,$htmlbold,
-							$Setting.AllowWIARedirection.State,$htmlwhite))
-						}
-						If($Text)
-						{
-							OutputPolicySetting $txt $Setting.AllowWIARedirection.State 
-						}
 					}
 					If((validStateProp $Setting HDXAdaptiveTransport State ) -and ($Setting.HDXAdaptiveTransport.State -ne "NotConfigured"))
 					{
@@ -18905,6 +19035,27 @@ Function ProcessCitrixPolicies
 							{
 								OutputPolicySetting $txt $tmp
 							}
+						}
+					}
+					If((validStateProp $Setting AllowWIARedirection State ) -and ($Setting.AllowWIARedirection.State -ne "NotConfigured"))
+					{
+						$txt = "ICA\WIA Redirection"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.AllowWIARedirection.State;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.AllowWIARedirection.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.AllowWIARedirection.State 
 						}
 					}
 					
@@ -19982,6 +20133,50 @@ Function ProcessCitrixPolicies
 							OutputPolicySetting $txt $Setting.EndpointMetricsCheckPeriod.Value 
 						}	
 					}
+					If((validStateProp $Setting EndpointLocationCheckEnabled State ) -and ($Setting.EndpointLocationCheckEnabled.State -ne "NotConfigured"))
+					{
+						#added in CVAD2411
+						$txt = "ICA\End User Monitoring\Endpoint location data collection"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.EndpointLocationCheckEnabled.State;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.EndpointLocationCheckEnabled.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.EndpointLocationCheckEnabled.State 
+						}
+					}
+					If((validStateProp $Setting EndpointNetworkLatencyMeasurePeriod State ) -and ($Setting.EndpointNetworkLatencyMeasurePeriod.State -ne "NotConfigured"))
+					{
+						#added in CVAD2411
+						$txt = "ICA\End User Monitoring\Endpoint network latency measurement interval (seconds)"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.EndpointNetworkLatencyMeasurePeriod.Value;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.EndpointNetworkLatencyMeasurePeriod.Value,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.EndpointNetworkLatencyMeasurePeriod.Value 
+						}	
+					}
 					If((validStateProp $Setting IcaRoundTripCalculation State ) -and ($Setting.IcaRoundTripCalculation.State -ne "NotConfigured"))
 					{
 						$txt = "ICA\End User Monitoring\ICA round trip calculation"
@@ -20594,6 +20789,28 @@ Function ProcessCitrixPolicies
 						If($Text)
 						{
 							OutputPolicySetting $txt $Setting.OptimizeFor3dWorkload.State 
+						}
+					}
+					If((validStateProp $Setting AppAndDesktopSharing State ) -and ($Setting.AppAndDesktopSharing.State -ne "NotConfigured"))
+					{
+						#added in CVAD2411
+						$txt = "ICA\Graphics\Optimized Content Sharing for Teams and other platforms"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.AppAndDesktopSharing.State;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.AppAndDesktopSharing.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.AppAndDesktopSharing.State 
 						}
 					}
 					If((validStateProp $Setting ScreenSharing State ) -and ($Setting.ScreenSharing.State -ne "NotConfigured"))
@@ -21507,6 +21724,39 @@ Function ProcessCitrixPolicies
 						{
 							OutputPolicySetting $txt $Setting.MultimediaOptimization.State 
 						}
+					}
+					If((validStateProp $Setting ScreenRecording State ) -and ($Setting.ScreenRecording.State -ne "NotConfigured"))
+					{
+						#addedin 2503
+						$txt = "ICA\Multimedia\Screen recording for UC SDK optimized applications"
+						$tmp = ""
+						Switch ($Setting.ScreenRecording.Value)
+						{
+							"Disabled"				{$tmp = "Disabled"; Break}
+							"BothDisabled"			{$tmp = "None"; Break}
+							"AllowHideRedBorder"	{$tmp = "Add a red border during screen recording"; Break}
+							"AllowUserNotification"	{$tmp = "Notify users that screen recording is in progress"; Break}
+							"BothEnabled"			{$tmp = "Add a red border and notify users that screen recording is in progress"; Break}
+							Default					{$tmp = "Screen recording for UC SDK optimized applications could not be determined: $($Setting.ScreenRecording.Value)"; Break}
+						}
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $tmp;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$tmp,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $tmp 
+						}
+						$tmp = $Null
 					}
 					If((validStateProp $Setting UseGPUForMultimediaOptimization State ) -and ($Setting.UseGPUForMultimediaOptimization.State -ne "NotConfigured"))
 					{
@@ -31511,6 +31761,78 @@ Function ProcessCitrixPolicies
 						}
 					}
 
+					#added in 3.43.004
+					Write-Verbose "$(Get-Date -Format G): `t`t`tuberAgent"
+					If((validStateProp $Setting uberAgentEnabled State ) -and ($Setting.uberAgentEnabled.State -ne "NotConfigured"))
+					{
+						#added in 2503
+						$txt = "uberAgent\Enable uberAgent data collection"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.uberAgentEnabled.State;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.uberAgentEnabled.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.uberAgentEnabled.State
+						}
+					}
+					If((validStateProp $Setting uberAgentConfigArchivePath State ) -and ($Setting.uberAgentConfigArchivePath.State -ne "NotConfigured"))
+					{
+						#added in 2503
+						$txt = "uberAgent\uberAgent configuration archive path"
+						If($MSWord -or $PDF)
+						{
+							$WordTableRowHash = @{
+							Text = $txt;
+							Value = $Setting.uberAgentConfigArchivePath.Value;
+							}
+							$SettingsWordTable += $WordTableRowHash;
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.uberAgentConfigArchivePath.Value,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.uberAgentConfigArchivePath.Value 
+						}
+					}
+					If((validStateProp $Setting uberAgentLicensePath State ) -and ($Setting.uberAgentLicensePath.State -ne "NotConfigured"))
+					{
+						#added in 2503
+						$txt = "uberAgent\uberAgent license path"
+						If($MSWord -or $PDF)
+						{
+							$WordTableRowHash = @{
+							Text = $txt;
+							Value = $Setting.uberAgentLicensePath.Value;
+							}
+							$SettingsWordTable += $WordTableRowHash;
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.uberAgentLicensePath.Value,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.uberAgentLicensePath.Value 
+						}
+					}
+					#end added in 3.43.004
+
 					Write-Verbose "$(Get-Date -Format G): `t`t`tUser Personalization Layer"
 					If((validStateProp $Setting UplCustomizedUserLayerSizeInGb State ) -and ($Setting.UplCustomizedUserLayerSizeInGb.State -ne "NotConfigured"))
 					{
@@ -31804,6 +32126,32 @@ Function ProcessCitrixPolicies
 						}
 					}
 
+					#added in 3.43.004
+					Write-Verbose "$(Get-Date -Format G): `t`t`tVDA Data Collection\Multimedia"
+					If((validStateProp $Setting EnableMultimediaDataCollection State ) -and ($Setting.EnableMultimediaDataCollection.State -ne "NotConfigured"))
+					{
+						$txt = "VDA Data Collection\Multimedia\Multimedia apps data collection for session performance monitoring"
+						If($MSWord -or $PDF)
+						{
+							$WordTableRowHash = @{
+							Text = $txt;
+							Value = $Setting.EnableMultimediaDataCollection.State;
+							}
+							$SettingsWordTable += $WordTableRowHash;
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.EnableMultimediaDataCollection.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.EnableMultimediaDataCollection.State
+						}
+					}
+					#end added in 3.43.004
+
 					#added in 3.42
 					Write-Verbose "$(Get-Date -Format G): `t`t`tVDA Data Collection\Performance"
 					If((validStateProp $Setting EnableVdaDiagnosticsCollection State ) -and ($Setting.EnableVdaDiagnosticsCollection.State -ne "NotConfigured"))
@@ -31855,6 +32203,33 @@ Function ProcessCitrixPolicies
 						}
 					}
 					#end added in 3.41
+
+					#added in 3.43.004
+					Write-Verbose "$(Get-Date -Format G): `t`t`tVDA Data Collection\uberAgent"
+					If((validStateProp $Setting EnableuberAgentDataCollection State ) -and ($Setting.EnableuberAgentDataCollection.State -ne "NotConfigured"))
+					{
+						#added in CVAD2411
+						$txt = "VDA Data Collection\uberAgent\uberAgent data collection for Application monitoring"
+						If($MSWord -or $PDF)
+						{
+							$WordTableRowHash = @{
+							Text = $txt;
+							Value = $Setting.EnableuberAgentDataCollection.State;
+							}
+							$SettingsWordTable += $WordTableRowHash;
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.EnableuberAgentDataCollection.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.EnableuberAgentDataCollection.State
+						}
+					}
+					#end added in 3.43.004
 
 					Write-Verbose "$(Get-Date -Format G): `t`t`tVirtual Delivery Agent Settings"
 					If((validStateProp $Setting ControllerRegistrationIPv6Netmask State ) -and ($Setting.ControllerRegistrationIPv6Netmask.State -ne "NotConfigured"))
@@ -31969,6 +32344,52 @@ Function ProcessCitrixPolicies
 						If($Text)
 						{
 							OutputPolicySetting $txt $Setting.EnableAutoUpdateOfControllers.State 
+						}
+					}
+					If((validStateProp $Setting OnlyUseIPv6ControllerRegistration State ) -and ($Setting.OnlyUseIPv6ControllerRegistration.State -ne "NotConfigured"))
+					{
+						#AD specific setting
+						$txt = "Virtual Delivery Agent Settings\Only use IPv6 Controller registration"
+						If($MSWord -or $PDF)
+						{
+							$WordTableRowHash = @{
+							Text = $txt;
+							Value = $Setting.OnlyUseIPv6ControllerRegistration.State;
+							}
+							$SettingsWordTable += $WordTableRowHash;
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.OnlyUseIPv6ControllerRegistration.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.OnlyUseIPv6ControllerRegistration.State 
+						}
+					}
+					If((validStateProp $Setting SiteGUID State ) -and ($Setting.SiteGUID.State -ne "NotConfigured"))
+					{
+						#AD specific setting
+						$txt = "Virtual Delivery Agent Settings\Site GUID"
+						If($MSWord -or $PDF)
+						{
+							$WordTableRowHash = @{
+							Text = $txt;
+							Value = $Setting.SiteGUID.Value;
+							}
+							$SettingsWordTable += $WordTableRowHash;
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.SiteGUID.Value,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.SiteGUID.Value 
 						}
 					}
 					
@@ -32175,15 +32596,15 @@ Function ProcessCitrixPolicies
 							}
 						}
 					}	
-					If((validStateProp $Setting OnlyUseIPv6ControllerRegistration State ) -and ($Setting.OnlyUseIPv6ControllerRegistration.State -ne "NotConfigured"))
+					If((validStateProp $Setting EnableEuemEventSinkToMonitor State ) -and ($Setting.EnableEuemEventSinkToMonitor.State -ne "NotConfigured"))
 					{
-						#AD specific setting
-						$txt = "Virtual Delivery Agent Settings\Only use IPv6 Controller registration"
+						#added in 2507
+						$txt = "Virtual Delivery Agent Settings\Monitoring\Send end user experience data to Monitor service"
 						If($MSWord -or $PDF)
 						{
 							$WordTableRowHash = @{
 							Text = $txt;
-							Value = $Setting.OnlyUseIPv6ControllerRegistration.State;
+							Value = $Setting.EnableEuemEventSinkToMonitor.State;
 							}
 							$SettingsWordTable += $WordTableRowHash;
 						}
@@ -32191,34 +32612,11 @@ Function ProcessCitrixPolicies
 						{
 							$rowdata += @(,(
 							$txt,$htmlbold,
-							$Setting.OnlyUseIPv6ControllerRegistration.State,$htmlwhite))
+							$Setting.EnableEuemEventSinkToMonitor.State,$htmlwhite))
 						}
 						If($Text)
 						{
-							OutputPolicySetting $txt $Setting.OnlyUseIPv6ControllerRegistration.State 
-						}
-					}
-					If((validStateProp $Setting SiteGUID State ) -and ($Setting.SiteGUID.State -ne "NotConfigured"))
-					{
-						#AD specific setting
-						$txt = "Virtual Delivery Agent Settings\Site GUID"
-						If($MSWord -or $PDF)
-						{
-							$WordTableRowHash = @{
-							Text = $txt;
-							Value = $Setting.SiteGUID.Value;
-							}
-							$SettingsWordTable += $WordTableRowHash;
-						}
-						If($HTML)
-						{
-							$rowdata += @(,(
-							$txt,$htmlbold,
-							$Setting.SiteGUID.Value,$htmlwhite))
-						}
-						If($Text)
-						{
-							OutputPolicySetting $txt $Setting.SiteGUID.Value 
+							OutputPolicySetting $txt $Setting.EnableEuemEventSinkToMonitor.State 
 						}
 					}
 					
@@ -33359,10 +33757,32 @@ Function OutputSiteSettings
 		$UseADLookupEnabled = $Script:CVADSite1.UseADLookupEnabled.ToString()
 	}
 
-	#If(validObject $Script:CVADSite1 )
-	#{
-	#}
-
+	#new for 3.43.004
+	If(validObject $Script:CVADSite2 LogServerEnabled)
+	{
+		If($Script:CVADSite2.LogServerEnabled)
+		{
+			$AOTEnabled       = $True
+			$LogServerEnabled = $Script:CVADSite2.LogServerEnabled.ToString()
+			$LogServerName    = $Script:CVADSite2.LogServerName
+			$LogServerPort    = $Script:CVADSite2.LogServerPort.ToString()
+		}
+		Else
+		{
+			$AOTEnabled       = $False
+			$LogServerEnabled = $Script:CVADSite2.LogServerEnabled.ToString()
+			$LogServerName    = ""
+			$LogServerPort    = ""
+		}
+	}
+	Else
+	{
+		$AOTEnabled       = $False
+		$LogServerEnabled = ""
+		$LogServerName    = ""
+		$LogServerPort    = ""
+	}
+	
 	Write-Verbose "$(Get-Date -Format G): `tOutput Site Settings"
 	If($MSWord -or $PDF)
 	{
@@ -33371,8 +33791,17 @@ Function OutputSiteSettings
 		WriteWordLine 2 0 "Site Settings"
 		$ScriptInformation = New-Object System.Collections.ArrayList
 		$ScriptInformation.Add(@{Data = "Site name"; Value = $CVADSiteName; }) > $Null
-		$ScriptInformation.Add(@{Data = "Default StoreFront address"; Value = $DefaultStoreFrontAddress; }) > $Null
 		$ScriptInformation.Add(@{Data = "Always Bypass Authentication for Cached Resources"; Value = $Script:CVADSite1.AlwaysBypassAuthForCachedResources.ToString(); }) > $Null #new in 3.42
+		If($AOTEnabled) #new in 3.43.004
+		{
+			$ScriptInformation.Add(@{Data = "Always on Tracing (AOT) Enabled"; Value = $LogServerEnabled; }) > $Null
+			$ScriptInformation.Add(@{Data = "     Log server name"; Value = $LogServerName; }) > $Null
+			$ScriptInformation.Add(@{Data = "     Log server port"; Value = $LogServerPort; }) > $Null
+		}
+		Else
+		{
+			$ScriptInformation.Add(@{Data = "Always on Tracing (AOT) Enabled"; Value = $LogServerEnabled; }) > $Null
+		}
 		$ScriptInformation.Add(@{Data = "Base OU"; Value = $Script:CVADSite1.BaseOU; }) > $Null
 		$ScriptInformation.Add(@{Data = "Bypass Authentication for Cached Resources"; Value = $Script:CVADSite1.BypassAuthForCachedResources.ToString(); }) > $Null #new in 1.15
 		$ScriptInformation.Add(@{Data = "Cloud Site License"; Value = $CloudSiteLicense; }) > $Null #new in 3.43
@@ -33382,6 +33811,7 @@ Function OutputSiteSettings
 		$ScriptInformation.Add(@{Data = "Credential Forwarding to Cloud Allowed"; Value = $Script:CVADSite1.CredentialForwardingToCloudAllowed.ToString(); }) > $Null #new in 1.15
 		$ScriptInformation.Add(@{Data = "Default Minimum Functional Level"; Value = $xVDAVersion; }) > $Null
 		$ScriptInformation.Add(@{Data = "Default Reuse Machines Without Shutdown In Outage"; Value = $Script:CVADSite1.DefaultReuseMachinesWithoutShutdownInOutage.ToString(); }) > $Null #new in 1.15
+		$ScriptInformation.Add(@{Data = "Default StoreFront address"; Value = $DefaultStoreFrontAddress; }) > $Null
 		$ScriptInformation.Add(@{Data = "Delete Resource Leases on Logoff"; Value = $Script:CVADSite1.DeleteResourceLeasesOnLogOff.ToString(); }) > $Null #new in 1.15
 		$ScriptInformation.Add(@{Data = "DNS Resolution Enabled"; Value = $Script:CVADSite1.DnsResolutionEnabled.ToString(); }) > $Null
 		$ScriptInformation.Add(@{Data = "Load Balancing Sessions on Machines"; Value = $LoadBalancingSessionsonMachines; }) > $Null #new in 3.42
@@ -33421,8 +33851,17 @@ Function OutputSiteSettings
 		Line 0 "Site Settings"
 		Line 0 ""
 		Line 1 "Site name`t`t`t`t`t`t: " $CVADSiteName
-		Line 1 "Default StoreFront address`t`t`t`t: " $DefaultStoreFrontAddress
 		Line 1 "Always Bypass Authentication for Cached Resources`t: " $Script:CVADSite1.AlwaysBypassAuthForCachedResources.ToString() #new in 3.42
+		If($AOTEnabled) #new in 3.43.004
+		{
+			Line 1 "Always on Tracing (AOT) Enabled`t`t`t`t: " $LogServerEnabled
+			Line 2 "Log server name: " $LogServerName
+			Line 2 "Log server port: " $LogServerPort
+		}
+		Else
+		{
+			Line 1 "Always on Tracing (AOT) Enabled`t`t`t`t: " $LogServerEnabled
+		}
 		Line 1 "Base OU`t`t`t`t`t`t`t: " $Script:CVADSite1.BaseOU
 		Line 1 "Bypass Authentication for Cached Resources`t`t: " $Script:CVADSite1.BypassAuthForCachedResources.ToString() #new in 1.15
 		Line 1 "Cloud Site License`t`t`t`t`t: " $CloudSiteLicense #new in 3.43
@@ -33432,6 +33871,7 @@ Function OutputSiteSettings
 		Line 1 "Credential Forwarding to Cloud Allowed`t`t`t: " $Script:CVADSite1.CredentialForwardingToCloudAllowed.ToString() #new in 1.15
 		Line 1 "Default Minimum Functional Level`t`t`t: " $xVDAVersion
 		Line 1 "Default Reuse Machines Without Shutdown In Outage`t: " $Script:CVADSite1.DefaultReuseMachinesWithoutShutdownInOutage.ToString() #new in 1.15
+		Line 1 "Default StoreFront address`t`t`t`t: " $DefaultStoreFrontAddress
 		Line 1 "Delete Resource Leases on Logoff`t`t`t: " $Script:CVADSite1.DeleteResourceLeasesOnLogOff.ToString() #new in 1.15
 		Line 1 "DNS Resolution Enabled`t`t`t`t`t: " $Script:CVADSite1.DnsResolutionEnabled.ToString()
 		Line 1 "Load Balancing Sessions on Machines`t`t`t: " $LoadBalancingSessionsonMachines #new in 3.42
@@ -33458,8 +33898,17 @@ Function OutputSiteSettings
 		WriteHTMLLine 2 0 "Site Settings"
 		$rowdata = @()
 		$columnHeaders = @("Site name",($global:htmlsb),$CVADSiteName,$htmlwhite)
-		$rowdata += @(,('Default StoreFront address',($global:htmlsb),$DefaultStoreFrontAddress,$htmlwhite))
 		$rowdata += @(,("Always Bypass Authentication for Cached Resources",($global:htmlsb),$Script:CVADSite1.AlwaysBypassAuthForCachedResources.ToString(),$htmlwhite)) #new in 3.42
+		If($AOTEnabled) #new in 3.43.004
+		{
+			$rowdata += @(,("Always on Tracing (AOT) Enabled",($global:htmlsb),$LogServerEnabled,$htmlwhite))
+			$rowdata += @(,("     Log server name",($global:htmlsb),$LogServerName,$htmlwhite))
+			$rowdata += @(,("     Log server port",($global:htmlsb),$LogServerPort,$htmlwhite))
+		}
+		Else
+		{
+			$rowdata += @(,("Always on Tracing (AOT) Enabled",($global:htmlsb),$LogServerEnabled,$htmlwhite))
+		}
 		$rowdata += @(,("Base OU",($global:htmlsb),$Script:CVADSite1.BaseOU,$htmlwhite))
 		$rowdata += @(,("Bypass Authentication for Cached Resources",($global:htmlsb),$Script:CVADSite1.BypassAuthForCachedResources.ToString(),$htmlwhite)) #new in 1.15
 		$rowdata += @(,("Cloud Site License",($global:htmlsb),$CloudSiteLicense,$htmlwhite)) #new in 3.43
@@ -33469,6 +33918,7 @@ Function OutputSiteSettings
 		$rowdata += @(,("Credential Forwarding to Cloud Allowed",($global:htmlsb),$Script:CVADSite1.CredentialForwardingToCloudAllowed.ToString(),$htmlwhite)) #new in 1.15
 		$rowdata += @(,("Default Minimum Functional Level",($global:htmlsb),$xVDAVersion,$htmlwhite))
 		$rowdata += @(,("Default Reuse Machines Without Shutdown In Outage",($global:htmlsb),$Script:CVADSite1.DefaultReuseMachinesWithoutShutdownInOutage.ToString(),$htmlwhite)) #new in 1.15
+		$rowdata += @(,('Default StoreFront address',($global:htmlsb),$DefaultStoreFrontAddress,$htmlwhite))
 		$rowdata += @(,("Delete Resource Leases on Logoff",($global:htmlsb),$Script:CVADSite1.DeleteResourceLeasesOnLogOff.ToString(),$htmlwhite)) #new in 1.15
 		$rowdata += @(,("DNS Resolution Enabled",($global:htmlsb),$Script:CVADSite1.DnsResolutionEnabled.ToString(),$htmlwhite))
 		$rowdata += @(,("Load Balancing Sessions on Machines",($global:htmlsb),$LoadBalancingSessionsonMachines,$htmlwhite)) #new in 3.42
@@ -33638,6 +34088,7 @@ Function GetSQLVersion
 {
 	Param([object]$SQLsrv)
 
+	#V3.43.004 add SQL 2025
 	#V1.40 add SQL 2017
 	#V1.40 add more info to the Default message
 	$Major = $SQLsrv.VersionMajor
@@ -33655,6 +34106,8 @@ Function GetSQLVersion
 		13						{$SQLVer = "SQL Server 2016"; Break}
 		14						{$SQLVer = "SQL Server 2017"; Break}
 		15						{$SQLVer = "SQL Server 2019"; Break}
+		16						{$SQLVer = "SQL Server 2022"; Break}
+		17						{$SQLVer = "SQL Server 2025"; Break}
 		Default					{$SQLVer = "Unable to determine SQL Server version. Major: $($Major) Minor: $($Minor) Edition: $($SQLEdition)"; Break}
 	}
 
@@ -33664,14 +34117,16 @@ Function GetSQLVersion
 Function GetDBCompatibilityLevel
 {
 	Param([string]$DBCompat, [object]$SQLsrv)
+	#V3.43.004 add SQL 2025
 	#9-Jul-2022 add support for SQL Server 2022
 
 	$Major = $SQLsrv.VersionMajor
 	
 	<#
-		https://www.spiria.com/en/blog/web-applications/understanding-sql-server-compatibility-levels
+		https://learn.microsoft.com/en-us/sql/t-sql/statements/alter-database-transact-sql-compatibility-level?view=sql-server-ver17
 		
 		Database Compatibility Level	Description
+		170								SQL Server 2025
 		160								SQL Server 2022
 		150								SQL Server 2019
 		140								SQL Server 2017
@@ -33686,6 +34141,7 @@ Function GetDBCompatibilityLevel
 	$tmp = ""
 	Switch($DBCompat)
 	{
+		"170"			{$tmp = "SQL Server 2025"; Break}
 		"160"			{$tmp = "SQL Server 2022"; Break}
 		"150"			{$tmp = "SQL Server 2019"; Break}
 		"140"			{$tmp = "SQL Server 2017"; Break}
@@ -33695,6 +34151,7 @@ Function GetDBCompatibilityLevel
 		"100"			{$tmp = "SQL Server 2008"; Break}
 		"90"			{$tmp = "SQL Server 2005"; Break}
 		"80"			{$tmp = "SQL Server 2000"; Break}
+		"Version170"	{$tmp = "SQL Server 2025"; Break}
 		"Version160"	{$tmp = "SQL Server 2022"; Break}
 		"Version150"	{$tmp = "SQL Server 2019"; Break}
 		"Version140"	{$tmp = "SQL Server 2017"; Break}
@@ -33714,7 +34171,8 @@ Function GetDBCompatibilityLevel
 	(($DBCompat -eq 130 -or $DBCompat -eq "Version130") -or `
 	($DBCompat -eq 140 -or $DBCompat -eq "Version140") -or `
 	($DBCompat -eq 150 -or $DBCompat -eq "Version150") -or `
-	($DBCompat -eq 160 -or $DBCompat -eq "Version160")))
+	($DBCompat -eq 160 -or $DBCompat -eq "Version160") -or `
+	($DBCompat -eq 170 -or $DBCompat -eq "Version170")))
 	{
 		$tmp = "Azure SQL Database"
 	}
@@ -36803,7 +37261,7 @@ Function GetRolePermissions
 			"AppLib_RemoveAppVServer"									{$Results.Add("Remove App-V Server", "App-V")}
 			"AppLib_RemovePackage"										{$Results.Add("Remove App-V Application Libraries and Packages", "App-V")}
 			"AppV_AddServer"											{$Results.Add("Add App-V publishing server", "App-V")}
-			"AppV_DeleteServer"											{$Results.Add("Delete App-V publishing server", "App-V")}
+			"AppV_DeleteServer"											{$Results.Add("Remove App-V Server and associated Packages", "Application Packages")} #description updated in 3.43.004
 			"AppV_Read"													{$Results.Add("Read App-V servers", "App-V")}
 			
 			#I missed along the way that "App-V" was renamed to "Application Packages" prior to CVAD 2308
@@ -36990,14 +37448,14 @@ Function GetRolePermissions
 			"Monitor_UCaaS_Connections_Read"							{$Results.Add("View Connections to communication apps (Real-time com", "Other permissions")} #added in 2507
 			"Orchestration_RestApi"										{$Results.Add("Manage Orchestration Service REST API", "Other permissions")}
 			"PerformUpgrade"											{$Results.Add("Perform upgrade", "Other permissions")}
-			"SkylightBroker"											{$Results.Add(" (3) ", "Other permissions")}
+			#"SkylightBroker"											{$Results.Add(" (3) ", "Other permissions")}
 			"Tag_Create"												{$Results.Add("Create tags", "Other permissions")}
 			"Tag_Delete"												{$Results.Add("Delete tags", "Other permissions")}
 			"Tag_Edit"													{$Results.Add("Edit tags", "Other permissions")}
 			"Tag_Read"													{$Results.Add("Read tags", "Other permissions")}
-			"Trust_MultiTenantAccessList"								{$Results.Add(" (2) ", "Other permissions")}
+			"Trust_MultiTenantAccessList"								{$Results.Add("Grants an administrator privileges to create and manage multi-tenant service access list permissions", "Other permissions")} #description updated in 3.43.004
 			"Trust_ServiceKeys"											{$Results.Add("Manage Trust Service Keys", "Other permissions")}
-			"Trust_VdaEnrollment"										{$Results.Add(" (1) ", "Other permissions")} #new in 2311
+			"Trust_VdaEnrollment"										{$Results.Add("Grants an administrator privileges to create and manage VDA enrollment tokens", "Other permissions")} #description updated in 3.43.004
 			"VdaUpgrade_CatalogManage"									{$Results.Add("Manage VDA Upgrade Catalog Schedules", "Other permissions")}
 			"VdaUpgrade_MachineManage"									{$Results.Add("Manage VDA Upgrade Machine Schedules", "Other permissions")}
 
@@ -37252,14 +37710,130 @@ Function OutputControllers
 		Write-Verbose "$(Get-Date -Format G): `t`tOutput Controller $($Controller.DNSName)"
 		$Script:TotalControllers++
 		
+		If(validObject $Controller IsLasAware)
+		{
+			$IsLasAware = $Controller.IsLasAware.ToString()
+			If($Null -eq $Controller.LasActivationExpiry)
+			{
+				$LasActivationExpiry = ""
+			}
+			Else
+			{
+				$LasActivationExpiry = $Controller.LasActivationExpiry.ToString()
+			}
+			If($Null -eq $Controller.LasActivationStatus)
+			{
+				$LasActivationStatus = ""
+			}
+			Else
+			{
+				$LasActivationStatus = $Controller.LasActivationStatus
+			}
+			If($Null -eq $Controller.LasConnectionStatus)
+			{
+				$LasConnectionStatus = ""
+			}
+			Else
+			{
+				$LasConnectionStatus = $Controller.LasConnectionStatus
+			}
+		}
+		Else
+		{
+			$IsLasAware = "N/A for this Controller"
+			$LasActivationExpiry = ""
+			$LasActivationStatus = ""
+			$LasConnectionStatus = ""
+		}
+
+		<#LastLicensingServerEvent
+			PS C:\Users\cwebster\Downloads> [system.enum]::getnames( $DDC.LastLicensingServerEvent.GetType().FullName )
+			ServerOK
+			IncompleteConfiguration
+			ServerIncompatible
+			StartupLicenseNotInstalled
+			ProductLicenseNotInstalled
+			OverdraftGranted
+			LicenseExpired
+			OutOfBoxGracePeriodEntered
+			SupplementalGracePeriodEntered
+			EmergencyGracePeriodEntered
+			OutOfBoxGracePeriodExpired
+			SupplementalGracePeriodExpired
+			EmergencyGracePeriodExpired
+			InitializationError
+			ReinitializationError
+			ShutdownError
+			LicenseAvailabilityCheckError
+			NotificationProfileReadError
+			NoLicenseAvailable
+			CheckoutFailed
+			CheckinFailed
+			LasConnectionOK
+			LasConnectionLost
+			LicenseServerConnectionLost
+		#>
+
+		Switch ($Controller.LastLicensingServerEvent)
+		{
+			"CheckinFailed"						{$LastLicensingServerEvent = "Checkin Failed"; Break}
+			"CheckoutFailed"					{$LastLicensingServerEvent = "Checkout Failed"; Break}
+			"EmergencyGracePeriodEntered"		{$LastLicensingServerEvent = "Emergency Grace Period Entered"; Break}
+			"EmergencyGracePeriodExpired"		{$LastLicensingServerEvent = "Emergency Grace Period Expired"; Break}
+			"IncompleteConfiguration"			{$LastLicensingServerEvent = "Incomplete Configuration"; Break}
+			"InitializationError"				{$LastLicensingServerEvent = "Initialization Error"; Break}
+			"LasConnectionLost"					{$LastLicensingServerEvent = "License Activation Service Connection Lost"; Break}
+			"LasConnectionOK"					{$LastLicensingServerEvent = "License Activation Service Connection OK"; Break}
+			"LicenseAvailabilityCheckError"		{$LastLicensingServerEvent = "License Availability Check Error"; Break}
+			"LicenseExpired"					{$LastLicensingServerEvent = "License Expired"; Break}
+			"LicenseServerConnectionLost"		{$LastLicensingServerEvent = "License Server Connection Lost"; Break}
+			"NoLicenseAvailable"				{$LastLicensingServerEvent = "No License Available"; Break}
+			"NotificationProfileReadError"		{$LastLicensingServerEvent = "Notification Profile Read Error"; Break}
+			"OutOfBoxGracePeriodEntered"		{$LastLicensingServerEvent = "Out Of Box Grace Period Entered"; Break}
+			"OutOfBoxGracePeriodExpired"		{$LastLicensingServerEvent = "Out Of Box Grace Period Expired"; Break}
+			"OverdraftGranted"					{$LastLicensingServerEvent = "Overdraft Granted"; Break}
+			"ProductLicenseNotInstalled"		{$LastLicensingServerEvent = "Product License Not Installed"; Break}
+			"ReinitializationError"				{$LastLicensingServerEvent = "Reinitialization Error"; Break}
+			"ServerIncompatible"				{$LastLicensingServerEvent = "Server Incompatible"; Break}
+			"ServerOK"							{$LastLicensingServerEvent = "Server OK"; Break}
+			"ShutdownError"						{$LastLicensingServerEvent = "Shutdown Error"; Break}
+			"StartupLicenseNotInstalled"		{$LastLicensingServerEvent = "Startup License Not Installed"; Break}
+			"SupplementalGracePeriodEntered"	{$LastLicensingServerEvent = "Supplemental Grace Period Entered"; Break}
+			"SupplementalGracePeriodExpired"	{$LastLicensingServerEvent = "Supplemental Grace Period Expired"; Break}
+			Default								{$LastLicensingServerEvent = "Unable to determine Last Licensing Server Event: $($Controller.LastLicensingServerEvent)"; Break}
+		}
+		
 		If($MSWord -or $PDF)
 		{
 			$ScriptInformation = New-Object System.Collections.ArrayList
 			$ScriptInformation.Add(@{Data = "Name"; Value = $Controller.DNSName; }) > $Null
-			$ScriptInformation.Add(@{Data = "Version"; Value = $Controller.ControllerVersion; }) > $Null
-			$ScriptInformation.Add(@{Data = "Last updated"; Value = $Controller.LastActivityTime; }) > $Null
+			$ScriptInformation.Add(@{Data = "Is License Activation Service (LAS) aware"; Value = $IsLasAware; }) > $Null
+			If($IsLasAware -eq "True")
+			{
+				$ScriptInformation.Add(@{Data = "LAS expiration time";   Value = $LasActivationExpiry; }) > $Null
+				$ScriptInformation.Add(@{Data = "LAS activation status"; Value = $LasActivationStatus; }) > $Null
+				$ScriptInformation.Add(@{Data = "LAS connection status"; Value = $LasConnectionStatus; }) > $Null
+			}
+			$ScriptInformation.Add(@{Data = "Last time Broker updated"; Value = $Controller.LastActivityTime.ToString(); }) > $Null
+			$ScriptInformation.Add(@{Data = "Last licensing server event"; Value = $LastLicensingServerEvent; }) > $Null
+			$cnt = -1
+			ForEach($Item in $Controller.LastLicensingServerEventDetails)
+			{
+				$cnt++
+				If($cnt -eq 0)
+				{
+					$ScriptInformation.Add(@{Data = "Last licensing server event details"; Value = $Item; }) > $Null
+				}
+				Else
+				{
+					$ScriptInformation.Add(@{Data = ""; Value = $Item; }) > $Null
+				}
+			}
+			$ScriptInformation.Add(@{Data = "Last licensing server event time"; Value = $Controller.LastLicensingServerEventTime.ToString(); }) > $Null
+			$ScriptInformation.Add(@{Data = "Last start-up time of the Broker service time"; Value = $Controller.LastStartTime.ToString(); }) > $Null
 			$ScriptInformation.Add(@{Data = "Registered desktops"; Value = $Controller.DesktopsRegistered.ToString(); }) > $Null
 			$ScriptInformation.Add(@{Data = "State"; Value = $Controller.State; }) > $Null
+			$ScriptInformation.Add(@{Data = "Version"; Value = $Controller.ControllerVersion; }) > $Null
 
 			$Table = AddWordTable -Hashtable $ScriptInformation `
 			-Columns Data,Value `
@@ -37269,7 +37843,7 @@ Function OutputControllers
 
 			SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
 
-			$Table.Columns.Item(1).Width = 150;
+			$Table.Columns.Item(1).Width = 250;
 			$Table.Columns.Item(2).Width = 250;
 
 			$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
@@ -37280,24 +37854,71 @@ Function OutputControllers
 		}
 		If($Text)
 		{
-			Line 1 "Name`t`t`t: " $Controller.DNSName
-			Line 1 "Version`t`t`t: " $Controller.ControllerVersion
-			Line 1 "Last updated`t`t: " $Controller.LastActivityTime
-			Line 1 "Registered desktops`t: " $Controller.DesktopsRegistered.ToString()
-			Line 1 "State`t`t`t: " $Controller.State
+			Line 1 "Name`t`t`t`t`t : " $Controller.DNSName
+			Line 1 "Is License Activation Service (LAS) aware: " $IsLasAware
+			If($IsLasAware -eq "True")
+			{
+				Line 1 "LAS expiration time`t`t`t : "   $LasActivationExpiry
+				Line 1 "LAS activation status`t`t`t : " $LasActivationStatus
+				Line 1 "LAS connection status`t`t`t : " $LasConnectionStatus
+			}
+			Line 1 "Last time Broker updated`t`t : " $Controller.LastActivityTime.ToString()
+			Line 1 "Last licensing server event`t`t : " $LastLicensingServerEvent
+			$cnt = -1
+			ForEach($Item in $Controller.LastLicensingServerEventDetails)
+			{
+				$cnt++
+				If($cnt -eq 0)
+				{
+					Line 1 "Last licensing server event details`t : " $Item
+				}
+				Else
+				{
+					Line 6 "   " $Item
+				}
+			}
+			Line 1 "Last licensing server event time`t : " $Controller.LastLicensingServerEventTime.ToString()
+			Line 1 "Last start-up time of the Broker service : " $Controller.LastStartTime.ToString()
+			Line 1 "Registered desktops`t`t`t : " $Controller.DesktopsRegistered.ToString()
+			Line 1 "State`t`t`t`t`t : " $Controller.State
+			Line 1 "Version`t`t`t`t`t : " $Controller.ControllerVersion
 			Line 0 ""
 		}
 		If($HTML)
 		{
 			$rowdata = @()
-			$columnHeaders = @("Name",($global:htmlsb),$Controller.DNSName,$htmlwhite)
-			$rowdata += @(,('Version',($global:htmlsb),$Controller.ControllerVersion,$htmlwhite))
-			$rowdata += @(,('Last updated',($global:htmlsb),$Controller.LastActivityTime,$htmlwhite))
+			$columnHeaders = @('Name',($global:htmlsb),$Controller.DNSName,$htmlwhite)
+			$rowdata += @(,('Is License Activation Service (LAS) aware',($global:htmlsb),$IsLasAware,$htmlwhite))
+			If($IsLasAware -eq 'True')
+			{
+				$rowdata += @(,('LAS expiration time',($global:htmlsb),$LasActivationExpiry,$htmlwhite))
+				$rowdata += @(,('LAS activation status',($global:htmlsb),$LasActivationStatus,$htmlwhite))
+				$rowdata += @(,('LAS connection status',($global:htmlsb),$LasConnectionStatus,$htmlwhite))
+			}
+			$rowdata += @(,('Last time Broker updated',($global:htmlsb),$Controller.LastActivityTime.ToString(),$htmlwhite))
+			$rowdata += @(,('Last licensing server event',($global:htmlsb),$LastLicensingServerEvent,$htmlwhite))
+			$cnt = -1
+			ForEach($Item in $Controller.LastLicensingServerEventDetails)
+			{
+				$cnt++
+				If($cnt -eq 0)
+				{
+					$rowdata += @(,('Last licensing server event details',($global:htmlsb),$Item,$htmlwhite))
+				}
+				Else
+				{
+					$rowdata += @(,('',($global:htmlsb),$Item,$htmlwhite))
+				}
+			}
+			$rowdata += @(,('Last licensing server event time',($global:htmlsb),$Controller.LastLicensingServerEventTime.ToString(),$htmlwhite))
+			$rowdata += @(,('Last start-up time of the Broker service time',($global:htmlsb),$Controller.LastStartTime.ToString(),$htmlwhite))
 			$rowdata += @(,('Registered desktops',($global:htmlsb),$Controller.DesktopsRegistered.ToString(),$htmlwhite))
 			$rowdata += @(,('State',($global:htmlsb),$Controller.State,$htmlwhite))
+			$rowdata += @(,('Version',($global:htmlsb),$Controller.ControllerVersion,$htmlwhite))
+
 			$msg = ""
-			$columnWidths = @("150","250")
-			FormatHTMLTable $msg -rowarray $rowdata -columnArray $columnheaders -fixedWidth $columnWidths -tablewidth "400"
+			$columnWidths = @("250","250")
+			FormatHTMLTable $msg -rowarray $rowdata -columnArray $columnheaders -fixedWidth $columnWidths -tablewidth "500"
 			WriteHTMLLine 0 0 ""
 		}
 		
@@ -38326,36 +38947,47 @@ Function OutputHosting
 	}
 	
 	#to get all the Connection Types and PluginIDs, use Get-HypHypervisorPlugin | ft
-	#Thanks to fellow CTPs Neil Spellings, Kees Baggerman, and Trond Eirik Haavarstein for getting this info for me
-	#For CVAD 2012, the values are:
+	#Thanks to Nicholas Cookendorfer, Arnaud Pain, and Prateek Anaud for getting this info for me
+	#For CVAD 2507 and DaaS, the values are:
 	<#
-		CitrixVerified ConnectionType DisplayName                                      PluginFactoryName                 UsesCloudInfrastructure
-		-------------- -------------- -----------                                      -----------------                 -----------------------
-								  AWS Amazon EC2                                       AWSMachineManagerFactory                             True
-								SCVMM Microsoft® System Center Virtual Machine Manager MicrosoftPSFactory                                  False
-							  VCenter VMware vSphere®                                  VmwareFactory                                       False
-							WakeOnLAN Microsoft® Configuration Manager Wake on LAN     ConfigMgrWOLMachineManagerFactory                   False
-							XenServer Citrix Hypervisor®                               XenFactory                                          False
-							   Custom Google Cloud Platform                            GcpPluginFactory                                    False
-							   Custom Microsoft® Azure™                                AzureRmFactory                                      False
-							   Custom Remote PC Wake on LAN                            VdaWOLMachineManagerFactory                         False	
+		Available	ConnectionType	DisplayName											PluginFactoryName
+		TRUE		AWS				Amazon EC2											AWSMachineManagerFactory
+		TRUE		SCVMM			Microsoft® System Center Virtual Machine Manager	MicrosoftPSFactory
+		TRUE		VCenter			VMware vSphere®										VmwareFactory
+		TRUE		XenServer		XenServer™											XenFactory
+		TRUE		Custom			Nutanix AHV											AcropolisFactory
+		TRUE		Custom			Nutanix AHV Prism Central							AcropolisHypervisorPCFactory
+		TRUE		Custom			Amazon WorkSpaces Core								AmazonWorkSpacesCoreMachineManagerFactory
+		TRUE		Custom			Microsoft® Azure™ Arc								AzureArcFactory
+		TRUE		Custom			Microsoft® Azure™									AzureRmFactory
+		TRUE		Custom			Google Cloud Platform								GcpPluginFactory
+		TRUE		Custom			HPE Moonshot										HPMoonshotFactory
+		TRUE		Custom			Red Hat OpenShift									OpenShiftPluginFactory
+		TRUE		Custom			Remote PC Wake on LAN								VdaWOLMachineManagerFactory
+		TRUE		Custom			Windows 365 Cloud PC								W365CloudPCFactory
 	#>
 	$xxConnectionType = ""
 	Switch ($xConnectionType)
 	{
 		"AWS"		{$xxConnectionType = "Amazon EC2"; Break}
-		"SCVMM"     {$xxConnectionType = "Microsoft System Center Virtual Machine Manager"; Break}
-		"vCenter"   {$xxConnectionType = "VMware vSphere"; Break}
+		"SCVMM"		{$xxConnectionType = "Microsoft System Center Virtual Machine Manager"; Break}
+		"VCenter"	{$xxConnectionType = "VMware vSphere"; Break}
 		"WakeOnLAN"	{$xxConnectionType = "Microsoft Configuration Manager Wake on LAN"; Break}
-		"XenServer" {$xxConnectionType = "Citrix Hypervisor"; Break}
-		"Custom"    {
+		"XenServer"	{$xxConnectionType = "XenServer"; Break}
+		"Custom"	{
 						Switch ($xConnectionPluginID)
 						{
-							"AcropolisFactory"				{$xxConnectionType = "Nutanix AHV"; Break}
-							"GcpPluginFactory"				{$xxConnectionType = "Google Cloud Platform"; Break}
-							"AzureRmFactory"				{$xxConnectionType = "Microsoft Azure"; Break}
-							"VdaWOLMachineManagerFactory"	{$xxConnectionType = "Remote PC Wake on LAN"; Break}
-							Default     					{$xxConnectionType = "Custom Hypervisor Type PluginID could not be determined: $($xConnectionPluginID)"; Break}
+							"AcropolisFactory"							{$xxConnectionType = "Nutanix AHV"; Break}
+							"AcropolisHypervisorPCFactory"				{$xxConnectionType = "Nutanix AHV Prism Central"; Break}
+							"AmazonWorkSpacesCoreMachineManagerFactory"	{$xxConnectionType = "Amazon WorkSpaces Core"; Break}
+							"AzureArcFactory"							{$xxConnectionType = "Microsoft® Azure™ Arc"; Break}
+							"AzureRmFactory"							{$xxConnectionType = "Microsoft Azure"; Break}
+							"GcpPluginFactory"							{$xxConnectionType = "Google Cloud Platform"; Break}
+							"HPMoonshotFactory"							{$xxConnectionType = "HPE Moonshot"; Break}
+							"OpenShiftPluginFactory"					{$xxConnectionType = "Red Hat OpenShift"; Break}
+							"VdaWOLMachineManagerFactory"				{$xxConnectionType = "Remote PC Wake on LAN"; Break}
+							"W365CloudPCFactory"						{$xxConnectionType = "Windows 365 Cloud PC"; Break}
+							Default										{$xxConnectionType = "Custom Hypervisor Type PluginID could not be determined: $($xConnectionPluginID)"; Break}
 						}
 						Break
 					}
@@ -41095,7 +41727,7 @@ Function ProcessScriptSetup
 	`n`n
 	If you are running the script remotely, did you install Studio or the PowerShell snapins on $($env:computername)?
 	`n`n
-	Please see the Prerequisites section in the ReadMe file https://carlwebster.sharefile.com/d-s8e431271460494c9
+	Please see the Prerequisites section in the ReadMe file https://www.dropbox.com/scl/fi/987b4bjr2iol24hnvhk2g/CVAD_Inventory_V3_ReadMe.rtf?rlkey=mtvmwvfbtoc97hvwgoc3lxz0p&dl=0
 	`n`n
 	Script will now close.
 	`n`n

@@ -6,6 +6,74 @@
 
 # This script is based on the 2.36 script
 
+#Version 3.43.004 13-Oct-2025
+#	Thanks to Citrix, Ferroque Systems, Guy Leech, Nicholas Cookendorfer, Arnaud Pain, and Prateek Anaud for their help
+#
+#	Added Computer policy
+#		ICA\FIDO2 allowed processes (2503)
+#		ICA\End User Monitoring\Endpoint location data collection (2411)
+#		ICA\End User Monitoring\Endpoint network latency measurement interval (2411)
+#		ICA\Multimedia\Screen recording for UC SDK optimized applications (2503)
+#		uberAgent\Enable uberAgent data collection (2503)
+#		uberAgent\uberAgent configuration archive path (2503)
+#		uberAgent\uberAgent license path (2503)
+#		VDA Data Collection\Multimedia\Multimedia apps data collection for session performance monitoring (2503)
+#		VDA Data Collection\uberAgent\uberAgent data collection for Application monitoring (2411)
+#		Virtual Delivery Agent Settings\Monitoring\Send end user experience data to Monitor service (2507)
+#
+#	Added User policy
+#		ICA\Graphics\Optimized Content Sharing for Teams and other platforms (2411)
+#
+#	In Function GetRolePermissions, 
+#		Updated descriptions for
+#			AppV_DeleteServer
+#			Trust_MultiTenantAccessList
+#			Trust_VdaEnrollment
+#		Removed
+#			SkylightBroker
+#
+#	In Function GetSQLVersion and Function GetDBCompatibilityLevel, add SQL Server 2025
+#
+#	In Function OutputSiteSettings, add data for Always on Tracing (AOT)
+#
+#	In Function OutputControllers
+#		Alphabetize the output
+#		Add code to support the following additions
+#			Is License Activation Service (LAS) aware
+#				LAS expiration time
+#				LAS activation status
+#				LAS connection status
+#			Last licensing server event (and code for the related Enum)
+#			Last licensing server event details
+#			Last licensing server event time
+#			Last start-up time of the Broker service time
+#
+#		Renamed "Last updated" to "Last time Broker updated"
+#
+#	Update Function OutputHosting with the latest hosting connection types and plugin types
+#		Thanks to Nicholas Cookendorfer, Arnaud Pain, and Prateek Anaud for getting this info for me
+#		For CVAD 2507 and DaaS, the values are:
+#	
+#		ConnectionType	DisplayName						PluginFactoryName
+#		AWS		Amazon EC2						AWSMachineManagerFactory
+#		SCVMM		Microsoft® System Center Virtual Machine Manager	MicrosoftPSFactory
+#		VCenter		VMware vSphere®						VmwareFactory
+#		XenServer	XenServer™						XenFactory
+#		Custom		Nutanix AHV						AcropolisFactory
+#		Custom		Nutanix AHV Prism Central				AcropolisHypervisorPCFactory
+#		Custom		Amazon WorkSpaces Core					AmazonWorkSpacesCoreMachineManagerFactory
+#		Custom		Microsoft® Azure™ Arc					AzureArcFactory
+#		Custom		Microsoft® Azure™					AzureRmFactory
+#		Custom		Google Cloud Platform					GcpPluginFactory
+#		Custom		HPE Moonshot						HPMoonshotFactory
+#		Custom		Red Hat OpenShift					OpenShiftPluginFactory
+#		Custom		Remote PC Wake on LAN					VdaWOLMachineManagerFactory
+#		Custom		Windows 365 Cloud PC					W365CloudPCFactory
+#
+#	Updated all references of ShareFile to Dropbox
+#
+#	Updated the help text
+
 #Version 3.43.003 1-Aug-2025
 #	Added Broker Registry Keys (Thanks to CG at Citrix for providing this information):
 #		HKLM:\Software\Policies\Citrix\DesktopServer\CheckExpiredEntitlementPeriodHours (2503)
