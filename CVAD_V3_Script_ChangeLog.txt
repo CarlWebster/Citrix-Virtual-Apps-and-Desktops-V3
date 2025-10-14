@@ -54,7 +54,7 @@
 #		Thanks to Nicholas Cookendorfer, Arnaud Pain, and Prateek Anaud for getting this info for me
 #		For CVAD 2507 and DaaS, the values are:
 #	
-#		ConnectionType	DisplayName						                           PluginFactoryName
+#		ConnectionType	DisplayName                                      PluginFactoryName
 #		AWS             Amazon EC2                                       AWSMachineManagerFactory
 #		SCVMM           Microsoft® System Center Virtual Machine Manager MicrosoftPSFactory
 #		VCenter         VMware vSphere®                                  VmwareFactory
@@ -1405,4 +1405,5 @@
 #	Replaced, where appropriate, XenApp and XenDesktop with CVAD, or Virtual Apps, or Virtual Desktops
 #	Updated the help text and all 46 examples
 #	Updated the link for the ReadMe file
+
 
