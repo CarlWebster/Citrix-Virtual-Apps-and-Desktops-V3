@@ -54,21 +54,21 @@
 #		Thanks to Nicholas Cookendorfer, Arnaud Pain, and Prateek Anaud for getting this info for me
 #		For CVAD 2507 and DaaS, the values are:
 #	
-#		ConnectionType	DisplayName						PluginFactoryName
-#		AWS		Amazon EC2						AWSMachineManagerFactory
-#		SCVMM		Microsoft® System Center Virtual Machine Manager	MicrosoftPSFactory
-#		VCenter		VMware vSphere®						VmwareFactory
-#		XenServer	XenServer™						XenFactory
-#		Custom		Nutanix AHV						AcropolisFactory
-#		Custom		Nutanix AHV Prism Central				AcropolisHypervisorPCFactory
-#		Custom		Amazon WorkSpaces Core					AmazonWorkSpacesCoreMachineManagerFactory
-#		Custom		Microsoft® Azure™ Arc					AzureArcFactory
-#		Custom		Microsoft® Azure™					AzureRmFactory
-#		Custom		Google Cloud Platform					GcpPluginFactory
-#		Custom		HPE Moonshot						HPMoonshotFactory
-#		Custom		Red Hat OpenShift					OpenShiftPluginFactory
-#		Custom		Remote PC Wake on LAN					VdaWOLMachineManagerFactory
-#		Custom		Windows 365 Cloud PC					W365CloudPCFactory
+#		ConnectionType	DisplayName						                           PluginFactoryName
+#		AWS             Amazon EC2                                       AWSMachineManagerFactory
+#		SCVMM           Microsoft® System Center Virtual Machine Manager MicrosoftPSFactory
+#		VCenter         VMware vSphere®                                  VmwareFactory
+#		XenServer       XenServer™                                       XenFactory
+#		Custom          Nutanix AHV                                      AcropolisFactory
+#		Custom          Nutanix AHV Prism Central                        AcropolisHypervisorPCFactory
+#		Custom          Amazon WorkSpaces Core                           AmazonWorkSpacesCoreMachineManagerFactory
+#		Custom          Microsoft® Azure™ Arc                            AzureArcFactory
+#		Custom          Microsoft® Azure™                                AzureRmFactory
+#		Custom          Google Cloud Platform                            GcpPluginFactory
+#		Custom          HPE Moonshot                                     HPMoonshotFactory
+#		Custom          Red Hat OpenShift                                OpenShiftPluginFactory
+#		Custom          Remote PC Wake on LAN                            VdaWOLMachineManagerFactory
+#		Custom          Windows 365 Cloud PC                             W365CloudPCFactory
 #
 #	Updated all references of ShareFile to Dropbox
 #
@@ -1405,3 +1405,4 @@
 #	Replaced, where appropriate, XenApp and XenDesktop with CVAD, or Virtual Apps, or Virtual Desktops
 #	Updated the help text and all 46 examples
 #	Updated the link for the ReadMe file
+
