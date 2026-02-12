@@ -9,6 +9,13 @@
 #Version 3.44
 #	Added support for CVAD 2511/7.46
 #
+#	Added User policy
+#		AssistantApp\Enable Assistant App
+#		ICA\Mac Image Capture scanner redirection
+#		ICA\Graphics\HDX screen Sharing timeout (minutes)
+#		ICA\Graphics\Remote Assistance with HDX screen sharing
+#		ICA\Graphics\Remote Assistance timeout (minutes)
+#
 #	In Function GetRolePermissions:
 #		Added new permissions
 #			AppLib_PackageDiscovery_Read
@@ -51,6 +58,12 @@
 #			ResourceAccessPolicyRule_Read
 #			Zone_AddScope
 #			Zone_RemoveScope
+#
+#	In Function OutputRoles
+#		Expand the Description column to accomodate longer descriptions
+#
+#	In Function OutputRoleDefinitions, 
+#		Expand the output column widths to accomodate the new folder and permission names
 
 #Version 3.43.004 13-Oct-2025
 #	Thanks to Citrix, Ferroque Systems, Guy Leech, Nicholas Cookendorfer, Arnaud Pain, and Prateek Anaud for their help

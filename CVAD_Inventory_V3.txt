@@ -1052,9 +1052,9 @@
 	This script creates a Word, PDF, plain text, or HTML document.
 .NOTES
 	NAME: CVAD_Inventory_V3.ps1
-	VERSION: 3.44 Beta 1
+	VERSION: 3.44 Beta 2
 	AUTHOR: Carl Webster
-	LASTEDIT: February 11, 2026
+	LASTEDIT: February 12, 2026
 #>
 
 #endregion
@@ -1250,6 +1250,13 @@ Param(
 #Version 3.44
 #	Added support for CVAD 2511/7.46
 #
+#	Added User policy
+#		AssistantApp\Enable Assistant App
+#		ICA\Mac Image Capture scanner redirection
+#		ICA\Graphics\HDX screen Sharing timeout (minutes)
+#		ICA\Graphics\Remote Assistance with HDX screen sharing
+#		ICA\Graphics\Remote Assistance timeout (minutes)
+#
 #	In Function GetRolePermissions:
 #		Added new permissions
 #			AppLib_PackageDiscovery_Read
@@ -1292,6 +1299,12 @@ Param(
 #			ResourceAccessPolicyRule_Read
 #			Zone_AddScope
 #			Zone_RemoveScope
+#
+#	In Function OutputRoles
+#		Expand the Description column to accomodate longer descriptions
+#
+#	In Function OutputRoleDefinitions, 
+#		Expand the output column widths to accomodate the new folder and permission names
 
 #Version 3.43.004 13-Oct-2025
 #	Thanks to Citrix, Ferroque Systems, Guy Leech, Nicholas Cookendorfer, Arnaud Pain, and Prateek Anaud for their help
@@ -2756,9 +2769,9 @@ $SaveEAPreference         = $ErrorActionPreference
 $ErrorActionPreference    = 'SilentlyContinue'
 
 #stuff for report footer
-$script:MyVersion   = "3.44 Beta 1"
+$script:MyVersion   = "3.44 Beta 2"
 $Script:ScriptName  = "CVAD_Inventory_V3.ps1"
-$tmpdate            = [datetime] "02/11/2026"
+$tmpdate            = [datetime] "02/12/2026"
 $Script:ReleaseDate = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($Null -eq $HTML)
@@ -17481,6 +17494,30 @@ Function ProcessCitrixPolicies
 					$First = $False
 					
 					Write-Verbose "$(Get-Date -Format G): `t`tPolicy settings"
+					Write-Verbose "$(Get-Date -Format G): `t`t`tAssistantApp"
+					If((validStateProp $Setting EnableAssistantApp State ) -and ($Setting.EnableAssistantApp.State -ne "NotConfigured"))
+					{
+						#added in 2511
+						$txt = "AssistantApp\Enable Assistant App"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.EnableAssistantApp.State;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.EnableAssistantApp.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.EnableAssistantApp.State
+						}
+					}
+
 					Write-Verbose "$(Get-Date -Format G): `t`t`tConnector for Configuration Manager 2012"
 					If((validStateProp $Setting AdvanceWarningFrequency State ) -and ($Setting.AdvanceWarningFrequency.State -ne "NotConfigured"))
 					{
@@ -18481,6 +18518,28 @@ Function ProcessCitrixPolicies
 						If($Text)
 						{
 							OutputPolicySetting $txt $Setting.LossTolerantModeAvailable.State
+						}
+					}
+					If((validStateProp $Setting AllowScannerMacImageCaptureRedirection State ) -and ($Setting.AllowScannerMacImageCaptureRedirection.State -ne "NotConfigured"))
+					{
+						#added in 2511
+						$txt = "ICA\Mac Image Capture scanner redirection"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.AllowScannerMacImageCaptureRedirection.State;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.AllowScannerMacImageCaptureRedirection.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.AllowScannerMacImageCaptureRedirection.State 
 						}
 					}
 					If((validStateProp $Setting PrimarySelectionUpdateMode State ) -and ($Setting.PrimarySelectionUpdateMode.State -ne "NotConfigured"))
@@ -20784,6 +20843,28 @@ Function ProcessCitrixPolicies
 							OutputPolicySetting $txt $Setting.DisplayLosslessIndicator.State 
 						}	
 					}
+					If((validStateProp $Setting ScreenSharingConnectTimeout State ) -and ($Setting.ScreenSharingConnectTimeout.State -ne "NotConfigured"))
+					{
+						#added in 2511
+						$txt = "ICA\Graphics\HDX screen Sharing timeout (minutes)"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.ScreenSharingConnectTimeout.Value;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.ScreenSharingConnectTimeout.Value,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.ScreenSharingConnectTimeout.Value 
+						}	
+					}
 					If((validStateProp $Setting MaximumColorDepth State ) -and ($Setting.MaximumColorDepth.State -ne "NotConfigured"))
 					{
 						$txt = "ICA\Graphics\Maximum allowed color depth"
@@ -20857,6 +20938,50 @@ Function ProcessCitrixPolicies
 						If($Text)
 						{
 							OutputPolicySetting $txt $Setting.AppAndDesktopSharing.State 
+						}
+					}
+					If((validStateProp $Setting RemoteAssistance State ) -and ($Setting.RemoteAssistance.State -ne "NotConfigured"))
+					{
+						#added in 2511
+						$txt = "ICA\Graphics\Remote Assistance with HDX screen sharing"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.RemoteAssistance.State;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.RemoteAssistance.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.RemoteAssistance.State 
+						}
+					}
+					If((validStateProp $Setting RemoteAssistanceConnectTimeout State ) -and ($Setting.RemoteAssistanceConnectTimeout.State -ne "NotConfigured"))
+					{
+						#added in 2511
+						$txt = "ICA\Graphics\Remote Assistance timeout (minutes)"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.RemoteAssistanceConnectTimeout.Value;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.RemoteAssistanceConnectTimeout.Value,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.RemoteAssistanceConnectTimeout.Value
 						}
 					}
 					If((validStateProp $Setting ScreenSharing State ) -and ($Setting.ScreenSharing.State -ne "NotConfigured"))
@@ -37075,6 +37200,7 @@ Function OutputRoles
 		-Format $wdTableGrid `
 		-AutoFit $wdAutoFitFixed;
 
+		SetWordCellFormat -Collection $Table -Size 9 -BackgroundColor $wdColorWhite
 		SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
 
 		$Table.Columns.Item(1).Width = 150;
@@ -37098,8 +37224,8 @@ Function OutputRoles
 		'Type',($global:htmlsb))
 
 		$msg = ""
-		$columnWidths = @("200","450","50")
-		FormatHTMLTable $msg -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths -tablewidth "700"
+		$columnWidths = @("200","550","50")
+		FormatHTMLTable $msg -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths -tablewidth "800"
 	}
 }
 
@@ -37225,8 +37351,8 @@ Function OutputRoleDefinitions
 
 			SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
 
-			$Table.Columns.Item(1).Width = 100;
-			$Table.Columns.Item(2).Width = 400;
+			$Table.Columns.Item(1).Width = 200;
+			$Table.Columns.Item(2).Width = 300;
 
 			$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
 
@@ -37245,8 +37371,8 @@ Function OutputRoleDefinitions
 			'Permissions',($global:htmlsb))
 
 			$msg = ""
-			$ColumnWidths = @("100","500")
-			FormatHTMLTable $msg -rowArray $rowdata -columnArray $columnHeaders	-fixedWidth $columnWidths -tablewidth "600"
+			$ColumnWidths = @("175","575")
+			FormatHTMLTable $msg -rowArray $rowdata -columnArray $columnHeaders	-fixedWidth $columnWidths -tablewidth "750"
 		}
 	}
 }
@@ -37295,20 +37421,20 @@ Function GetRolePermissions
 			"ApplicationGroup_RemoveScope"								{$Results.Add("Remove Application Group from Scope", "Application Groups")}
 		
 			#old App-V group name
-			"AppLib_AddApplication"										{$Results.Add("Add App-V applications", "App-V")}
-			"AppLib_AddPackage"											{$Results.Add("Add App-V Application Libraries and Packages", "App-V")}
-			"AppLib_IsolationGroup_Create"								{$Results.Add("Create App-V Isolation Group", "App-V")}
-			"AppLib_IsolationGroup_Remove"								{$Results.Add("Remove App-V Isolation Groups", "App-V")}
-			"AppLib_PackageDiscovery_Create"							{$Results.Add("Create Application Package Discovery Sessions", "App-V")} #new in 2212
-			"AppLib_PackageDiscoveryProfile_Create"						{$Results.Add("Create Application Package Discovery Profiles", "App-V")} #new in 2212
-			"AppLib_PackageDiscoveryProfile_Remove"						{$Results.Add("Remove Application Package Discovery Profiles", "App-V")} #new in 2212
-			"AppLib_Read"												{$Results.Add("Read App-V Application Libraries and Packages", "App-V")}
-			"AppLib_RemoveApplication"									{$Results.Add("Remove App-V applications", "App-V")} #added in 2411
-			"AppLib_RemoveAppVServer"									{$Results.Add("Remove App-V Server", "App-V")}
-			"AppLib_RemovePackage"										{$Results.Add("Remove App-V Application Libraries and Packages", "App-V")}
-			"AppV_AddServer"											{$Results.Add("Add App-V publishing server", "App-V")}
-			"AppV_DeleteServer"											{$Results.Add("Remove App-V Server and associated Packages", "Application Packages")} #description updated in 3.43.004
-			"AppV_Read"													{$Results.Add("Read App-V servers", "App-V")}
+			#"AppLib_AddApplication"									{$Results.Add("Add App-V applications", "App-V")}
+			#"AppLib_AddPackage"										{$Results.Add("Add App-V Application Libraries and Packages", "App-V")}
+			#"AppLib_IsolationGroup_Create"								{$Results.Add("Create App-V Isolation Group", "App-V")}
+			#"AppLib_IsolationGroup_Remove"								{$Results.Add("Remove App-V Isolation Groups", "App-V")}
+			#"AppLib_PackageDiscovery_Create"							{$Results.Add("Create Application Package Discovery Sessions", "App-V")} #new in 2212
+			#"AppLib_PackageDiscoveryProfile_Create"					{$Results.Add("Create Application Package Discovery Profiles", "App-V")} #new in 2212
+			#"AppLib_PackageDiscoveryProfile_Remove"					{$Results.Add("Remove Application Package Discovery Profiles", "App-V")} #new in 2212
+			#"AppLib_Read"												{$Results.Add("Read App-V Application Libraries and Packages", "App-V")}
+			#"AppLib_RemoveApplication"									{$Results.Add("Remove App-V applications", "App-V")} #added in 2411
+			#"AppLib_RemoveAppVServer"									{$Results.Add("Remove App-V Server", "App-V")}
+			#"AppLib_RemovePackage"										{$Results.Add("Remove App-V Application Libraries and Packages", "App-V")}
+			#"AppV_AddServer"											{$Results.Add("Add App-V publishing server", "App-V")}
+			#"AppV_DeleteServer"										{$Results.Add("Remove App-V Server and associated Packages", "Application Packages")} #description updated in 3.43.004
+			#"AppV_Read"												{$Results.Add("Read App-V servers", "App-V")}
 			
 			#I missed along the way that "App-V" was renamed to "Application Packages" prior to CVAD 2308
 			#3.43.002
@@ -37406,7 +37532,7 @@ Function GetRolePermissions
 			"Director_HDXProtocol_Edit"									{$Results.Add("Edit HDX Protocol related Broker machine command properties", "Director")}
 			"Director_HelpDesk_Read"									{$Results.Add("View Activity Manager page", "Director")}
 			"Director_InfrastructureMonitor"							{$Results.Add("View Infrastructure Monitor page", "Director")}
-			"Director_InfrastructureMonitor_Edit"						{$Results.Add("Create/Edit/Manage Connections to Citrix components (Infra Monitoring)", "Director")} #added in 2411
+			"Director_InfrastructureMonitor_Edit"						{$Results.Add("Create/Edit/Manage Connections to Citrix components (Infra Monitoring) (1)", "Director")} #added in 2411
 			"Director_IntegrationsAndDataExport"						{$Results.Add("View Integrations and Data exports page", "Director")}
 			"Director_KillApplication"									{$Results.Add("Perform Kill Application running on a machine", "Director")}
 			"Director_KillApplication_Edit"								{$Results.Add("Edit Kill Application related Broker machine command properties", "Director")}
