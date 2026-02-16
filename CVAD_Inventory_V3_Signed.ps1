@@ -1052,9 +1052,9 @@
 	This script creates a Word, PDF, plain text, or HTML document.
 .NOTES
 	NAME: CVAD_Inventory_V3.ps1
-	VERSION: 3.44 Beta 2
+	VERSION: 3.44 Beta 3
 	AUTHOR: Carl Webster
-	LASTEDIT: February 12, 2026
+	LASTEDIT: February 16, 2026
 #>
 
 #endregion
@@ -1250,6 +1250,21 @@ Param(
 #Version 3.44
 #	Added support for CVAD 2511/7.46
 #
+#	Added Computer policy
+#		Chrome Enterprise Premium\Enroll Chrome Browser
+#		ICA\Graphics\HDX screen sharing ports
+#		ICA\Graphics\Remote assistance ports
+#		ICA\Session Control\Disconnect published app session after closing last app
+#		VDA Data Collection\uberagent\Enhance Director to use uberAgent SessionDetail data for calculating Session Score
+#		VDA Data Collection\uberagent\Enhance Director with uberAgent data for resource utilization
+#		Workspace Environment Management\Agent proxy configuration
+#		Workspace Environment Management\Agent service port
+#		Workspace Environment Management\Cached data synchronization port
+#		Workspace Environment Management\Custom settings for basic deployment
+#		Workspace Environment Management\Discover Citrix Cloud Connectors from CVAD service
+#		Workspace Environment Management\Infrastructure server
+#		Workspace Environment Management\Override Agent Deployment Type
+#
 #	Added User policy
 #		AssistantApp\Enable Assistant App
 #		ICA\Mac Image Capture scanner redirection
@@ -1301,10 +1316,10 @@ Param(
 #			Zone_RemoveScope
 #
 #	In Function OutputRoles
-#		Expand the Description column to accomodate longer descriptions
+#		Expand the Description column to accommodate longer descriptions
 #
 #	In Function OutputRoleDefinitions, 
-#		Expand the output column widths to accomodate the new folder and permission names
+#		Expand the output column widths to accommodate the new folder and permission names
 
 #Version 3.43.004 13-Oct-2025
 #	Thanks to Citrix, Ferroque Systems, Guy Leech, Nicholas Cookendorfer, Arnaud Pain, and Prateek Anaud for their help
@@ -2769,9 +2784,9 @@ $SaveEAPreference         = $ErrorActionPreference
 $ErrorActionPreference    = 'SilentlyContinue'
 
 #stuff for report footer
-$script:MyVersion   = "3.44 Beta 2"
+$script:MyVersion   = "3.44 Beta 3"
 $Script:ScriptName  = "CVAD_Inventory_V3.ps1"
-$tmpdate            = [datetime] "02/12/2026"
+$tmpdate            = [datetime] "02/16/2026"
 $Script:ReleaseDate = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($Null -eq $HTML)
@@ -17518,6 +17533,30 @@ Function ProcessCitrixPolicies
 						}
 					}
 
+					Write-Verbose "$(Get-Date -Format G): `t`t`tChrome Enterprise Premium"
+					If((validStateProp $Setting EnrollChromeBrowser State ) -and ($Setting.EnrollChromeBrowser.State -ne "NotConfigured"))
+					{
+						#added in 2511
+						$txt = "Chrome Enterprise Premium\Enroll Chrome Browser"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.EnrollChromeBrowser.Value;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.EnrollChromeBrowser.Value,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.EnrollChromeBrowser.Value
+						}
+					}
+
 					Write-Verbose "$(Get-Date -Format G): `t`t`tConnector for Configuration Manager 2012"
 					If((validStateProp $Setting AdvanceWarningFrequency State ) -and ($Setting.AdvanceWarningFrequency.State -ne "NotConfigured"))
 					{
@@ -20843,6 +20882,28 @@ Function ProcessCitrixPolicies
 							OutputPolicySetting $txt $Setting.DisplayLosslessIndicator.State 
 						}	
 					}
+					If((validStateProp $Setting ScreenSharingPortRange State ) -and ($Setting.ScreenSharingPortRange.State -ne "NotConfigured"))
+					{
+						#added in 2511
+						$txt = "ICA\Graphics\HDX screen sharing ports"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.ScreenSharingPortRange.Value;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.ScreenSharingPortRange.Value,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.ScreenSharingPortRange.Value 
+						}	
+					}
 					If((validStateProp $Setting ScreenSharingConnectTimeout State ) -and ($Setting.ScreenSharingConnectTimeout.State -ne "NotConfigured"))
 					{
 						#added in 2511
@@ -20939,6 +21000,28 @@ Function ProcessCitrixPolicies
 						{
 							OutputPolicySetting $txt $Setting.AppAndDesktopSharing.State 
 						}
+					}
+					If((validStateProp $Setting RemoteAssistancePortRange State ) -and ($Setting.RemoteAssistancePortRange.State -ne "NotConfigured"))
+					{
+						#added in 2511
+						$txt = "ICA\Graphics\Remote assistance ports"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.RemoteAssistancePortRange.Value;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.RemoteAssistancePortRange.Value,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.RemoteAssistancePortRange.Value 
+						}	
 					}
 					If((validStateProp $Setting RemoteAssistance State ) -and ($Setting.RemoteAssistance.State -ne "NotConfigured"))
 					{
@@ -24263,6 +24346,30 @@ Function ProcessCitrixPolicies
 						}
 					}
 					
+					Write-Verbose "$(Get-Date -Format G): `t`t`tICA\Session Control"
+					If((validStateProp $Setting EnableAutoDisconnectedSession State ) -and ($Setting.EnableAutoDisconnectedSession.State -ne "NotConfigured"))
+					{
+						#added in 2511
+						$txt = "ICA\Session Control\Disconnect published app session after closing last app"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.EnableAutoDisconnectedSession.State;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.EnableAutoDisconnectedSession.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.EnableAutoDisconnectedSession.State 
+						}
+					}
+
 					Write-Verbose "$(Get-Date -Format G): `t`t`tICA\Session Interactivity"
 					If((validStateProp $Setting LossTolerantThresholds State ) -and ($Setting.LossTolerantThresholds.State -ne "NotConfigured"))
 					{
@@ -32375,12 +32482,57 @@ Function ProcessCitrixPolicies
 					}
 					#end added in 3.41
 
-					#added in 3.43.004
 					Write-Verbose "$(Get-Date -Format G): `t`t`tVDA Data Collection\uberAgent"
+					If((validStateProp $Setting EnableuberAgentSessionDetailCollection State ) -and ($Setting.EnableuberAgentSessionDetailCollection.State -ne "NotConfigured"))
+					{
+						#added in 2511
+						$txt = "VDA Data Collection\uberAgent\uberAgent data collection for Application monitoring"
+						If($MSWord -or $PDF)
+						{
+							$WordTableRowHash = @{
+							Text = $txt;
+							Value = $Setting.EnableuberAgentSessionDetailCollection.State;
+							}
+							$SettingsWordTable += $WordTableRowHash;
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.EnableuberAgentSessionDetailCollection.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.EnableuberAgentSessionDetailCollection.State
+						}
+					}
+					If((validStateProp $Setting EnableuberAgentDataCollectio State ) -and ($Setting.EnableuberAgentDataCollectio.State -ne "NotConfigured"))
+					{
+						#added in 2511
+						$txt = "VDA Data Collection\uberAgent\Enhance Director to use uberAgent SessionDetail data for calculating Session Score"
+						If($MSWord -or $PDF)
+						{
+							$WordTableRowHash = @{
+							Text = $txt;
+							Value = $Setting.EnableuberAgentDataCollectio.State;
+							}
+							$SettingsWordTable += $WordTableRowHash;
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.EnableuberAgentDataCollectio.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.EnableuberAgentDataCollectio.State
+						}
+					}
 					If((validStateProp $Setting EnableuberAgentDataCollection State ) -and ($Setting.EnableuberAgentDataCollection.State -ne "NotConfigured"))
 					{
 						#added in CVAD2411
-						$txt = "VDA Data Collection\uberAgent\uberAgent data collection for Application monitoring"
+						$txt = "VDA Data Collection\uberAgent\Enhance Director with uberAgent data for resource utilization"
 						If($MSWord -or $PDF)
 						{
 							$WordTableRowHash = @{
@@ -32400,7 +32552,6 @@ Function ProcessCitrixPolicies
 							OutputPolicySetting $txt $Setting.EnableuberAgentDataCollection.State
 						}
 					}
-					#end added in 3.43.004
 
 					Write-Verbose "$(Get-Date -Format G): `t`t`tVirtual Delivery Agent Settings"
 					If((validStateProp $Setting ControllerRegistrationIPv6Netmask State ) -and ($Setting.ControllerRegistrationIPv6Netmask.State -ne "NotConfigured"))
@@ -32903,6 +33054,75 @@ Function ProcessCitrixPolicies
 				}
 
 				Write-Verbose "$(Get-Date -Format G): `t`t`tWorkspace Environment Management"
+				If((validStateProp $Setting WemProxyAddress State ) -and ($Setting.WemProxyAddress.State -ne "NotConfigured"))
+				{
+					#added in 2511
+					$txt = "Workspace Environment Management\Agent proxy configuration"
+					If($MSWord -or $PDF)
+					{
+						$WordTableRowHash = @{
+						Text = $txt;
+						Value = $Setting.WemProxyAddress.Value;
+						}
+						$SettingsWordTable += $WordTableRowHash;
+					}
+					If($HTML)
+					{
+						$rowdata += @(,(
+						$txt,$htmlbold,
+						$Setting.WemProxyAddress.Value,$htmlwhite))
+					}
+					If($Text)
+					{
+						OutputPolicySetting $txt $Setting.WemProxyAddress.Value 
+					}
+				}
+				If((validStateProp $Setting WemBrokerSvcPort State ) -and ($Setting.WemBrokerSvcPort.State -ne "NotConfigured"))
+				{
+					#added in 2511
+					$txt = "Workspace Environment Management\Agent service port"
+					If($MSWord -or $PDF)
+					{
+						$WordTableRowHash = @{
+						Text = $txt;
+						Value = $Setting.WemBrokerSvcPort.Value;
+						}
+						$SettingsWordTable += $WordTableRowHash;
+					}
+					If($HTML)
+					{
+						$rowdata += @(,(
+						$txt,$htmlbold,
+						$Setting.WemBrokerSvcPort.Value,$htmlwhite))
+					}
+					If($Text)
+					{
+						OutputPolicySetting $txt $Setting.WemBrokerSvcPort.Value 
+					}
+				}
+				If((validStateProp $Setting WemCachedDataSyncPort State ) -and ($Setting.WemCachedDataSyncPort.State -ne "NotConfigured"))
+				{
+					#added in 2511
+					$txt = "Workspace Environment Management\Cached data synchronization port"
+					If($MSWord -or $PDF)
+					{
+						$WordTableRowHash = @{
+						Text = $txt;
+						Value = $Setting.WemCachedDataSyncPort.Value;
+						}
+						$SettingsWordTable += $WordTableRowHash;
+					}
+					If($HTML)
+					{
+						$rowdata += @(,(
+						$txt,$htmlbold,
+						$Setting.WemCachedDataSyncPort.Value,$htmlwhite))
+					}
+					If($Text)
+					{
+						OutputPolicySetting $txt $Setting.WemCachedDataSyncPort.Value 
+					}
+				}
 				If((validStateProp $Setting WemCloudConnectorList State ) -and ($Setting.WemCloudConnectorList.State -ne "NotConfigured"))
 				{
 					$txt = "Workspace Environment Management\Citrix Cloud Connectors" #added in 2103
@@ -33006,6 +33226,191 @@ Function ProcessCitrixPolicies
 						{
 							OutputPolicySetting $txt $Setting.WemCloudConnectorList.State 
 						}
+					}
+				}
+				If((validStateProp $Setting WemCustomBasicSettings State ) -and ($Setting.WemCustomBasicSettings.State -ne "NotConfigured"))
+				{
+					#added in 2511
+					$txt = "Workspace Environment Management\Custom settings for basic deployment"
+					If($Setting.WemCustomBasicSettings.State -eq "Enabled")
+					{
+						If(validStateProp $Setting WemCustomBasicSettings Values )
+						{
+							$tmpArray = $Setting.WemCustomBasicSettings.Values.Split(",")
+							$tmp = ""
+							$cnt = 0
+							ForEach($Thing in $tmpArray)
+							{
+								$cnt++
+								$tmp = "$($Thing)"
+								If($cnt -eq 1)
+								{
+									If($MSWord -or $PDF)
+									{
+										$WordTableRowHash = @{
+										Text = $txt;
+										Value = $tmp;
+										}
+										$SettingsWordTable += $WordTableRowHash;
+									}
+									If($HTML)
+									{
+										$rowdata += @(,(
+										$txt,$htmlbold,
+										$tmp,$htmlwhite))
+									}
+									If($Text)
+									{
+										OutputPolicySetting $txt $tmp
+									}
+								}
+								Else
+								{
+									If($MSWord -or $PDF)
+									{
+										$WordTableRowHash = @{
+										Text = "";
+										Value = $tmp;
+										}
+										$SettingsWordTable += $WordTableRowHash;
+									}
+									If($HTML)
+									{
+										$rowdata += @(,(
+										"",$htmlbold,
+										$tmp,$htmlwhite))
+									}
+									If($Text)
+									{
+										OutputPolicySetting "`t`t`t`t`t`t`t" $tmp
+									}
+								}
+							}
+							$tmpArray = $Null
+							$tmp = $Null
+						}
+						Else
+						{
+							$tmp = "No Custom settings for basic deployment were found"
+							If($MSWord -or $PDF)
+							{
+								$WordTableRowHash = @{
+								Text = $txt;
+								Value = $tmp;
+								}
+								$SettingsWordTable += $WordTableRowHash;
+							}
+							If($HTML)
+							{
+								$rowdata += @(,(
+								$txt,$htmlbold,
+								$tmp,$htmlwhite))
+							}
+							If($Text)
+							{
+								OutputPolicySetting $txt $tmp
+							}
+						}
+					}
+					Else
+					{
+						If($MSWord -or $PDF)
+						{
+							$WordTableRowHash = @{
+							Text = $txt;
+							Value = $Setting.WemCustomBasicSettings.State;
+							}
+							$SettingsWordTable += $WordTableRowHash;
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.WemCustomBasicSettings.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.WemCustomBasicSettings.State 
+						}
+					}
+				}
+				If((validStateProp $Setting WemAllowWEMUseCvadConnectors State ) -and ($Setting.WemAllowWEMUseCvadConnectors.State -ne "NotConfigured"))
+				{
+					#added in 2511
+					$txt = "Workspace Environment Management\Discover Citrix Cloud Connectors from CVAD service"
+					If($MSWord -or $PDF)
+					{
+						$WordTableRowHash = @{
+						Text = $txt;
+						Value = $Setting.WemAllowWEMUseCvadConnectors.State;
+						}
+						$SettingsWordTable += $WordTableRowHash;
+					}
+					If($HTML)
+					{
+						$rowdata += @(,(
+						$txt,$htmlbold,
+						$Setting.WemAllowWEMUseCvadConnectors.State,$htmlwhite))
+					}
+					If($Text)
+					{
+						OutputPolicySetting $txt $Setting.WemAllowWEMUseCvadConnectors.State 
+					}
+				}
+				If((validStateProp $Setting WemBrokerSvcName State ) -and ($Setting.WemBrokerSvcName.State -ne "NotConfigured"))
+				{
+					#added in 2511
+					$txt = "Workspace Environment Management\Infrastructure server"
+					If($MSWord -or $PDF)
+					{
+						$WordTableRowHash = @{
+						Text = $txt;
+						Value = $Setting.WemBrokerSvcName.Value;
+						}
+						$SettingsWordTable += $WordTableRowHash;
+					}
+					If($HTML)
+					{
+						$rowdata += @(,(
+						$txt,$htmlbold,
+						$Setting.WemBrokerSvcName.Value,$htmlwhite))
+					}
+					If($Text)
+					{
+						OutputPolicySetting $txt $Setting.WemBrokerSvcName.Value 
+					}
+				}
+				If((validStateProp $Setting WemOverrideAgentDeployment State ) -and ($Setting.WemOverrideAgentDeployment.State -ne "NotConfigured"))
+				{
+					#added in 2511
+					
+					Switch($Setting.WemOverrideAgentDeployment.Value)
+					{
+						"CloudService"	{$Tmp = "Cloud service"; Break}
+						"OnPremises"	{$Tmp = "On-premises"; Break}
+						"Basic"			{$Tmp = "Basic"; Break}
+						"Disabled"		{$Tmp = "Disabled"; Break}
+						Default			{$Tmp = "Unable to determine Override Agent Deployment Type: $($Setting.WemOverrideAgentDeployment.Value)"; Break}
+					}
+					
+					$txt = "Workspace Environment Management\Override Agent Deployment Type"
+					If($MSWord -or $PDF)
+					{
+						$WordTableRowHash = @{
+						Text = $txt;
+						Value = $Tmp;
+						}
+						$SettingsWordTable += $WordTableRowHash;
+					}
+					If($HTML)
+					{
+						$rowdata += @(,(
+						$txt,$htmlbold,
+						$Tmp,$htmlwhite))
+					}
+					If($Text)
+					{
+						OutputPolicySetting $txt $Tmp 
 					}
 				}
 
@@ -43301,8 +43706,8 @@ ProcessScriptEnd
 # SIG # Begin signature block
 # MIIthQYJKoZIhvcNAQcCoIItdjCCLXICAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU5DcqNwUWCQ/ahwXqkzFGX6Si
-# MPeggibfMIIFjTCCBHWgAwIBAgIQDpsYjvnQLefv21DiCEAYWjANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUJvXg/3hvKT712/BTTPOUQmbz
+# L3eggibfMIIFjTCCBHWgAwIBAgIQDpsYjvnQLefv21DiCEAYWjANBgkqhkiG9w0B
 # AQwFADBlMQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYD
 # VQQLExB3d3cuZGlnaWNlcnQuY29tMSQwIgYDVQQDExtEaWdpQ2VydCBBc3N1cmVk
 # IElEIFJvb3QgQ0EwHhcNMjIwODAxMDAwMDAwWhcNMzExMTA5MjM1OTU5WjBiMQsw
@@ -43513,33 +43918,33 @@ ProcessScriptEnd
 # UzEXMBUGA1UEChMORGlnaUNlcnQsIEluYy4xQTA/BgNVBAMTOERpZ2lDZXJ0IFRy
 # dXN0ZWQgRzQgQ29kZSBTaWduaW5nIFJTQTQwOTYgU0hBMzg0IDIwMjEgQ0ExAhAL
 # bN+2Z4EOKufLWhG6HUlwMAkGBSsOAwIaBQCgQDAZBgkqhkiG9w0BCQMxDAYKKwYB
-# BAGCNwIBBDAjBgkqhkiG9w0BCQQxFgQUiZNf2R6yv7didzfZsShDCvhyBO4wDQYJ
-# KoZIhvcNAQEBBQAEggIAoLw8cq9syRPsU476NHL1vrKsEbqXDg3IBx/yCArb21J/
-# BmKUv/ZcSmaacpSXcndfA09uGzNxE5lCFwUwBFcCFQCJWeJuaX/6J32Z6aN2Vldi
-# OP1dc9C2Ulj6lKTgQ7tfRpW5hjiZDxk0dJZyDbRp4S7XweThzQkwLldOfS16vmIX
-# C7xRgWLwtPAJr7KoqLkjAQff9ouu0KmO5kPNg5dElx38DIPwns5mlKNVxMkHSuR/
-# 4uk8qBXDUbnvkJ0GikGy1xt9utZlWJSlFh6J9Eudnt4hg/XtZ0hl+0HpNRk/5F4Q
-# vlQukJ6d5wW+jCr14G0K1QvQiRgqLTXHPZ2EHJxwqUuXbAzhnEhQWLWazCuPrc0g
-# SF1QbT1+wJB5MdzvTfBxKN3Ijq2psE3YrMWbewrzFklljdh01b8zZsMb++T7staA
-# wVDbALYpEb7tm0YoRRBp3VHYr4JbzszSrgs88+JL2IxyKhx2joeWnxplOKf9ALMf
-# jR0S4GXQrzzBRCXQbNsO6ZSdMoQPw2TBXCTalo9jIAPBMGDOJSNdVHHxy39BgTyl
-# 5H59sCdcvXyc1MCRxNRFPt3N4lTSHa2c0cLcPQc0klx0wohc9xMES30oO80Jk6ab
-# hJgHIszp1JChZjeC5tskOc1iRZgtveIKFF7zENUnr4czjX6tkjdHolTnBoY9SXqh
+# BAGCNwIBBDAjBgkqhkiG9w0BCQQxFgQUE5unSMk4q+PzyXajATaT5EAS/wIwDQYJ
+# KoZIhvcNAQEBBQAEggIAzMaQLo2QNVNucX6UehGXt5VFWXlPkOvOlh3D0/3OyyUa
+# JtGXIJxVEVZaCab94AoGW0N2llEEbuaz5K8MM+S+bp4LnQDYsjXz8YH9GNtBQqD8
+# apAS2gjoqyHtyXPFWjxy7rtAU4rPLk1LOZkmFqtFkZsuQWvUUmE9cWvdRpyFCrEg
+# Rv+6STbirO7pEYC87UHawHvAiAvp84C9mazvt3o+i5zW8dfQVDs5lda+275KM7KB
+# sD8gM91VOE1SEW33IBDlfDAgnTPEdEhn705LGbISj3Q31yIoQyfWjX8SKFzhW1Vj
+# 1PKPdYYAt/GrbAjrgA0jVc0s1YO3pIQBMeZ5dxqpWWgC+1N79VvdnIiDfVp9jHW+
+# RMLg5oyt3vQxPBKvLETiPTPJw4sys0mz8UlTukyYkfuDRrqMGr11zQBVLfK57uX4
+# HdbWMmTW7Qww9tRE6soRoQZ/V2UBuIsPjZJDvy63jxFoif4omJ0l0MbxHoBj+9Ea
+# HgXlHosCl9y0MLKmQJkVznUGOY5ZV+gFvgX8wfcJ5KP/s8LUMz3ospENhUzTmejb
+# gQfXcS59fyXZ7EQufrcRKuzni86PmB+mY9151cNibIYd03bmWpPsHqmdHl7UrL6H
+# ogkGOCm2NZPuxQV3ZYg5g2Sq46ETUiuLKbASgKKtTyLujee3XOu6QIa0Q3P5y/eh
 # ggMmMIIDIgYJKoZIhvcNAQkGMYIDEzCCAw8CAQEwfTBpMQswCQYDVQQGEwJVUzEX
 # MBUGA1UEChMORGlnaUNlcnQsIEluYy4xQTA/BgNVBAMTOERpZ2lDZXJ0IFRydXN0
 # ZWQgRzQgVGltZVN0YW1waW5nIFJTQTQwOTYgU0hBMjU2IDIwMjUgQ0ExAhAKgO8Y
 # S43xBYLRxHanlXRoMA0GCWCGSAFlAwQCAQUAoGkwGAYJKoZIhvcNAQkDMQsGCSqG
-# SIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMjYwMjEyMTkxNjE4WjAvBgkqhkiG9w0B
-# CQQxIgQgbW3hMcYao0n3dxyJICUuLcywHCUEAUQVboQVGODW5HgwDQYJKoZIhvcN
-# AQEBBQAEggIAPtPcBlDj9UgbHf3BtDo7dZ46bPi1fLlisC2l3ChHKjXRvrg7Y6Z8
-# z7+R18EZPGRLAt0+q+czQ68KyY20wP8g8h4mBmRDOoEhyhFzakroCouaL1zpRRM5
-# jNOy+nxD2X/B7qVlquFjjlaGapVUEQ6y0V5IcHXneNU2lYck+x/Qww1ruRuYD8fw
-# 9CaHpZV3Jt3VGdCfwUMEt7GL/Uprts9gcFsABHBNqY/uV+88cGr4/83qncfdq66T
-# fPE6B2p1K5KoP6POvMbBmcJgtCp0z0UtPpql6HUuM9/UdmX1nw3JIq6RGeZXBEqc
-# +oHwO6sFGV6/NuyRDky5lpzppYK9usJBKkTjHoUEKU6fvJ3o5l/ef+c52D6oe142
-# kcOlmUYyD+/OkHvPZ8yPVgoAGGw6DoO5843UEbUnDvbagbyQjqLFPaEIBLs3KKS6
-# O5ucnHoQwx3crW+7ezz1q6tUhz/bOjuqZAFNOupbHkEUCD/idinQG8G7VoALpe9B
-# 609TDFB3kHsJKRclFsPiV4zmp7coATe1EpyAekv+T3SQrsGLbEpvRGL2Ka37oMBg
-# GC/YDgNrofZaLJwybyP8izXwOIjIj/qIaRa/GMYosM9AKyVCd4ONzJa+BPfC7Bc/
-# FbOLjM0OSn87Ca0XLlAB1imFEdxbNmr6Yt877cpaMkyGRIwjyAjGox0=
+# SIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMjYwMjE2MTUyNTMwWjAvBgkqhkiG9w0B
+# CQQxIgQg7yHJ3+YNPAAcrhbNEyOtlwXT2cdJcOmHFKJ32CV1c80wDQYJKoZIhvcN
+# AQEBBQAEggIASZidYp8Va9bzmQ4fKUzqP+nci6G+XEOVAsLQCW53GtDU+xkpxqTo
+# xRf625N822x2JMUorVZewhgU8NcKYl8H9f7e1uZvK0Z0vcrNNDt+ajeX0RDrGphA
+# ia6YsisOPTVlgzGgqWxdYwXRdkAzWMwUwtVUPpte2vlxUXoRXMfxa9FRJCy2AVVX
+# wUgBcv1k6YQqL29Bm2UId7U/wVEbyQLQ21cA2z51t58lvvmUZdFzG7u1b70bQwSz
+# wJfVvNN1MvIaKCalWvHa/161l2a5DyJHWeIQ4jvxEEszKgsODLrrU64zm4HSPN8N
+# PxMSiXF6P/xYQzvJDtVkIfgXqaEA+NKlAzxZG/QL1eq35sJW7oCtJivEtgnqr/We
+# oTQapX0u4Z1GLfw8hOc82460r8eZqV0efQq5YyoYXE/PXBLqwqEpc7opiLZGJ/5P
+# NfqLvQTQTngdLzLHsHzXiaSUWREy5sanNJHJeMXkFFLg6M1+m35rVTcTwlXifjhh
+# oQA0DKkVFh7ekyyq+S0fLkVB9W/i5SNktts9EXoleOUwpEBdQ+gJU4Vfe/QOLEtS
+# 6XU0QZ1Nb2zyrdfof5U5H4+1JTw/D7FF4VBbnjbYy93lR8bSbJGiZYSR/Oqmgg+9
+# 0sAd5LH2K7Dl9qAXC0lJshDZLAyN4xgJDvDvY5fqU8U28u9xo3tC5Pc=
 # SIG # End signature block

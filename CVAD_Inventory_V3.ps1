@@ -1052,9 +1052,9 @@
 	This script creates a Word, PDF, plain text, or HTML document.
 .NOTES
 	NAME: CVAD_Inventory_V3.ps1
-	VERSION: 3.44 Beta 2
+	VERSION: 3.44 Beta 3
 	AUTHOR: Carl Webster
-	LASTEDIT: February 12, 2026
+	LASTEDIT: February 16, 2026
 #>
 
 #endregion
@@ -1250,6 +1250,21 @@ Param(
 #Version 3.44
 #	Added support for CVAD 2511/7.46
 #
+#	Added Computer policy
+#		Chrome Enterprise Premium\Enroll Chrome Browser
+#		ICA\Graphics\HDX screen sharing ports
+#		ICA\Graphics\Remote assistance ports
+#		ICA\Session Control\Disconnect published app session after closing last app
+#		VDA Data Collection\uberagent\Enhance Director to use uberAgent SessionDetail data for calculating Session Score
+#		VDA Data Collection\uberagent\Enhance Director with uberAgent data for resource utilization
+#		Workspace Environment Management\Agent proxy configuration
+#		Workspace Environment Management\Agent service port
+#		Workspace Environment Management\Cached data synchronization port
+#		Workspace Environment Management\Custom settings for basic deployment
+#		Workspace Environment Management\Discover Citrix Cloud Connectors from CVAD service
+#		Workspace Environment Management\Infrastructure server
+#		Workspace Environment Management\Override Agent Deployment Type
+#
 #	Added User policy
 #		AssistantApp\Enable Assistant App
 #		ICA\Mac Image Capture scanner redirection
@@ -1301,10 +1316,10 @@ Param(
 #			Zone_RemoveScope
 #
 #	In Function OutputRoles
-#		Expand the Description column to accomodate longer descriptions
+#		Expand the Description column to accommodate longer descriptions
 #
 #	In Function OutputRoleDefinitions, 
-#		Expand the output column widths to accomodate the new folder and permission names
+#		Expand the output column widths to accommodate the new folder and permission names
 
 #Version 3.43.004 13-Oct-2025
 #	Thanks to Citrix, Ferroque Systems, Guy Leech, Nicholas Cookendorfer, Arnaud Pain, and Prateek Anaud for their help
@@ -2769,9 +2784,9 @@ $SaveEAPreference         = $ErrorActionPreference
 $ErrorActionPreference    = 'SilentlyContinue'
 
 #stuff for report footer
-$script:MyVersion   = "3.44 Beta 2"
+$script:MyVersion   = "3.44 Beta 3"
 $Script:ScriptName  = "CVAD_Inventory_V3.ps1"
-$tmpdate            = [datetime] "02/12/2026"
+$tmpdate            = [datetime] "02/16/2026"
 $Script:ReleaseDate = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($Null -eq $HTML)
@@ -17518,6 +17533,30 @@ Function ProcessCitrixPolicies
 						}
 					}
 
+					Write-Verbose "$(Get-Date -Format G): `t`t`tChrome Enterprise Premium"
+					If((validStateProp $Setting EnrollChromeBrowser State ) -and ($Setting.EnrollChromeBrowser.State -ne "NotConfigured"))
+					{
+						#added in 2511
+						$txt = "Chrome Enterprise Premium\Enroll Chrome Browser"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.EnrollChromeBrowser.Value;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.EnrollChromeBrowser.Value,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.EnrollChromeBrowser.Value
+						}
+					}
+
 					Write-Verbose "$(Get-Date -Format G): `t`t`tConnector for Configuration Manager 2012"
 					If((validStateProp $Setting AdvanceWarningFrequency State ) -and ($Setting.AdvanceWarningFrequency.State -ne "NotConfigured"))
 					{
@@ -20843,6 +20882,28 @@ Function ProcessCitrixPolicies
 							OutputPolicySetting $txt $Setting.DisplayLosslessIndicator.State 
 						}	
 					}
+					If((validStateProp $Setting ScreenSharingPortRange State ) -and ($Setting.ScreenSharingPortRange.State -ne "NotConfigured"))
+					{
+						#added in 2511
+						$txt = "ICA\Graphics\HDX screen sharing ports"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.ScreenSharingPortRange.Value;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.ScreenSharingPortRange.Value,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.ScreenSharingPortRange.Value 
+						}	
+					}
 					If((validStateProp $Setting ScreenSharingConnectTimeout State ) -and ($Setting.ScreenSharingConnectTimeout.State -ne "NotConfigured"))
 					{
 						#added in 2511
@@ -20939,6 +21000,28 @@ Function ProcessCitrixPolicies
 						{
 							OutputPolicySetting $txt $Setting.AppAndDesktopSharing.State 
 						}
+					}
+					If((validStateProp $Setting RemoteAssistancePortRange State ) -and ($Setting.RemoteAssistancePortRange.State -ne "NotConfigured"))
+					{
+						#added in 2511
+						$txt = "ICA\Graphics\Remote assistance ports"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.RemoteAssistancePortRange.Value;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.RemoteAssistancePortRange.Value,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.RemoteAssistancePortRange.Value 
+						}	
 					}
 					If((validStateProp $Setting RemoteAssistance State ) -and ($Setting.RemoteAssistance.State -ne "NotConfigured"))
 					{
@@ -24263,6 +24346,30 @@ Function ProcessCitrixPolicies
 						}
 					}
 					
+					Write-Verbose "$(Get-Date -Format G): `t`t`tICA\Session Control"
+					If((validStateProp $Setting EnableAutoDisconnectedSession State ) -and ($Setting.EnableAutoDisconnectedSession.State -ne "NotConfigured"))
+					{
+						#added in 2511
+						$txt = "ICA\Session Control\Disconnect published app session after closing last app"
+						If($MSWord -or $PDF)
+						{
+							$SettingsWordTable += @{
+							Text = $txt;
+							Value = $Setting.EnableAutoDisconnectedSession.State;
+							}
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.EnableAutoDisconnectedSession.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.EnableAutoDisconnectedSession.State 
+						}
+					}
+
 					Write-Verbose "$(Get-Date -Format G): `t`t`tICA\Session Interactivity"
 					If((validStateProp $Setting LossTolerantThresholds State ) -and ($Setting.LossTolerantThresholds.State -ne "NotConfigured"))
 					{
@@ -32375,12 +32482,57 @@ Function ProcessCitrixPolicies
 					}
 					#end added in 3.41
 
-					#added in 3.43.004
 					Write-Verbose "$(Get-Date -Format G): `t`t`tVDA Data Collection\uberAgent"
+					If((validStateProp $Setting EnableuberAgentSessionDetailCollection State ) -and ($Setting.EnableuberAgentSessionDetailCollection.State -ne "NotConfigured"))
+					{
+						#added in 2511
+						$txt = "VDA Data Collection\uberAgent\uberAgent data collection for Application monitoring"
+						If($MSWord -or $PDF)
+						{
+							$WordTableRowHash = @{
+							Text = $txt;
+							Value = $Setting.EnableuberAgentSessionDetailCollection.State;
+							}
+							$SettingsWordTable += $WordTableRowHash;
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.EnableuberAgentSessionDetailCollection.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.EnableuberAgentSessionDetailCollection.State
+						}
+					}
+					If((validStateProp $Setting EnableuberAgentDataCollectio State ) -and ($Setting.EnableuberAgentDataCollectio.State -ne "NotConfigured"))
+					{
+						#added in 2511
+						$txt = "VDA Data Collection\uberAgent\Enhance Director to use uberAgent SessionDetail data for calculating Session Score"
+						If($MSWord -or $PDF)
+						{
+							$WordTableRowHash = @{
+							Text = $txt;
+							Value = $Setting.EnableuberAgentDataCollectio.State;
+							}
+							$SettingsWordTable += $WordTableRowHash;
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.EnableuberAgentDataCollectio.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.EnableuberAgentDataCollectio.State
+						}
+					}
 					If((validStateProp $Setting EnableuberAgentDataCollection State ) -and ($Setting.EnableuberAgentDataCollection.State -ne "NotConfigured"))
 					{
 						#added in CVAD2411
-						$txt = "VDA Data Collection\uberAgent\uberAgent data collection for Application monitoring"
+						$txt = "VDA Data Collection\uberAgent\Enhance Director with uberAgent data for resource utilization"
 						If($MSWord -or $PDF)
 						{
 							$WordTableRowHash = @{
@@ -32400,7 +32552,6 @@ Function ProcessCitrixPolicies
 							OutputPolicySetting $txt $Setting.EnableuberAgentDataCollection.State
 						}
 					}
-					#end added in 3.43.004
 
 					Write-Verbose "$(Get-Date -Format G): `t`t`tVirtual Delivery Agent Settings"
 					If((validStateProp $Setting ControllerRegistrationIPv6Netmask State ) -and ($Setting.ControllerRegistrationIPv6Netmask.State -ne "NotConfigured"))
@@ -32903,6 +33054,75 @@ Function ProcessCitrixPolicies
 				}
 
 				Write-Verbose "$(Get-Date -Format G): `t`t`tWorkspace Environment Management"
+				If((validStateProp $Setting WemProxyAddress State ) -and ($Setting.WemProxyAddress.State -ne "NotConfigured"))
+				{
+					#added in 2511
+					$txt = "Workspace Environment Management\Agent proxy configuration"
+					If($MSWord -or $PDF)
+					{
+						$WordTableRowHash = @{
+						Text = $txt;
+						Value = $Setting.WemProxyAddress.Value;
+						}
+						$SettingsWordTable += $WordTableRowHash;
+					}
+					If($HTML)
+					{
+						$rowdata += @(,(
+						$txt,$htmlbold,
+						$Setting.WemProxyAddress.Value,$htmlwhite))
+					}
+					If($Text)
+					{
+						OutputPolicySetting $txt $Setting.WemProxyAddress.Value 
+					}
+				}
+				If((validStateProp $Setting WemBrokerSvcPort State ) -and ($Setting.WemBrokerSvcPort.State -ne "NotConfigured"))
+				{
+					#added in 2511
+					$txt = "Workspace Environment Management\Agent service port"
+					If($MSWord -or $PDF)
+					{
+						$WordTableRowHash = @{
+						Text = $txt;
+						Value = $Setting.WemBrokerSvcPort.Value;
+						}
+						$SettingsWordTable += $WordTableRowHash;
+					}
+					If($HTML)
+					{
+						$rowdata += @(,(
+						$txt,$htmlbold,
+						$Setting.WemBrokerSvcPort.Value,$htmlwhite))
+					}
+					If($Text)
+					{
+						OutputPolicySetting $txt $Setting.WemBrokerSvcPort.Value 
+					}
+				}
+				If((validStateProp $Setting WemCachedDataSyncPort State ) -and ($Setting.WemCachedDataSyncPort.State -ne "NotConfigured"))
+				{
+					#added in 2511
+					$txt = "Workspace Environment Management\Cached data synchronization port"
+					If($MSWord -or $PDF)
+					{
+						$WordTableRowHash = @{
+						Text = $txt;
+						Value = $Setting.WemCachedDataSyncPort.Value;
+						}
+						$SettingsWordTable += $WordTableRowHash;
+					}
+					If($HTML)
+					{
+						$rowdata += @(,(
+						$txt,$htmlbold,
+						$Setting.WemCachedDataSyncPort.Value,$htmlwhite))
+					}
+					If($Text)
+					{
+						OutputPolicySetting $txt $Setting.WemCachedDataSyncPort.Value 
+					}
+				}
 				If((validStateProp $Setting WemCloudConnectorList State ) -and ($Setting.WemCloudConnectorList.State -ne "NotConfigured"))
 				{
 					$txt = "Workspace Environment Management\Citrix Cloud Connectors" #added in 2103
@@ -33006,6 +33226,191 @@ Function ProcessCitrixPolicies
 						{
 							OutputPolicySetting $txt $Setting.WemCloudConnectorList.State 
 						}
+					}
+				}
+				If((validStateProp $Setting WemCustomBasicSettings State ) -and ($Setting.WemCustomBasicSettings.State -ne "NotConfigured"))
+				{
+					#added in 2511
+					$txt = "Workspace Environment Management\Custom settings for basic deployment"
+					If($Setting.WemCustomBasicSettings.State -eq "Enabled")
+					{
+						If(validStateProp $Setting WemCustomBasicSettings Values )
+						{
+							$tmpArray = $Setting.WemCustomBasicSettings.Values.Split(",")
+							$tmp = ""
+							$cnt = 0
+							ForEach($Thing in $tmpArray)
+							{
+								$cnt++
+								$tmp = "$($Thing)"
+								If($cnt -eq 1)
+								{
+									If($MSWord -or $PDF)
+									{
+										$WordTableRowHash = @{
+										Text = $txt;
+										Value = $tmp;
+										}
+										$SettingsWordTable += $WordTableRowHash;
+									}
+									If($HTML)
+									{
+										$rowdata += @(,(
+										$txt,$htmlbold,
+										$tmp,$htmlwhite))
+									}
+									If($Text)
+									{
+										OutputPolicySetting $txt $tmp
+									}
+								}
+								Else
+								{
+									If($MSWord -or $PDF)
+									{
+										$WordTableRowHash = @{
+										Text = "";
+										Value = $tmp;
+										}
+										$SettingsWordTable += $WordTableRowHash;
+									}
+									If($HTML)
+									{
+										$rowdata += @(,(
+										"",$htmlbold,
+										$tmp,$htmlwhite))
+									}
+									If($Text)
+									{
+										OutputPolicySetting "`t`t`t`t`t`t`t" $tmp
+									}
+								}
+							}
+							$tmpArray = $Null
+							$tmp = $Null
+						}
+						Else
+						{
+							$tmp = "No Custom settings for basic deployment were found"
+							If($MSWord -or $PDF)
+							{
+								$WordTableRowHash = @{
+								Text = $txt;
+								Value = $tmp;
+								}
+								$SettingsWordTable += $WordTableRowHash;
+							}
+							If($HTML)
+							{
+								$rowdata += @(,(
+								$txt,$htmlbold,
+								$tmp,$htmlwhite))
+							}
+							If($Text)
+							{
+								OutputPolicySetting $txt $tmp
+							}
+						}
+					}
+					Else
+					{
+						If($MSWord -or $PDF)
+						{
+							$WordTableRowHash = @{
+							Text = $txt;
+							Value = $Setting.WemCustomBasicSettings.State;
+							}
+							$SettingsWordTable += $WordTableRowHash;
+						}
+						If($HTML)
+						{
+							$rowdata += @(,(
+							$txt,$htmlbold,
+							$Setting.WemCustomBasicSettings.State,$htmlwhite))
+						}
+						If($Text)
+						{
+							OutputPolicySetting $txt $Setting.WemCustomBasicSettings.State 
+						}
+					}
+				}
+				If((validStateProp $Setting WemAllowWEMUseCvadConnectors State ) -and ($Setting.WemAllowWEMUseCvadConnectors.State -ne "NotConfigured"))
+				{
+					#added in 2511
+					$txt = "Workspace Environment Management\Discover Citrix Cloud Connectors from CVAD service"
+					If($MSWord -or $PDF)
+					{
+						$WordTableRowHash = @{
+						Text = $txt;
+						Value = $Setting.WemAllowWEMUseCvadConnectors.State;
+						}
+						$SettingsWordTable += $WordTableRowHash;
+					}
+					If($HTML)
+					{
+						$rowdata += @(,(
+						$txt,$htmlbold,
+						$Setting.WemAllowWEMUseCvadConnectors.State,$htmlwhite))
+					}
+					If($Text)
+					{
+						OutputPolicySetting $txt $Setting.WemAllowWEMUseCvadConnectors.State 
+					}
+				}
+				If((validStateProp $Setting WemBrokerSvcName State ) -and ($Setting.WemBrokerSvcName.State -ne "NotConfigured"))
+				{
+					#added in 2511
+					$txt = "Workspace Environment Management\Infrastructure server"
+					If($MSWord -or $PDF)
+					{
+						$WordTableRowHash = @{
+						Text = $txt;
+						Value = $Setting.WemBrokerSvcName.Value;
+						}
+						$SettingsWordTable += $WordTableRowHash;
+					}
+					If($HTML)
+					{
+						$rowdata += @(,(
+						$txt,$htmlbold,
+						$Setting.WemBrokerSvcName.Value,$htmlwhite))
+					}
+					If($Text)
+					{
+						OutputPolicySetting $txt $Setting.WemBrokerSvcName.Value 
+					}
+				}
+				If((validStateProp $Setting WemOverrideAgentDeployment State ) -and ($Setting.WemOverrideAgentDeployment.State -ne "NotConfigured"))
+				{
+					#added in 2511
+					
+					Switch($Setting.WemOverrideAgentDeployment.Value)
+					{
+						"CloudService"	{$Tmp = "Cloud service"; Break}
+						"OnPremises"	{$Tmp = "On-premises"; Break}
+						"Basic"			{$Tmp = "Basic"; Break}
+						"Disabled"		{$Tmp = "Disabled"; Break}
+						Default			{$Tmp = "Unable to determine Override Agent Deployment Type: $($Setting.WemOverrideAgentDeployment.Value)"; Break}
+					}
+					
+					$txt = "Workspace Environment Management\Override Agent Deployment Type"
+					If($MSWord -or $PDF)
+					{
+						$WordTableRowHash = @{
+						Text = $txt;
+						Value = $Tmp;
+						}
+						$SettingsWordTable += $WordTableRowHash;
+					}
+					If($HTML)
+					{
+						$rowdata += @(,(
+						$txt,$htmlbold,
+						$Tmp,$htmlwhite))
+					}
+					If($Text)
+					{
+						OutputPolicySetting $txt $Tmp 
 					}
 				}
 
