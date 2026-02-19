@@ -1052,9 +1052,9 @@
 	This script creates a Word, PDF, plain text, or HTML document.
 .NOTES
 	NAME: CVAD_Inventory_V3.ps1
-	VERSION: 3.44 Beta 3
+	VERSION: 3.44 Beta 4
 	AUTHOR: Carl Webster
-	LASTEDIT: February 16, 2026
+	LASTEDIT: February 19, 2026
 #>
 
 #endregion
@@ -1274,46 +1274,66 @@ Param(
 #
 #	In Function GetRolePermissions:
 #		Added new permissions
-#			AppLib_PackageDiscovery_Read
-#			Director_Analytics
-#			Director_DesktopHardwareInformation
-#			Director_DiskMetrics
-#			Director_EndpointMetrics
-#			Director_EndpointMetrics_Edit
-#			Director_GetVDARegistryKeyValues
-#			Director_GetVDARegistryKeyValues_Edit
-#			Director_GPOData
-#			Director_GpuMetrics
-#			Director_HDXInformation
-#			Director_HDXProtocol
-#			Director_LatencyInformation
-#			Director_MachineMetricValues
-#			Director_MTOPInformation
-#			Director_PersonalizationInformation
-#			Director_PoliciesInformation
-#			Director_ProfileLoadData
-#			Director_RDSLicenseCheck
-#			Director_RoundTripInformation
-#			Director_ShadowSessionViaHDXSS
-#			Director_ShadowSessionViaHDXSS_Edit
-#			Director_TaskManagerInformation
-#			EntitlementPolicyRule_ChangeTags
-#			EntitlementPolicyRule_Machine_ChangeTags
-#			Image_AddScope
-#			Image_RemoveScope
-#			MergeGroup_Create
-#			MergeGroup_Delete
-#			MergeGroup_EditProperties
-#			ExtendedTracing_Manage
-#			Monitor_Log_Server_Configuration_Manage
-#			Trust_MultiTenantAccessList_Read
-#			Trust_VdaEnrollmentToken_Read
-#			ResourceAccessPolicyRule_Create
-#			ResourceAccessPolicyRule_Delete
-#			ResourceAccessPolicyRule_EditProperties
-#			ResourceAccessPolicyRule_Read
-#			Zone_AddScope
-#			Zone_RemoveScope
+#			AppLib_PackageDiscovery_Read (View Application Package Discovery Sessions)
+#			Director_Analytics (View Analytics page)
+#			Director_AotLogs (View Logs page)
+#			Director_DesktopHardwareInformation (Perform Machine Hardware related Broker machine command)
+#			Director_DiskMetrics (Perform Disk metrics related Broker machine command)
+#			Director_EndpointMetrics (Perform Endpoint Metrics related Broker machine command)
+#			Director_EndpointMetrics_Edit (Edit Endpoint Metrics related Broker machine command)
+#			Director_GetVDARegistryKeyValues (Get VDA registry key values)
+#			Director_GetVDARegistryKeyValues_Edit (Edit VDA registry keys retrieval related machine command properties)
+#			Director_GPOData (Perform GPO Data related Broker machine command)
+#			Director_GpuMetrics (Perform Gpu metrics related Broker machine command)
+#			Director_HDXInformation (Perform HDX related Broker machine command)
+#			Director_HDXProtocol (Perform HDX Protocol related Broker machine command)
+#			Director_LatencyInformation (Perform Latency related Broker machine command)
+#			Director_MachineMetricValues (Perform Machine metric related Broker machine command)
+#			Director_MTOPInformation (Perform MTOP related Broker machine command)
+#			Director_PersonalizationInformation (Perform Personalization related Broker machine command)
+#			Director_PoliciesInformation (Perform Policies related Broker machine command)
+#			Director_ProfileLoadData (Perform Profile Load Data related Broker machine command)
+#			Director_RDSLicenseCheck (RDS License Check)
+#			Director_RoundTripInformation (Perform Roundtrip Time related Broker machine command)
+#			Director_ShadowSessionViaHDXSS (Perform Remote Assistance on a machine via HDX Screen Sharing)
+#			Director_ShadowSessionViaHDXSS_Edit (Edit HDX Screen Sharing related machine command properties)
+#			Director_TaskManagerInformation (Perform TaskManager related Broker machine command)
+#			EntitlementPolicyRule_ChangeTags (Edit Entitlement Policy Rule tags)
+#			EntitlementPolicyRule_Machine_ChangeTags (Edit Entitlement Policy Rule machine tags)
+#			Image_AddScope (Add Image to Scope)
+#			Image_RemoveScope (Remove Image from Scope)
+#			MergeGroup_Create (Create Merge Groups)
+#			MergeGroup_Delete (Delete Merge Groups)
+#			MergeGroup_EditProperties (Edit Merge Groups)
+#			MergeGroup_Read (View Merge Groups)
+#			ExtendedTracing_Manage (Manage Trace Capture Sessions)
+#			ExtendedTracing_Read (View Trace Capture Sessions)
+#			Monitor_Log_Server_Configuration_Manage (Manage Monitor log server configurations)
+#			Trust_MultiTenantAccessList_Read (Read multi-tenant service access list permissions.)
+#			Trust_VdaEnrollmentToken_Read (Read VDA enrollment tokens.)
+#			ResourceAccessPolicyRule_Create (Creates Resource Access Policy Rules)
+#			ResourceAccessPolicyRule_Delete (Delete Resource Access Policy Rules)
+#			ResourceAccessPolicyRule_EditProperties (Edit Resource Access Policy Rules)
+#			ResourceAccessPolicyRule_Read (Reads Resource Access Policy Rules)
+#			Zone_AddScope (Add Zone to Scope)
+#			Zone_RemoveScope (Zone_RemoveScope)
+#
+#	In Function OutputMachines, add the following Machine custom properties:
+#		Custom Properties For Azure
+#			BackupVmConfiguration
+#
+#		Custom Properties For Aws
+#			WBCDiskStorageType
+#			PersistWBC
+#			PersistOSDisk
+#			PreformatWriteBackCache
+#			BackupVmConfiguration
+#				
+#		Custom properties For Scvmm
+#			AzureArcSubscriptionId
+#			AzureArcRegion
+#			AzureArcResourceGroup
+#			EnableAzureArcOnboarding
 #
 #	In Function OutputRoles
 #		Expand the Description column to accommodate longer descriptions
@@ -2784,9 +2804,9 @@ $SaveEAPreference         = $ErrorActionPreference
 $ErrorActionPreference    = 'SilentlyContinue'
 
 #stuff for report footer
-$script:MyVersion   = "3.44 Beta 3"
+$script:MyVersion   = "3.44 Beta 4"
 $Script:ScriptName  = "CVAD_Inventory_V3.ps1"
-$tmpdate            = [datetime] "02/16/2026"
+$tmpdate            = [datetime] "02/19/2026"
 $Script:ReleaseDate = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($Null -eq $HTML)
@@ -8884,6 +8904,7 @@ Function OutputMachines
 				https://developer-docs.citrix.com/projects/citrix-virtual-apps-desktops-sdk/en/latest/MachineCreation/about_Prov_CustomProperties/
 				
 				Custom Properties For Azure
+					BackupVmConfiguration #new in 3.44
 					DedicatedHostGroupId
 					DiskEncryptionSetId
 					EnableIntuneEnroll
@@ -8917,7 +8938,12 @@ Function OutputMachines
 				Custom Properties For Aws
 					AwsCaptureInstanceProperties
 					AwsOperationalResourcesTagging
-
+					WBCDiskStorageType #new in 3.44
+					PersistWBC #new in 3.44
+					PersistOSDisk #new in 3.44
+					PreformatWriteBackCache #new in 3.44
+					BackupVmConfiguration #new in 3.44
+					
 				Custom Properties For Gcp
 					CatalogZones
 					CryptoKeyId
@@ -8929,6 +8955,12 @@ Function OutputMachines
 					
 				Custom Properties For VMware #new in 3.41
 					FolderId
+					
+				Custom properties For Scvmm #new in 3.44
+					AzureArcSubscriptionId
+					AzureArcRegion
+					AzureArcResourceGroup
+					EnableAzureArcOnboarding
 			#>
 			
 			$ProvScheme = Get-ProvScheme -ProvisioningSchemeUid $Catalog.ProvisioningSchemeID @CVADParams2
@@ -37825,22 +37857,6 @@ Function GetRolePermissions
 			"ApplicationGroup_RemoveFromDesktopGroup"					{$Results.Add("Remove Delivery Group from Application Group", "Application Groups")}
 			"ApplicationGroup_RemoveScope"								{$Results.Add("Remove Application Group from Scope", "Application Groups")}
 		
-			#old App-V group name
-			#"AppLib_AddApplication"									{$Results.Add("Add App-V applications", "App-V")}
-			#"AppLib_AddPackage"										{$Results.Add("Add App-V Application Libraries and Packages", "App-V")}
-			#"AppLib_IsolationGroup_Create"								{$Results.Add("Create App-V Isolation Group", "App-V")}
-			#"AppLib_IsolationGroup_Remove"								{$Results.Add("Remove App-V Isolation Groups", "App-V")}
-			#"AppLib_PackageDiscovery_Create"							{$Results.Add("Create Application Package Discovery Sessions", "App-V")} #new in 2212
-			#"AppLib_PackageDiscoveryProfile_Create"					{$Results.Add("Create Application Package Discovery Profiles", "App-V")} #new in 2212
-			#"AppLib_PackageDiscoveryProfile_Remove"					{$Results.Add("Remove Application Package Discovery Profiles", "App-V")} #new in 2212
-			#"AppLib_Read"												{$Results.Add("Read App-V Application Libraries and Packages", "App-V")}
-			#"AppLib_RemoveApplication"									{$Results.Add("Remove App-V applications", "App-V")} #added in 2411
-			#"AppLib_RemoveAppVServer"									{$Results.Add("Remove App-V Server", "App-V")}
-			#"AppLib_RemovePackage"										{$Results.Add("Remove App-V Application Libraries and Packages", "App-V")}
-			#"AppV_AddServer"											{$Results.Add("Add App-V publishing server", "App-V")}
-			#"AppV_DeleteServer"										{$Results.Add("Remove App-V Server and associated Packages", "Application Packages")} #description updated in 3.43.004
-			#"AppV_Read"												{$Results.Add("Read App-V servers", "App-V")}
-			
 			#I missed along the way that "App-V" was renamed to "Application Packages" prior to CVAD 2308
 			#3.43.002
 			"AppLib_AddApplication"										{$Results.Add("Add Application Packages applications", "Application Packages")}
@@ -37909,6 +37925,7 @@ Function GetRolePermissions
 			"Director_Alerts_Read"										{$Results.Add("View Alerts", "Director")}
 			"Director_AlertWebhookProfile_Edit"							{$Results.Add("Create\Edit\Remove\View Webhook Profile Configurations", "Director")} #added in 2411
 			"Director_Analytics"										{$Results.Add("View Analytics page", "Director")} #added in 2511
+			"Director_AotLogs"											{$Results.Add("View Logs page", "Director")} #added in 2511
 			"Director_ApplicationDashboard"								{$Results.Add("View Applications page", "Director")}
 			"Director_BulkActions_Edit"									{$Results.Add("Perform bulk actions for machine and session management", "Director")} #added in 2503
 			"Director_ClientDetails_Read"								{$Results.Add("View Client Details page", "Director")}
@@ -38044,6 +38061,7 @@ Function GetRolePermissions
 			"MergeGroup_Create"											{$Results.Add("Create Merge Groups", "Merge Groups")} #added in 2511
 			"MergeGroup_Delete"											{$Results.Add("Delete Merge Groups", "Merge Groups")} #added in 2511
 			"MergeGroup_EditProperties"									{$Results.Add("Edit Merge Groups", "Merge Groups")} #added in 2511
+			"MergeGroup_Read"											{$Results.Add("View Merge Groups", "Merge Groups")} #added in 2511
 
 			"AutoTagRule_Create"										{$Results.Add("Create AutoTagRule", "Other permissions")}
 			"AutoTagRule_Delete"										{$Results.Add("Delete AutoTagRule", "Other permissions")}
@@ -38054,6 +38072,7 @@ Function GetRolePermissions
 			"DirectorAgent_Registration"								{$Results.Add("Create/Edit/Manage Connections to Citrix components (Infra Monitoring)", "Other permissions")}	#2407
 			"EnvTest"													{$Results.Add("Run environment tests", "Other permissions")}
 			"ExtendedTracing_Manage"									{$Results.Add("Manage Trace Capture Sessions", "Other permissions")} #added in 2511
+			"ExtendedTracing_Read"										{$Results.Add("View Trace Capture Sessions", "Other permissions")} #added in 2511
 			"Global_Read"												{$Results.Add("Read Site Configuration (Global_Read)", "Other permissions")}
 			"Global_Write"												{$Results.Add("Update Site Configuration (Global_Write)", "Other permissions")}
 			"Monitor_Log_Server_Configuration_Manage"					{$Results.Add("Manage Monitor log server configurations", "Other permissions")} #added in 2511
@@ -38061,7 +38080,6 @@ Function GetRolePermissions
 			"Monitor_UCaaS_Connections_Read"							{$Results.Add("View Connections to communication apps (Real-time com", "Other permissions")} #added in 2507
 			"Orchestration_RestApi"										{$Results.Add("Manage Orchestration Service REST API", "Other permissions")}
 			"PerformUpgrade"											{$Results.Add("Perform upgrade", "Other permissions")}
-			#"SkylightBroker"											{$Results.Add(" (3) ", "Other permissions")}
 			"Tag_Create"												{$Results.Add("Create tags", "Other permissions")}
 			"Tag_Delete"												{$Results.Add("Delete tags", "Other permissions")}
 			"Tag_Edit"													{$Results.Add("Edit tags", "Other permissions")}
@@ -43706,8 +43724,8 @@ ProcessScriptEnd
 # SIG # Begin signature block
 # MIIthQYJKoZIhvcNAQcCoIItdjCCLXICAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUJvXg/3hvKT712/BTTPOUQmbz
-# L3eggibfMIIFjTCCBHWgAwIBAgIQDpsYjvnQLefv21DiCEAYWjANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU3Rv301BRgxQRlC6qJh0yom6Z
+# B/6ggibfMIIFjTCCBHWgAwIBAgIQDpsYjvnQLefv21DiCEAYWjANBgkqhkiG9w0B
 # AQwFADBlMQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYD
 # VQQLExB3d3cuZGlnaWNlcnQuY29tMSQwIgYDVQQDExtEaWdpQ2VydCBBc3N1cmVk
 # IElEIFJvb3QgQ0EwHhcNMjIwODAxMDAwMDAwWhcNMzExMTA5MjM1OTU5WjBiMQsw
@@ -43918,33 +43936,33 @@ ProcessScriptEnd
 # UzEXMBUGA1UEChMORGlnaUNlcnQsIEluYy4xQTA/BgNVBAMTOERpZ2lDZXJ0IFRy
 # dXN0ZWQgRzQgQ29kZSBTaWduaW5nIFJTQTQwOTYgU0hBMzg0IDIwMjEgQ0ExAhAL
 # bN+2Z4EOKufLWhG6HUlwMAkGBSsOAwIaBQCgQDAZBgkqhkiG9w0BCQMxDAYKKwYB
-# BAGCNwIBBDAjBgkqhkiG9w0BCQQxFgQUE5unSMk4q+PzyXajATaT5EAS/wIwDQYJ
-# KoZIhvcNAQEBBQAEggIAzMaQLo2QNVNucX6UehGXt5VFWXlPkOvOlh3D0/3OyyUa
-# JtGXIJxVEVZaCab94AoGW0N2llEEbuaz5K8MM+S+bp4LnQDYsjXz8YH9GNtBQqD8
-# apAS2gjoqyHtyXPFWjxy7rtAU4rPLk1LOZkmFqtFkZsuQWvUUmE9cWvdRpyFCrEg
-# Rv+6STbirO7pEYC87UHawHvAiAvp84C9mazvt3o+i5zW8dfQVDs5lda+275KM7KB
-# sD8gM91VOE1SEW33IBDlfDAgnTPEdEhn705LGbISj3Q31yIoQyfWjX8SKFzhW1Vj
-# 1PKPdYYAt/GrbAjrgA0jVc0s1YO3pIQBMeZ5dxqpWWgC+1N79VvdnIiDfVp9jHW+
-# RMLg5oyt3vQxPBKvLETiPTPJw4sys0mz8UlTukyYkfuDRrqMGr11zQBVLfK57uX4
-# HdbWMmTW7Qww9tRE6soRoQZ/V2UBuIsPjZJDvy63jxFoif4omJ0l0MbxHoBj+9Ea
-# HgXlHosCl9y0MLKmQJkVznUGOY5ZV+gFvgX8wfcJ5KP/s8LUMz3ospENhUzTmejb
-# gQfXcS59fyXZ7EQufrcRKuzni86PmB+mY9151cNibIYd03bmWpPsHqmdHl7UrL6H
-# ogkGOCm2NZPuxQV3ZYg5g2Sq46ETUiuLKbASgKKtTyLujee3XOu6QIa0Q3P5y/eh
+# BAGCNwIBBDAjBgkqhkiG9w0BCQQxFgQU6BHxdAzA/7xunXTvWewT4Pjs/UkwDQYJ
+# KoZIhvcNAQEBBQAEggIAFManCpZIbp01DBIlFPdKwQ3It/G6CQynY8K86jUzzm4o
+# 4fFPuL/Y8Fs8KswaMsTywsYe/ewROwIYZFUujTv8JPFyMJ6DHhnSCbPqST4ji++f
+# VXdhaU7KddPLcyuXTfCdOClxUyE9Sb08aHDyQUgzEiTnLvnC9DJjgfC5awMKKJ6q
+# qEQIaMMmAk2417sDIEZZ0qzFufMuG+sEW5HjBq5LHZx3bVhkmLVLmJYM/1nsDFlK
+# xtT3Tk2xFnjVEgtH+8YvzKzuh9DzMmt46TD2HIokFr0979TKZWBIAZww4NZAH4Z9
+# +Tuw4VGAKR7adDcF4abOjtOVmEzK5JCa0xaNE9/GOrgHQZfrHFNnRHDi44pRV9Yj
+# wmsUqTd9IWYlvdk1SrdkTRRHqI70Qd2KPLVUaWO/0ZbErxNmZsYJC1c9uV6D5mv7
+# kaNkoJFhRSF6SYiAN1ZKWYlQ5+7NkjIKDWLe8AOElpwdyybNKD2U0glH1vUZcRHy
+# MjvIKopq0dQbTYy8v1lKfWw8dIbcKnvBeKLDGqAjJmEohyb/oUNkfn/WIsLF1YYj
+# BPjgscNfOxw4h/WI0P808njUMT3I3mi+t6lgh467Z2xhb8kaGaWh3ynqW2gFS+y0
+# 0UZ7hPu8bM0ruNl9YiO8BJjzXyFW4OpV8ocKP1/e3gfN7r5NgKDU8CgJtKA/wBWh
 # ggMmMIIDIgYJKoZIhvcNAQkGMYIDEzCCAw8CAQEwfTBpMQswCQYDVQQGEwJVUzEX
 # MBUGA1UEChMORGlnaUNlcnQsIEluYy4xQTA/BgNVBAMTOERpZ2lDZXJ0IFRydXN0
 # ZWQgRzQgVGltZVN0YW1waW5nIFJTQTQwOTYgU0hBMjU2IDIwMjUgQ0ExAhAKgO8Y
 # S43xBYLRxHanlXRoMA0GCWCGSAFlAwQCAQUAoGkwGAYJKoZIhvcNAQkDMQsGCSqG
-# SIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMjYwMjE2MTUyNTMwWjAvBgkqhkiG9w0B
-# CQQxIgQg7yHJ3+YNPAAcrhbNEyOtlwXT2cdJcOmHFKJ32CV1c80wDQYJKoZIhvcN
-# AQEBBQAEggIASZidYp8Va9bzmQ4fKUzqP+nci6G+XEOVAsLQCW53GtDU+xkpxqTo
-# xRf625N822x2JMUorVZewhgU8NcKYl8H9f7e1uZvK0Z0vcrNNDt+ajeX0RDrGphA
-# ia6YsisOPTVlgzGgqWxdYwXRdkAzWMwUwtVUPpte2vlxUXoRXMfxa9FRJCy2AVVX
-# wUgBcv1k6YQqL29Bm2UId7U/wVEbyQLQ21cA2z51t58lvvmUZdFzG7u1b70bQwSz
-# wJfVvNN1MvIaKCalWvHa/161l2a5DyJHWeIQ4jvxEEszKgsODLrrU64zm4HSPN8N
-# PxMSiXF6P/xYQzvJDtVkIfgXqaEA+NKlAzxZG/QL1eq35sJW7oCtJivEtgnqr/We
-# oTQapX0u4Z1GLfw8hOc82460r8eZqV0efQq5YyoYXE/PXBLqwqEpc7opiLZGJ/5P
-# NfqLvQTQTngdLzLHsHzXiaSUWREy5sanNJHJeMXkFFLg6M1+m35rVTcTwlXifjhh
-# oQA0DKkVFh7ekyyq+S0fLkVB9W/i5SNktts9EXoleOUwpEBdQ+gJU4Vfe/QOLEtS
-# 6XU0QZ1Nb2zyrdfof5U5H4+1JTw/D7FF4VBbnjbYy93lR8bSbJGiZYSR/Oqmgg+9
-# 0sAd5LH2K7Dl9qAXC0lJshDZLAyN4xgJDvDvY5fqU8U28u9xo3tC5Pc=
+# SIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMjYwMjE5MTMyNTE0WjAvBgkqhkiG9w0B
+# CQQxIgQgX5+Gqx0W89chFF41IWO6p/smujpmNC+vDxdFHaQC/p0wDQYJKoZIhvcN
+# AQEBBQAEggIAO6fyL+rYJ/YBGUSfRUxnWkhRwvt5MIF0q/5NnIIFayhUYf8kji7H
+# u8u14ln5sYKQ9WYaIfFzaSzBzlqembEZjmGPF5fABXmuXPMnDDNH1LQFMgi44Dim
+# So6zZ1Ul7SeHzC420NUpTtSEcTVOSkUpFIZz3EMNmDvOyoYJ2gB1a6m50PRjUyT3
+# FQqfnY8LljoVfmr12QdYFM4Dbix7i5wN+jD1VS4X9S2iMwnevfxk2u6X0oq5mTa1
+# 5ZbdSjHp7ImoTHyN53Iewt5lkvho5dvrkaa7B96bnX9K/rXjROc69cyX5XOEZz5A
+# s5NwyGbbkNxL0UrjzhUrEsGwP9VFp2TouVrYzZzB75Qqv/TcteuZtyaTqzvqyKcm
+# bw7DHH8KsyZcVv1+rGg2Y9fndN7WwwgC7bCBy1nxsnfNLLkeiqnapGdU7lzLAUII
+# yJIcD33kauCEpqon7zBan2moTbj5rhRThpq/C36phyOtyPPGWnF70umpTj7Q4Dzt
+# s0ZenqK4rHH8QmpFMyeTbOtFu0UymzVJOiOe1eJLkX2JleP016AJIHtLhlOkeS5q
+# C1CXbdMgplFAi5knk/CyLLzs1L17ZqoueNhHTX0gp6zoxXvz6Pp4QUQZoS5jN9lp
+# lASpJV9GM1HkYuUGHSnN4nHVFRkfXA80f4XXy1O/5b1HOUBNCXx68RE=
 # SIG # End signature block

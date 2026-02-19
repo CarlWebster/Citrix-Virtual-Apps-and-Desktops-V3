@@ -1052,9 +1052,9 @@
 	This script creates a Word, PDF, plain text, or HTML document.
 .NOTES
 	NAME: CVAD_Inventory_V3.ps1
-	VERSION: 3.44 Beta 3
+	VERSION: 3.44 Beta 4
 	AUTHOR: Carl Webster
-	LASTEDIT: February 16, 2026
+	LASTEDIT: February 19, 2026
 #>
 
 #endregion
@@ -1274,46 +1274,66 @@ Param(
 #
 #	In Function GetRolePermissions:
 #		Added new permissions
-#			AppLib_PackageDiscovery_Read
-#			Director_Analytics
-#			Director_DesktopHardwareInformation
-#			Director_DiskMetrics
-#			Director_EndpointMetrics
-#			Director_EndpointMetrics_Edit
-#			Director_GetVDARegistryKeyValues
-#			Director_GetVDARegistryKeyValues_Edit
-#			Director_GPOData
-#			Director_GpuMetrics
-#			Director_HDXInformation
-#			Director_HDXProtocol
-#			Director_LatencyInformation
-#			Director_MachineMetricValues
-#			Director_MTOPInformation
-#			Director_PersonalizationInformation
-#			Director_PoliciesInformation
-#			Director_ProfileLoadData
-#			Director_RDSLicenseCheck
-#			Director_RoundTripInformation
-#			Director_ShadowSessionViaHDXSS
-#			Director_ShadowSessionViaHDXSS_Edit
-#			Director_TaskManagerInformation
-#			EntitlementPolicyRule_ChangeTags
-#			EntitlementPolicyRule_Machine_ChangeTags
-#			Image_AddScope
-#			Image_RemoveScope
-#			MergeGroup_Create
-#			MergeGroup_Delete
-#			MergeGroup_EditProperties
-#			ExtendedTracing_Manage
-#			Monitor_Log_Server_Configuration_Manage
-#			Trust_MultiTenantAccessList_Read
-#			Trust_VdaEnrollmentToken_Read
-#			ResourceAccessPolicyRule_Create
-#			ResourceAccessPolicyRule_Delete
-#			ResourceAccessPolicyRule_EditProperties
-#			ResourceAccessPolicyRule_Read
-#			Zone_AddScope
-#			Zone_RemoveScope
+#			AppLib_PackageDiscovery_Read (View Application Package Discovery Sessions)
+#			Director_Analytics (View Analytics page)
+#			Director_AotLogs (View Logs page)
+#			Director_DesktopHardwareInformation (Perform Machine Hardware related Broker machine command)
+#			Director_DiskMetrics (Perform Disk metrics related Broker machine command)
+#			Director_EndpointMetrics (Perform Endpoint Metrics related Broker machine command)
+#			Director_EndpointMetrics_Edit (Edit Endpoint Metrics related Broker machine command)
+#			Director_GetVDARegistryKeyValues (Get VDA registry key values)
+#			Director_GetVDARegistryKeyValues_Edit (Edit VDA registry keys retrieval related machine command properties)
+#			Director_GPOData (Perform GPO Data related Broker machine command)
+#			Director_GpuMetrics (Perform Gpu metrics related Broker machine command)
+#			Director_HDXInformation (Perform HDX related Broker machine command)
+#			Director_HDXProtocol (Perform HDX Protocol related Broker machine command)
+#			Director_LatencyInformation (Perform Latency related Broker machine command)
+#			Director_MachineMetricValues (Perform Machine metric related Broker machine command)
+#			Director_MTOPInformation (Perform MTOP related Broker machine command)
+#			Director_PersonalizationInformation (Perform Personalization related Broker machine command)
+#			Director_PoliciesInformation (Perform Policies related Broker machine command)
+#			Director_ProfileLoadData (Perform Profile Load Data related Broker machine command)
+#			Director_RDSLicenseCheck (RDS License Check)
+#			Director_RoundTripInformation (Perform Roundtrip Time related Broker machine command)
+#			Director_ShadowSessionViaHDXSS (Perform Remote Assistance on a machine via HDX Screen Sharing)
+#			Director_ShadowSessionViaHDXSS_Edit (Edit HDX Screen Sharing related machine command properties)
+#			Director_TaskManagerInformation (Perform TaskManager related Broker machine command)
+#			EntitlementPolicyRule_ChangeTags (Edit Entitlement Policy Rule tags)
+#			EntitlementPolicyRule_Machine_ChangeTags (Edit Entitlement Policy Rule machine tags)
+#			Image_AddScope (Add Image to Scope)
+#			Image_RemoveScope (Remove Image from Scope)
+#			MergeGroup_Create (Create Merge Groups)
+#			MergeGroup_Delete (Delete Merge Groups)
+#			MergeGroup_EditProperties (Edit Merge Groups)
+#			MergeGroup_Read (View Merge Groups)
+#			ExtendedTracing_Manage (Manage Trace Capture Sessions)
+#			ExtendedTracing_Read (View Trace Capture Sessions)
+#			Monitor_Log_Server_Configuration_Manage (Manage Monitor log server configurations)
+#			Trust_MultiTenantAccessList_Read (Read multi-tenant service access list permissions.)
+#			Trust_VdaEnrollmentToken_Read (Read VDA enrollment tokens.)
+#			ResourceAccessPolicyRule_Create (Creates Resource Access Policy Rules)
+#			ResourceAccessPolicyRule_Delete (Delete Resource Access Policy Rules)
+#			ResourceAccessPolicyRule_EditProperties (Edit Resource Access Policy Rules)
+#			ResourceAccessPolicyRule_Read (Reads Resource Access Policy Rules)
+#			Zone_AddScope (Add Zone to Scope)
+#			Zone_RemoveScope (Zone_RemoveScope)
+#
+#	In Function OutputMachines, add the following Machine custom properties:
+#		Custom Properties For Azure
+#			BackupVmConfiguration
+#
+#		Custom Properties For Aws
+#			WBCDiskStorageType
+#			PersistWBC
+#			PersistOSDisk
+#			PreformatWriteBackCache
+#			BackupVmConfiguration
+#				
+#		Custom properties For Scvmm
+#			AzureArcSubscriptionId
+#			AzureArcRegion
+#			AzureArcResourceGroup
+#			EnableAzureArcOnboarding
 #
 #	In Function OutputRoles
 #		Expand the Description column to accommodate longer descriptions
@@ -2784,9 +2804,9 @@ $SaveEAPreference         = $ErrorActionPreference
 $ErrorActionPreference    = 'SilentlyContinue'
 
 #stuff for report footer
-$script:MyVersion   = "3.44 Beta 3"
+$script:MyVersion   = "3.44 Beta 4"
 $Script:ScriptName  = "CVAD_Inventory_V3.ps1"
-$tmpdate            = [datetime] "02/16/2026"
+$tmpdate            = [datetime] "02/19/2026"
 $Script:ReleaseDate = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($Null -eq $HTML)
@@ -8884,6 +8904,7 @@ Function OutputMachines
 				https://developer-docs.citrix.com/projects/citrix-virtual-apps-desktops-sdk/en/latest/MachineCreation/about_Prov_CustomProperties/
 				
 				Custom Properties For Azure
+					BackupVmConfiguration #new in 3.44
 					DedicatedHostGroupId
 					DiskEncryptionSetId
 					EnableIntuneEnroll
@@ -8917,7 +8938,12 @@ Function OutputMachines
 				Custom Properties For Aws
 					AwsCaptureInstanceProperties
 					AwsOperationalResourcesTagging
-
+					WBCDiskStorageType #new in 3.44
+					PersistWBC #new in 3.44
+					PersistOSDisk #new in 3.44
+					PreformatWriteBackCache #new in 3.44
+					BackupVmConfiguration #new in 3.44
+					
 				Custom Properties For Gcp
 					CatalogZones
 					CryptoKeyId
@@ -8929,6 +8955,12 @@ Function OutputMachines
 					
 				Custom Properties For VMware #new in 3.41
 					FolderId
+					
+				Custom properties For Scvmm #new in 3.44
+					AzureArcSubscriptionId
+					AzureArcRegion
+					AzureArcResourceGroup
+					EnableAzureArcOnboarding
 			#>
 			
 			$ProvScheme = Get-ProvScheme -ProvisioningSchemeUid $Catalog.ProvisioningSchemeID @CVADParams2
@@ -37825,22 +37857,6 @@ Function GetRolePermissions
 			"ApplicationGroup_RemoveFromDesktopGroup"					{$Results.Add("Remove Delivery Group from Application Group", "Application Groups")}
 			"ApplicationGroup_RemoveScope"								{$Results.Add("Remove Application Group from Scope", "Application Groups")}
 		
-			#old App-V group name
-			#"AppLib_AddApplication"									{$Results.Add("Add App-V applications", "App-V")}
-			#"AppLib_AddPackage"										{$Results.Add("Add App-V Application Libraries and Packages", "App-V")}
-			#"AppLib_IsolationGroup_Create"								{$Results.Add("Create App-V Isolation Group", "App-V")}
-			#"AppLib_IsolationGroup_Remove"								{$Results.Add("Remove App-V Isolation Groups", "App-V")}
-			#"AppLib_PackageDiscovery_Create"							{$Results.Add("Create Application Package Discovery Sessions", "App-V")} #new in 2212
-			#"AppLib_PackageDiscoveryProfile_Create"					{$Results.Add("Create Application Package Discovery Profiles", "App-V")} #new in 2212
-			#"AppLib_PackageDiscoveryProfile_Remove"					{$Results.Add("Remove Application Package Discovery Profiles", "App-V")} #new in 2212
-			#"AppLib_Read"												{$Results.Add("Read App-V Application Libraries and Packages", "App-V")}
-			#"AppLib_RemoveApplication"									{$Results.Add("Remove App-V applications", "App-V")} #added in 2411
-			#"AppLib_RemoveAppVServer"									{$Results.Add("Remove App-V Server", "App-V")}
-			#"AppLib_RemovePackage"										{$Results.Add("Remove App-V Application Libraries and Packages", "App-V")}
-			#"AppV_AddServer"											{$Results.Add("Add App-V publishing server", "App-V")}
-			#"AppV_DeleteServer"										{$Results.Add("Remove App-V Server and associated Packages", "Application Packages")} #description updated in 3.43.004
-			#"AppV_Read"												{$Results.Add("Read App-V servers", "App-V")}
-			
 			#I missed along the way that "App-V" was renamed to "Application Packages" prior to CVAD 2308
 			#3.43.002
 			"AppLib_AddApplication"										{$Results.Add("Add Application Packages applications", "Application Packages")}
@@ -37909,6 +37925,7 @@ Function GetRolePermissions
 			"Director_Alerts_Read"										{$Results.Add("View Alerts", "Director")}
 			"Director_AlertWebhookProfile_Edit"							{$Results.Add("Create\Edit\Remove\View Webhook Profile Configurations", "Director")} #added in 2411
 			"Director_Analytics"										{$Results.Add("View Analytics page", "Director")} #added in 2511
+			"Director_AotLogs"											{$Results.Add("View Logs page", "Director")} #added in 2511
 			"Director_ApplicationDashboard"								{$Results.Add("View Applications page", "Director")}
 			"Director_BulkActions_Edit"									{$Results.Add("Perform bulk actions for machine and session management", "Director")} #added in 2503
 			"Director_ClientDetails_Read"								{$Results.Add("View Client Details page", "Director")}
@@ -38044,6 +38061,7 @@ Function GetRolePermissions
 			"MergeGroup_Create"											{$Results.Add("Create Merge Groups", "Merge Groups")} #added in 2511
 			"MergeGroup_Delete"											{$Results.Add("Delete Merge Groups", "Merge Groups")} #added in 2511
 			"MergeGroup_EditProperties"									{$Results.Add("Edit Merge Groups", "Merge Groups")} #added in 2511
+			"MergeGroup_Read"											{$Results.Add("View Merge Groups", "Merge Groups")} #added in 2511
 
 			"AutoTagRule_Create"										{$Results.Add("Create AutoTagRule", "Other permissions")}
 			"AutoTagRule_Delete"										{$Results.Add("Delete AutoTagRule", "Other permissions")}
@@ -38054,6 +38072,7 @@ Function GetRolePermissions
 			"DirectorAgent_Registration"								{$Results.Add("Create/Edit/Manage Connections to Citrix components (Infra Monitoring)", "Other permissions")}	#2407
 			"EnvTest"													{$Results.Add("Run environment tests", "Other permissions")}
 			"ExtendedTracing_Manage"									{$Results.Add("Manage Trace Capture Sessions", "Other permissions")} #added in 2511
+			"ExtendedTracing_Read"										{$Results.Add("View Trace Capture Sessions", "Other permissions")} #added in 2511
 			"Global_Read"												{$Results.Add("Read Site Configuration (Global_Read)", "Other permissions")}
 			"Global_Write"												{$Results.Add("Update Site Configuration (Global_Write)", "Other permissions")}
 			"Monitor_Log_Server_Configuration_Manage"					{$Results.Add("Manage Monitor log server configurations", "Other permissions")} #added in 2511
@@ -38061,7 +38080,6 @@ Function GetRolePermissions
 			"Monitor_UCaaS_Connections_Read"							{$Results.Add("View Connections to communication apps (Real-time com", "Other permissions")} #added in 2507
 			"Orchestration_RestApi"										{$Results.Add("Manage Orchestration Service REST API", "Other permissions")}
 			"PerformUpgrade"											{$Results.Add("Perform upgrade", "Other permissions")}
-			#"SkylightBroker"											{$Results.Add(" (3) ", "Other permissions")}
 			"Tag_Create"												{$Results.Add("Create tags", "Other permissions")}
 			"Tag_Delete"												{$Results.Add("Delete tags", "Other permissions")}
 			"Tag_Edit"													{$Results.Add("Edit tags", "Other permissions")}
