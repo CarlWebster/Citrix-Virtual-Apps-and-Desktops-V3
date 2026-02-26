@@ -7,7 +7,140 @@
 # This script is based on the 2.36 script
 
 #Version 3.44
+#	Thanks to Ferroque Systems, Steve Noel, Prateek Anand, Vikash Kumar, Mathias Alleyn 
+#	for lab access and help in gathering the necessary data for this update
+#
 #	Added support for CVAD 2511/7.46
+#
+#	Added Broker Registry Keys (Thanks to CG at Citrix for providing this information):
+#		HKLM:\Software\Policies\Citrix\DesktopServer\AzureSSOnDataRefreshIntervalMins
+#			Type: int
+#			Default: 1440
+#			Info: Minutes, Minimum=1, Maximum=1440
+#			Summary: Interval for polling Azure Entra Id SSO data from datastore. 
+#					 This call happens within FeatureChecksSiteServics.cs
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\FeatureChecksSiteServiceIdleIntervalTimeSecs
+#			Type: int
+#			Default: 120
+#			Info: Seconds, Minimum=30
+#			Summary: The period in seconds for polling for updates to the site data when the site is idle.
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\FeatureChecksSiteServiceIntervalTimeSecs
+#			Type: int
+#			Default: 30
+#			Info: Seconds, Minimum=30
+#			Summary: The period in seconds for polling for updates to the site data.
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\ReRegisterNowBatchDelayMs
+#			Type: int
+#			Default: 1000
+#			Info: 
+#			Summary: The delay between batches when performing a re-register now operation such that 
+#					 whole operation is completed within 2 minutes. 
+#					 A sample size is (MaxWorkers / ReRegisterNowBatchSize) * ReRegisterNowBatchDelayMs, 
+#					 ie, (11000 / 100) * 1000ms = 110,000 ms = 1.83 minutes.
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\ReRegisterNowBatchSize
+#			Type: int
+#			Default: 100
+#			Info: 
+#			Summary: The number of machines to be processed in a single batch when performing a re-register now operation.
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\SdkWriteDisablesReadReplicaUseForSecs
+#			Type: int
+#			Default: 15
+#			Info: Seconds, Minimum=1
+#			Summary: The number of seconds after any 'write' operation from a given SDK snapin after which it's considered 
+#					 safe to route subsequent 'read' operations from the same snapin to an available read replica database.
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\DataStore\Connections\Controller\SqlLogin (missed from an earlier script update)
+#			Type: string
+#			Default: 
+#			Info: 
+#			Summary: The SQL login for use with SQL authenticated connections to the database.
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\DataStore\Connections\Controller\SqlPassword (missed from an earlier script update)
+#			Type: string
+#			Default: 
+#			Info: 
+#			Summary: The SQL password for use with SQL authenticated connections to the database.
+#
+#		HKLM:\Software\Citrix\Broker\Service\State\DatabaseConnection\CancelAutoMaintenanceMode
+#			Type: bool
+#			Default: false
+#			Info: 
+#			Summary: When this setting is True, if a VDA has been automatically placed into maintenance mode 
+#					 following multiple failed registrations (see MaxFailedRegistrationsAllowed) but later registers 
+#					 successfully, the VDA is automatically removed from maintenance mode.
+#
+#					 When this setting is False, or the VDA was placed into maintenance mode by the admin, then the 
+#					 VDA remains in maintenance mode even if it later registers successfully.
+#
+#		HKLM:\Software\Citrix\Broker\Service\State\DatabaseConnection\MaxMinutesForPowerManagementExclusion
+#			Type: int
+#			Default: 43200
+#			Info: Minutes, Minimum=0, Maximum=43200
+#			Summary: The maximum minutes an Admin can set ExcludeFromAutomaticPowerManagementUntil for a private desktop.
+#
+#		HKLM:\Software\Citrix\DesktopServer\NameCache\LookupFailureCountBeforeClearingNamesInCache
+#			Type: int
+#			Default: 5
+#			Info: Number of times a lookup has failed. Minimum=5, Maximum=7
+#			Summary: Number of lookup failures after which the cached AD user/group account name, or machine name, 
+#					 details are cleared from the cache. The SAM name will be replaced with the SID and other name 
+#					 details will be cleared out. The amount of time before a name is cleared from the cache depends 
+#					 on the NameRefreshExponentialBackoffMaximumMins and NameRefreshPeriodAfterErrorMins settings.
+#
+#		HKLM:\Software\Citrix\StaService\Service\State\STA\LastStaActivityTimestamp
+#			Type: string
+#			Default: 0001-01-01T00:00:00Z
+#			Info: 
+#			Summary: The last time the STA service was active, in UTC format.
+#
+#		HKLM:\Software\Citrix\StaService\Service\State\STA\RecordLastActivityIntervalMinutes
+#			Type: int
+#			Default: 10
+#			Info: Minutes, Minimum=2
+#			Summary: The interval in minutes at which the STA service records the last activity timestamp.
+#
+#		HKLM:\Software\Citrix\DesktopServer\PowerStateCacheEntryExpiryTimeSecs
+#			Type: int
+#			Default: 1800
+#			Info: Seconds, Minimum=60
+#			Summary: Time after which a power state cache entry is expired.
+#
+#		HKLM:\Software\Citrix\DesktopServer\PowerStateCacheEnumerationLifetimeSecs
+#			Type: int
+#			Default: 300
+#			Info: Seconds
+#			Summary: The maximum time for which resource enumeration results used for access to the power state 
+#					 cache are retained and reused before a new NFuse request triggers a new resource enumeration.
+#
+#		HKLM:\Software\Citrix\DesktopServer\PowerStateCachePollingIntervalSecs
+#			Type: int
+#			Default: 120
+#			Info: Seconds, Minimum=60
+#			Summary: Time after which the power state cache is refreshed from the database.
+#
+#		HKLM:\Software\Citrix\DesktopServer\UniqueDeviceIdOptions
+#			Type: int
+#			Default: 0
+#			Info: Minimum=0, Maximum=3
+#			Summary: Specifies options to use when trying to ensure that the client device ID received from WSP/SF is unique. 
+#					 This setting should not be changed from its default value except to workaround specific issues observed 
+#					 in a particular site.
+#
+#					 The value is a bit mask where the bits have the following meanings:
+#
+#					 Bit 0: When set, causes the client device ID to be unconditionally qualified by the client's IP address. 
+#					 This can rectify session reconnection problems caused by non-unique device IDs, but can conversely cause 
+#					 session reconnection problems if network infrastructure such as firewalls or load balancers causes the 
+#					 IP address of a client device to change over time even when actively connected to a VDA.
+#
+#					 Bit 1: When set, if no device ID is received or its value is known to be non-unique, do not try substituting 
+#					 the client name for the device ID, but instead use the client IP address. This may avoid problems caused 
+#					 where multiple devices are reporting the same non-unique client name.
 #
 #	Added Computer policy
 #		Chrome Enterprise Premium\Enroll Chrome Browser
@@ -94,11 +227,20 @@
 #			AzureArcResourceGroup
 #			EnableAzureArcOnboarding
 #
+#		In the column headings for the Machine Catalogs:
+#			Rename "No. of Machines" to "Machine Count"
+#			Rename "Allocated Machines" to "Allocated Count"
+#			Add column for Folder
+#
+#		For the Machine Catalog summary table, change from a horizontal to a vertical table to fit the added Folder column
+#
 #	In Function OutputRoles
 #		Expand the Description column to accommodate longer descriptions
 #
 #	In Function OutputRoleDefinitions, 
 #		Expand the output column widths to accommodate the new folder and permission names
+#
+#	Updated the Help text and ReadMe files
 
 #Version 3.43.004 13-Oct-2025
 #	Thanks to Citrix, Ferroque Systems, Guy Leech, Nicholas Cookendorfer, Arnaud Pain, and Prateek Anaud for their help

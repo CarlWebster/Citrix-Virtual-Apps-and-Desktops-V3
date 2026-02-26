@@ -71,7 +71,7 @@
 
 	Creates an output file named after the CVAD Site.
 	
-	Word and PDF Document includes a Cover Page, Table of Contents and Footer.
+	Word and PDF documents include a Cover Page, Table of Contents, and Footer.
 	Includes support for the following language versions of Microsoft Word:
 		Catalan
 		Chinese
@@ -137,8 +137,8 @@
 	
 	*****Requires the script runs elevated*****
 	
-	For Word and PDF output, this adds eights pages, per Controller, to the report.
-	For Text and HTML, this adds 315 lines, per Controller, to the report.
+	For Word and PDF output, this adds 8 pages to the report per Controller.
+	For Text and HTML, this adds 315 lines to the report per Controller.
 
 	This parameter is disabled by default.
 	This parameter has an alias of BRK.
@@ -147,15 +147,14 @@
 		List of installed Microsoft Hotfixes and Updates
 		List of Citrix installed components
 		List of Windows installed Roles and Features
-		Appendix C List of installed Microsoft Hotfixes and Updates for all 
-		Controllers
-		Appendix D List of Citrix installed components for all Controllers
-		Appendix E List of Windows installed Roles and Features for all Controllers
+		Appendix C: List of installed Microsoft Hotfixes and Updates for all Controllers
+		Appendix D: List of Citrix installed components for all Controllers
+		Appendix E: List of Windows installed Roles and Features for all Controllers
 	
 	This parameter is disabled by default.
 	This parameter has an alias of DDC.
 .PARAMETER Hardware
-	Use WMI to gather hardware information on Computer System, Disks, Processor, and 
+	Use WMI to gather hardware information on the Computer System, Disks, Processor, and 
 	Network Interface Cards
 
 	This parameter may require the script be run from an elevated PowerShell session 
@@ -171,7 +170,7 @@
 	Gives detailed information on all desktops in all Desktop (Delivery) Groups.
 	
 	Using the DeliveryGroups parameter can cause the report to take a very long 
-	time to complete and can generate an extremely long report.
+	time to complete, and can generate an extremely long report.
 	
 	Using both the MachineCatalogs and DeliveryGroups parameters can cause the 
 	report to take an extremely long time to complete and generate an exceptionally 
@@ -225,7 +224,7 @@
 	Gives detailed information for all machines in all Machine Catalogs.
 	
 	Using the MachineCatalogs parameter can cause the report to take a very long 
-	time to complete and can generate an extremely long report.
+	time to complete, and can generate an extremely long report.
 	
 	Using both the MachineCatalogs and DeliveryGroups parameters can cause the 
 	report to take an extremely long time to complete and generate an exceptionally 
@@ -245,12 +244,12 @@
 .PARAMETER NoPolicies
 	Excludes all Site and Citrix AD-based policy information from the output document.
 	
-	Using the NoPolicies parameter will cause the Policies parameter to be set to False.
+	Using the NoPolicies parameter sets the Policies parameter to False.
 	
 	This parameter is disabled by default.
 	This parameter has an alias of NP.
 .PARAMETER NoSessions
-	Excludes Machine Catalog, Application and Hosting session data from the report.
+	Excludes Machine Catalog, Application, and Hosting session data from the report.
 	
 	Using the MaxDetails parameter does not change this setting.
 	
@@ -264,7 +263,7 @@
 	
 	There are three related parameters: Policies, NoPolicies, and NoADPolicies.
 	
-	Policies and NoPolicies are mutually exclusive and priority is given to NoPolicies.
+	Policies and NoPolicies are mutually exclusive, and priority is given to NoPolicies.
 	
 	This parameter is disabled by default.
 	This parameter has an alias of Pol.
@@ -273,7 +272,7 @@
 	This parameter is disabled by default.
 	This parameter has an alias of SF.
 .PARAMETER VDARegistryKeys
-	Adds information on registry keys to the Machine Details section.
+	Adds registry key information to the Machine Details section.
 	
 	If this parameter is used, MachineCatalogs is set to True.
 	
@@ -308,7 +307,7 @@
 .PARAMETER AddDateTime
 	Adds a date timestamp to the end of the file name.
 	The timestamp is in the format of yyyy-MM-dd_HHmm.
-	June 1, 2025, at 6PM is 2025-06-01_1800.
+	June 1, 2025, at 6 PM is 2025-06-01_1800.
 	The output filename will be ReportName_2025-06-01_1800.docx (or.pdf).
 	This parameter is disabled by default.
 	This parameter has an alias of ADT.
@@ -331,7 +330,7 @@
 	Outputs all errors to a text file at the end of the script.
 	
 	This is used when the script developer requests more troubleshooting data.
-	The text file is placed in the same folder from where the script runs.
+	The text file is placed in the same folder from which the script runs.
 	
 	This parameter is disabled by default.
 .PARAMETER Folder
@@ -340,7 +339,7 @@
 	Generates a log file for troubleshooting.
 .PARAMETER ScriptInfo
 	Outputs information about the script to a text file.
-	The text file is placed in the same folder from where the script runs.
+	The text file is placed in the same folder from which the script runs.
 	
 	This parameter is disabled by default.
 	This parameter has an alias of SI.
@@ -426,7 +425,7 @@
 	This parameter has an alias of CPh.
 .PARAMETER CoverPage
 	What Microsoft Word Cover Page to use.
-	Only Word 2010, 2013 and 2016 are supported.
+	Only Word 2010, 2013, and 2016 are supported.
 	(default cover pages in Word en-US)
 
 	Valid input is:
@@ -450,9 +449,9 @@
 		Ion (Light) (Word 2013/2016. Top date doesn't fit; box needs to be 
 		manually resized or font changed to 8 point)
 		Mod (Word 2010. Works)
-		Motion (Word 2010/2013/2016. Works if top date is manually changed to 
+		Motion (Word 2010/2013/2016. Works if the top date is manually changed to 
 		36 point)
-		Newsprint (Word 2010. Works but date is not populated)
+		Newsprint (Word 2010. Works, but the date is not populated)
 		Perspective (Word 2010. Works)
 		Pinstripes (Word 2010. Works)
 		Puzzle (Word 2010. Top date doesn't fit; box needs to be manually 
@@ -487,10 +486,10 @@
 	The default is False.
 .PARAMETER From
 	Specifies the username for the From email address.
-	If SmtpServer is used, this is a required parameter.
+	If SmtpServer is used, this parameter is required.
 .PARAMETER To
 	Specifies the username for the To email address.
-	If SmtpServer is used, this is a required parameter.
+	If SmtpServer is used, this parameter is required.
 .EXAMPLE
 	PS C:\PSScript >.\CVAD_Inventory_V3.ps1
 	
@@ -1052,9 +1051,9 @@
 	This script creates a Word, PDF, plain text, or HTML document.
 .NOTES
 	NAME: CVAD_Inventory_V3.ps1
-	VERSION: 3.44 Beta 4
+	VERSION: 3.44 Beta 5
 	AUTHOR: Carl Webster
-	LASTEDIT: February 19, 2026
+	LASTEDIT: February 26, 2026
 #>
 
 #endregion
@@ -1248,7 +1247,140 @@ Param(
 # This script is based on the 2.36 script
 #
 #Version 3.44
+#	Thanks to Ferroque Systems, Steve Noel, Prateek Anand, Vikash Kumar, Mathias Alleyn 
+#	for lab access and help in gathering the necessary data for this update
+#
 #	Added support for CVAD 2511/7.46
+#
+#	Added Broker Registry Keys (Thanks to CG at Citrix for providing this information):
+#		HKLM:\Software\Policies\Citrix\DesktopServer\AzureSSOnDataRefreshIntervalMins
+#			Type: int
+#			Default: 1440
+#			Info: Minutes, Minimum=1, Maximum=1440
+#			Summary: Interval for polling Azure Entra Id SSO data from datastore. 
+#					 This call happens within FeatureChecksSiteServics.cs
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\FeatureChecksSiteServiceIdleIntervalTimeSecs
+#			Type: int
+#			Default: 120
+#			Info: Seconds, Minimum=30
+#			Summary: The period in seconds for polling for updates to the site data when the site is idle.
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\FeatureChecksSiteServiceIntervalTimeSecs
+#			Type: int
+#			Default: 30
+#			Info: Seconds, Minimum=30
+#			Summary: The period in seconds for polling for updates to the site data.
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\ReRegisterNowBatchDelayMs
+#			Type: int
+#			Default: 1000
+#			Info: 
+#			Summary: The delay between batches when performing a re-register now operation such that 
+#					 whole operation is completed within 2 minutes. 
+#					 A sample size is (MaxWorkers / ReRegisterNowBatchSize) * ReRegisterNowBatchDelayMs, 
+#					 ie, (11000 / 100) * 1000ms = 110,000 ms = 1.83 minutes.
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\ReRegisterNowBatchSize
+#			Type: int
+#			Default: 100
+#			Info: 
+#			Summary: The number of machines to be processed in a single batch when performing a re-register now operation.
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\SdkWriteDisablesReadReplicaUseForSecs
+#			Type: int
+#			Default: 15
+#			Info: Seconds, Minimum=1
+#			Summary: The number of seconds after any 'write' operation from a given SDK snapin after which it's considered 
+#					 safe to route subsequent 'read' operations from the same snapin to an available read replica database.
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\DataStore\Connections\Controller\SqlLogin (missed from an earlier script update)
+#			Type: string
+#			Default: 
+#			Info: 
+#			Summary: The SQL login for use with SQL authenticated connections to the database.
+#
+#		HKLM:\Software\Policies\Citrix\DesktopServer\DataStore\Connections\Controller\SqlPassword (missed from an earlier script update)
+#			Type: string
+#			Default: 
+#			Info: 
+#			Summary: The SQL password for use with SQL authenticated connections to the database.
+#
+#		HKLM:\Software\Citrix\Broker\Service\State\DatabaseConnection\CancelAutoMaintenanceMode
+#			Type: bool
+#			Default: false
+#			Info: 
+#			Summary: When this setting is True, if a VDA has been automatically placed into maintenance mode 
+#					 following multiple failed registrations (see MaxFailedRegistrationsAllowed) but later registers 
+#					 successfully, the VDA is automatically removed from maintenance mode.
+#
+#					 When this setting is False, or the VDA was placed into maintenance mode by the admin, then the 
+#					 VDA remains in maintenance mode even if it later registers successfully.
+#
+#		HKLM:\Software\Citrix\Broker\Service\State\DatabaseConnection\MaxMinutesForPowerManagementExclusion
+#			Type: int
+#			Default: 43200
+#			Info: Minutes, Minimum=0, Maximum=43200
+#			Summary: The maximum minutes an Admin can set ExcludeFromAutomaticPowerManagementUntil for a private desktop.
+#
+#		HKLM:\Software\Citrix\DesktopServer\NameCache\LookupFailureCountBeforeClearingNamesInCache
+#			Type: int
+#			Default: 5
+#			Info: Number of times a lookup has failed. Minimum=5, Maximum=7
+#			Summary: Number of lookup failures after which the cached AD user/group account name, or machine name, 
+#					 details are cleared from the cache. The SAM name will be replaced with the SID and other name 
+#					 details will be cleared out. The amount of time before a name is cleared from the cache depends 
+#					 on the NameRefreshExponentialBackoffMaximumMins and NameRefreshPeriodAfterErrorMins settings.
+#
+#		HKLM:\Software\Citrix\StaService\Service\State\STA\LastStaActivityTimestamp
+#			Type: string
+#			Default: 0001-01-01T00:00:00Z
+#			Info: 
+#			Summary: The last time the STA service was active, in UTC format.
+#
+#		HKLM:\Software\Citrix\StaService\Service\State\STA\RecordLastActivityIntervalMinutes
+#			Type: int
+#			Default: 10
+#			Info: Minutes, Minimum=2
+#			Summary: The interval in minutes at which the STA service records the last activity timestamp.
+#
+#		HKLM:\Software\Citrix\DesktopServer\PowerStateCacheEntryExpiryTimeSecs
+#			Type: int
+#			Default: 1800
+#			Info: Seconds, Minimum=60
+#			Summary: Time after which a power state cache entry is expired.
+#
+#		HKLM:\Software\Citrix\DesktopServer\PowerStateCacheEnumerationLifetimeSecs
+#			Type: int
+#			Default: 300
+#			Info: Seconds
+#			Summary: The maximum time for which resource enumeration results used for access to the power state 
+#					 cache are retained and reused before a new NFuse request triggers a new resource enumeration.
+#
+#		HKLM:\Software\Citrix\DesktopServer\PowerStateCachePollingIntervalSecs
+#			Type: int
+#			Default: 120
+#			Info: Seconds, Minimum=60
+#			Summary: Time after which the power state cache is refreshed from the database.
+#
+#		HKLM:\Software\Citrix\DesktopServer\UniqueDeviceIdOptions
+#			Type: int
+#			Default: 0
+#			Info: Minimum=0, Maximum=3
+#			Summary: Specifies options to use when trying to ensure that the client device ID received from WSP/SF is unique. 
+#					 This setting should not be changed from its default value except to workaround specific issues observed 
+#					 in a particular site.
+#
+#					 The value is a bit mask where the bits have the following meanings:
+#
+#					 Bit 0: When set, causes the client device ID to be unconditionally qualified by the client's IP address. 
+#					 This can rectify session reconnection problems caused by non-unique device IDs, but can conversely cause 
+#					 session reconnection problems if network infrastructure such as firewalls or load balancers causes the 
+#					 IP address of a client device to change over time even when actively connected to a VDA.
+#
+#					 Bit 1: When set, if no device ID is received or its value is known to be non-unique, do not try substituting 
+#					 the client name for the device ID, but instead use the client IP address. This may avoid problems caused 
+#					 where multiple devices are reporting the same non-unique client name.
 #
 #	Added Computer policy
 #		Chrome Enterprise Premium\Enroll Chrome Browser
@@ -1335,11 +1467,20 @@ Param(
 #			AzureArcResourceGroup
 #			EnableAzureArcOnboarding
 #
+#		In the column headings for the Machine Catalogs:
+#			Rename "No. of Machines" to "Machine Count"
+#			Rename "Allocated Machines" to "Allocated Count"
+#			Add column for Folder
+#
+#		For the Machine Catalog summary table, change from a horizontal to a vertical table to fit the added Folder column
+#
 #	In Function OutputRoles
 #		Expand the Description column to accommodate longer descriptions
 #
 #	In Function OutputRoleDefinitions, 
 #		Expand the output column widths to accommodate the new folder and permission names
+#
+#	Updated the Help text and ReadMe files
 
 #Version 3.43.004 13-Oct-2025
 #	Thanks to Citrix, Ferroque Systems, Guy Leech, Nicholas Cookendorfer, Arnaud Pain, and Prateek Anaud for their help
@@ -2804,9 +2945,9 @@ $SaveEAPreference         = $ErrorActionPreference
 $ErrorActionPreference    = 'SilentlyContinue'
 
 #stuff for report footer
-$script:MyVersion   = "3.44 Beta 4"
+$script:MyVersion   = "3.44 Beta 5"
 $Script:ScriptName  = "CVAD_Inventory_V3.ps1"
-$tmpdate            = [datetime] "02/19/2026"
+$tmpdate            = [datetime] "02/26/2026"
 $Script:ReleaseDate = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($Null -eq $HTML)
@@ -7710,23 +7851,7 @@ Function OutputMachines
 	
 	Write-Verbose "$(Get-Date -Format G): `tProcessing Machine Catalogs"
 	
-	#add 16-jun-2015, summary table of catalogs to match what is shown in Studio
-	If($MSWord -or $PDF)
-	{
-		[System.Collections.Hashtable[]] $WordTable = @();
-	}
-	If($Text)
-	{
-		Line 0 "                                                                              No. of   Allocated Allocation                                        "
-		Line 0 "Machine Catalog                          Machine Type                         Machines Machines  Type       User Data     Provisioning Method      "
-		Line 0 "==================================================================================================================================================="
-		#       1234567890123456789012345678901234567890S123456789012345678901234567890123456S12345678S12345678SS1234567890S1234567890123S1234567890123456789012345
-		#                                                Single-session OS (Remote PC Access)                               On local Disk Machine creation services
-	}
-	If($HTML)
-	{
-		$rowdata = @()
-	}
+	#updated 25-Feb-2026, summary table of catalogs to match what is shown in Web Studio
 
 	ForEach($Catalog in $Catalogs)
 	{
@@ -7791,6 +7916,16 @@ Function OutputMachines
 			Default					{$MDMEnrollment = "MDM Enrollment method could not be determined: $($Catalog.MdmEnrollment)"; Break}
 		}
 
+		#folder name added in 3.44
+		If($Catalog.AdminFolderName -eq "")
+		{
+			$FolderName = "Machine Catalogs\"
+		}
+		Else
+		{
+			$FolderName = $Catalog.AdminFolderName
+		}
+		
 		$Machines = @(Get-BrokerMachine @CVADParams2 -CatalogName $Catalog.Name -SortBy DNSName)
 		If($? -and ($Null -ne $Machines))
 		{
@@ -7799,84 +7934,64 @@ Function OutputMachines
 		
 		If($MSWord -or $PDF)
 		{
-			$WordTable += @{
-			MachineCatalogName = $Catalog.Name; 
-			MachineType        = $xCatalogType; 
-			NoOfMachines       = $NumberOfMachines.ToString();
-			AllocatedMachines  = $Catalog.UsedCount.ToString(); 
-			AllocationType     = $xAllocationType;
-			UserData           = $xPersistType;
-			ProvisioningMethod = $xProvisioningType;
-			}
+			[System.Collections.Hashtable[]] $CatalogInformation = @()
+			$CatalogInformation += @{Data = "Machine Catalog"; Value = $Catalog.Name; }
+			$CatalogInformation += @{Data = "Machine Type"; Value = $xCatalogType; }
+			$CatalogInformation += @{Data = "Machine Count"; Value = $NumberOfMachines.ToString(); }
+			$CatalogInformation += @{Data = "Allocated Count"; Value = $Catalog.UsedCount.ToString(); }
+			$CatalogInformation += @{Data = "Folder"; Value = $FolderName; }
+			$CatalogInformation += @{Data = "Allocation Type"; Value = $xAllocationType; }
+			$CatalogInformation += @{Data = "User data"; Value = $xPersistType; }
+			$CatalogInformation += @{Data = "Provisioning method"; Value = $xProvisioningType; }
+
+			$Table = AddWordTable -Hashtable $CatalogInformation `
+			-Columns Data,Value `
+			-List `
+			-Format $wdTableGrid `
+			-AutoFit $wdAutoFitFixed;
+
+			SetWordCellFormat -Collection $Table.Columns.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
+
+			$Table.Columns.Item(1).Width = 250;
+			$Table.Columns.Item(2).Width = 250;
+
+			$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
+
+			FindWordDocumentEnd
+			$Table = $Null
+			WriteWordLine 0 0 ""
 		}
 		If($Text)
 		{
-			Line 0 ( "{0,-40} {1,-36} {2,8} {3,8}  {4,-10} {5,-13} {6,-25}" -f `
-			$Catalog.Name, 
-			$xCatalogType, 
-			$NumberOfMachines.ToString(), 
-			$Catalog.UsedCount.ToString(), 
-			$xAllocationType, 
-			$xPersistType, 
-			$xProvisioningType)
+			Line 1 "Machine Catalog`t`t: " $Catalog.Name
+			Line 1 "Machine Type`t`t: " $xCatalogType
+			Line 1 "Machine Count`t`t: " $NumberOfMachines.ToString()
+			Line 1 "Allocated Count`t`t: " $Catalog.UsedCount.ToString()
+			Line 1 "Folder`t`t`t: " $FolderName
+			Line 1 "Allocation Type`t`t: " $xAllocationType
+			Line 1 "User data`t`t: " $xPersistType
+			Line 1 "Provisioning method`t: " $xProvisioningType
+			Line 0 ""
 		}
 		If($HTML)
 		{
-			$rowdata += @(,(
-			$Catalog.Name,$htmlwhite,
-			$xCatalogType,$htmlwhite,
-			$NumberOfMachines.ToString(),$htmlwhite,
-			$Catalog.UsedCount.ToString(),$htmlwhite,
-			$xAllocationType,$htmlwhite,
-			$xPersistType,$htmlwhite,
-			$xProvisioningType,$htmlwhite))
+			$rowdata = @()
+			$columnHeaders = @("Machine Catalog",($global:htmlsb),$Catalog.Name,$htmlwhite)
+			$rowdata += @(,("Machine Type",($global:htmlsb),$xCatalogType,$htmlwhite))
+			$rowdata += @(,("Machine Count",($global:htmlsb),$NumberOfMachines.ToString(),$htmlwhite))
+			$rowdata += @(,("Allocated Count",($global:htmlsb),$Catalog.UsedCount.ToString(),$htmlwhite))
+			$rowdata += @(,("Folder",($global:htmlsb),$FolderName,$htmlwhite))
+			$rowdata += @(,("Allocation Type",($global:htmlsb),$xAllocationType,$htmlwhite))
+			$rowdata += @(,("User data",($global:htmlsb),$xPersistType,$htmlwhite))
+			$rowdata += @(,("Provisioning method",($global:htmlsb),$xProvisioningType,$htmlwhite))
+
+			$msg = ""
+			$columnWidths = @("250","250")
+			FormatHTMLTable $msg -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths -tablewidth "500"
+			WriteHTMLLine 0 0 ""
 		}
 	}
 
-	If($MSWord -or $PDF)
-	{
-		$Table = AddWordTable -Hashtable $WordTable `
-		-Columns  MachineCatalogName, MachineType, NoOfMachines, AllocatedMachines, AllocationType, UserData, ProvisioningMethod `
-		-Headers  "Machine Catalog", "Machine type", "No. of machines", "Allocated machines", "Allocation Type", "User data", "Provisioning method" `
-		-Format $wdTableGrid `
-		-AutoFit $wdAutoFitFixed;
-
-		SetWordCellFormat -Collection $Table -Size 9 -BackgroundColor $wdColorWhite
-		SetWordCellFormat -Collection $Table.Rows.Item(1).Cells -Bold -BackgroundColor $wdColorGray15;
-
-		$Table.Columns.Item(1).Width = 105;
-		$Table.Columns.Item(2).Width = 100;
-		$Table.Columns.Item(3).Width = 75;
-		$Table.Columns.Item(4).Width = 50;
-		$Table.Columns.Item(5).Width = 55;
-		$Table.Columns.Item(6).Width = 50;
-		$Table.Columns.Item(7).Width = 65;
-
-		$Table.Rows.SetLeftIndent($Indent0TabStops,$wdAdjustProportional)
-
-		FindWordDocumentEnd
-		$Table = $Null
-	}
-	If($Text)
-	{
-		Line 0 ""
-	}
-	If($HTML)
-	{
-		$columnHeaders = @(
-		'Machine Catalog',($global:htmlsb),
-		'Machine type',($global:htmlsb),
-		'No. of machines',($global:htmlsb),
-		'Allocated machines',($global:htmlsb),
-		'Allocation Type',($global:htmlsb),
-		'User data',($global:htmlsb),
-		'Provisioning method',($global:htmlsb)
-		)
-
-		$columnWidths = @("125","175","75","50","55","75","145")
-		$msg = ""
-		FormatHTMLTable $msg -rowArray $rowdata -columnArray $columnHeaders -fixedWidth $columnWidths -tablewidth "700"
-	}
 	
 	ForEach($Catalog in $Catalogs)
 	{
@@ -38821,6 +38936,7 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "AutoHideNonContactableSessions" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "AutoTagRuleIntervalsTimeSecs" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "AutoTagRuleIdleIntervalsTimeSecs" $ComputerName #Added in 3.43
+	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "AzureSSOnDataRefreshIntervalMins" $ComputerName #Added in 3.44
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "BrokerStartupRetryPeriodLimitMs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "BrokerStartupRetryPeriodStartMaxMs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "CheckExpiredEntitlementPeriodHours" $ComputerName #added in 3.43.003
@@ -38832,6 +38948,8 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "DisconnectOperationTimeOutSecs" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "DynamicSequenceStirIntervalMins" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "ExtraSpinUpTimeSecs" $ComputerName
+	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "FeatureChecksSiteServiceIdleIntervalTimeSecs" $ComputerName #Added in 3.44
+	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "FeatureChecksSiteServiceIntervalTimeSecs" $ComputerName #Added in 3.44
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "FirstHeartbeatDistributionWidthSecs" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "FreeSessionThresholdForLoadEvaluation" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "GetEntitlementTypePeriodHours" $ComputerName #Added in 3.40
@@ -38869,11 +38987,14 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "NonContactableSessionGracePeriodSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "PhantomRegistrationSecs" $ComputerName #added in 3.31
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "PiiDataRetentionDays" $ComputerName #added in 3.42
+	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "ReRegisterNowBatchDelayMs" $ComputerName #added in 3.44
+	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "ReRegisterNowBatchSize" $ComputerName #added in 3.44
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "RegistrationSinbinPeriodSecs" $ComputerName #added in 3.42
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "ProtectedSessionReconnectSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "RoTPublicKeysUpdateMaxDelayHours" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "SaaSLicenseComponentCheckPeriodHours" $ComputerName #Added in 3.33
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "ScrambleLicensingData" $ComputerName #Added in 3.42
+	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "SdkWriteDisablesReadReplicaUseForSecs" $ComputerName #Added in 3.44
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "ServiceIdleIntervalSeconds" $ComputerName #Added in 3.43
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "SetSiteDataPeriodSecs" $ComputerName #Added in 3.41
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "SetSiteDataWhenIdlePeriodSecs" $ComputerName #Added in 3.43
@@ -38903,6 +39024,7 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "AutoHideNonContactableSessions" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "AutoTagRuleIntervalsTimeSecs" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "AutoTagRuleIdleIntervalsTimeSecs" $ComputerName #Added in 3.43
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "AzureSSOnDataRefreshIntervalMins" $ComputerName #Added in 3.44
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "BrokerStartupRetryPeriodLimitMs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "BrokerStartupRetryPeriodStartMaxMs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "CheckExpiredEntitlementPeriodHours" $ComputerName #added in 3.43.003
@@ -38914,6 +39036,8 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "DisconnectOperationTimeOutSecs" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "DynamicSequenceStirIntervalMins" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "ExtraSpinUpTimeSecs" $ComputerName
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "FeatureChecksSiteServiceIdleIntervalTimeSecs" $ComputerName #Added in 3.44
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "FeatureChecksSiteServiceIntervalTimeSecs" $ComputerName #Added in 3.44
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "FirstHeartbeatDistributionWidthSecs" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "FreeSessionThresholdForLoadEvaluation" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "GetEntitlementTypePeriodHours" $ComputerName #Added in 3.40
@@ -38951,11 +39075,14 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "NonContactableSessionGracePeriodSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "PhantomRegistrationSecs" $ComputerName #added in 3.31
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "PiiDataRetentionDays" $ComputerName #added in 3.42
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "ReRegisterNowBatchDelayMs" $ComputerName #added in 3.44
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "ReRegisterNowBatchSize" $ComputerName #added in 3.44
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "RegistrationSinbinPeriodSecs" $ComputerName #added in 3.42
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "ProtectedSessionReconnectSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "RoTPublicKeysUpdateMaxDelayHours" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "SaaSLicenseComponentCheckPeriodHours" $ComputerName #Added in 3.33
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "ScrambleLicensingData" $ComputerName #Added in 3.42
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "SdkWriteDisablesReadReplicaUseForSecs" $ComputerName #Added in 3.44
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "ServiceIdleIntervalSeconds" $ComputerName #Added in 3.43
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "SetSiteDataPeriodSecs" $ComputerName #Added in 3.41
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "SetSiteDataWhenIdlePeriodSecs" $ComputerName #Added in 3.43
@@ -38993,6 +39120,8 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer\DataStore\Connections\Controller" "ReaperDeferralPeriodSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer\DataStore\Connections\Controller" "ResourceLimitRetryDelaySecs" $ComputerName #Added in 3.40
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer\DataStore\Connections\Controller" "SdkSqlQueryTimeoutSecs" $ComputerName
+	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer\DataStore\Connections\Controller" "SqlLogin" $ComputerName #added in 3.44
+	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer\DataStore\Connections\Controller" "SqlPassword" $ComputerName #added in 3.44
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\DataStore\Connections\Controller" "ConnectionString" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\DataStore\Connections\Controller" "ConnectivityRetryDelaySecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\DataStore\Connections\Controller" "ForceDbConnectionFailure" $ComputerName
@@ -39015,38 +39144,6 @@ Function GetControllerRegistryKeys
 	
 	#HostingManagementSettings
 	<#
-		comment out these lines:
-		1. This is the wrong registry location
-		2. There are no Policies for these settings
-		Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "AutoscalePowerActionQueuingPeriodSeconds" $ComputerName #Added in 3.29
-		Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "BulkPowerActionBusyBufferSecs" $ComputerName #Added in 3.29
-		Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "BulkPowerCheckingCoolOffActivePowerActionsSecs" $ComputerName
-		Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "BulkPowerCheckingCoolOffSecs" $ComputerName
-		Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "CompletedActionRetentionPeriodSec" $ComputerName
-		Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "ComplexPowerActionTimeoutSecs" $ComputerName
-		Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "HclConnectionStateCachePeriodSecs" $ComputerName #Added in 3.29
-		Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "HostingStartupRetryPeriodLimitMs" $ComputerName
-		Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "HostingStartupRetryPeriodStartMaxMs" $ComputerName
-		Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "HypervisorConnectionMaxPollFailures" $ComputerName #Added in 3.29
-		Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "HypervisorConnectionPollMaxPeriodSecs" $ComputerName #Added in 3.29
-		Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "HypervisorConnectionPollPeriodSec" $ComputerName
-		Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "HypervisorPollForAlertsIntervalSecs" $ComputerName
-		Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "LegacyPeakTransitionDisconnectedbehavior" $ComputerName
-		Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "MachineRecreationSinBinMinutes" $ComputerName
-		Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "MachineStartSinBinSeconds" $ComputerName
-		Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "MaxCompletedActionsToPurge" $ComputerName #added in 3.35
-		Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "MaxFailedRegistrationsAllowed" $ComputerName
-		Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "MaxNotificationThreads" $ComputerName #Added in 3.29
-		Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "MaxRegistrationDelayMin" $ComputerName
-		Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "MaxTimeBeforeStuckOnBootFaultSecs" $ComputerName
-		Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "MaxTimeBeforeUnregisteredFaultSecs" $ComputerName
-		Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "ParallelDesktopGroupScalingMaxThreads" $ComputerName #Added in 3.29
-		Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "ParallelPowerStateReadMaxThreads" $ComputerName #Added in 3.35
-		Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "SimplePowerActionTimeoutSecs" $ComputerName #Added in 3.29
-		Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "StarvationBoostPeriodSec" $ComputerName
-	#>
-	
-	<#
 		In 3.43 change the registry location
 		
 		From: HKLM:\Software\Citrix\DesktopServer
@@ -39058,6 +39155,7 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\DatabaseConnection" "BulkPowerActionBusyBufferSecs" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\DatabaseConnection" "BulkPowerCheckingCoolOffActivePowerActionsSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\DatabaseConnection" "BulkPowerCheckingCoolOffSecs" $ComputerName
+	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\DatabaseConnection" "CancelAutoMaintenanceMode" $ComputerName #Added in 3.44
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\DatabaseConnection" "CompletedActionRetentionPeriodSec" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\DatabaseConnection" "ComplexPowerActionTimeoutSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\DatabaseConnection" "HclConnectionStateCachePeriodSecs" $ComputerName #Added in 3.29
@@ -39073,6 +39171,7 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\DatabaseConnection" "MaxCompletedActionsToPurge" $ComputerName #added in 3.35
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\DatabaseConnection" "MaxConcurrentScheduleOverrideQueries" $ComputerName #added in 3.43
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\DatabaseConnection" "MaxFailedRegistrationsAllowed" $ComputerName
+	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\DatabaseConnection" "MaxMinutesForPowerManagementExclusion" $ComputerName #Added in 3.44
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\DatabaseConnection" "MaxNotificationThreads" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\DatabaseConnection" "MaxRegistrationDelayMin" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\DatabaseConnection" "MaxTimeBeforeStuckOnBootFaultSecs" $ComputerName
@@ -39119,7 +39218,6 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\LHC" "HigherRankedPeerElectedCheckIntervalMinutes" $ComputerName #Added in 3.43.003
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\LHC" "HypervisorConnectionSyncIntervalSeconds" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\LHC" "InitialOutageModeDetectionPeriod" $ComputerName
-	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\LHC" "IsFirstConfigSyncSuccess" $ComputerName #Added in 3.40
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\LHC" "MaximumOutageModeDetectionPeriod" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\LHC" "MaxLocalDBMemorySizeMB" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\LHC" "MinimalOutageModeRecoveryPeriod" $ComputerName
@@ -39142,8 +39240,9 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "HasHigherRankedPeerBeenElected" $ComputerName #added in 3.43.003
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "IsElected" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "IsElectedLastUpdatedAt" $ComputerName #Added in 3.42
-	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "IsOnPremStoreFrontPresent" $ComputerName #Added in 3.29
-	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "IsStaRequestReceived" $ComputerName #Added in 3.29
+	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "IsFirstConfigSyncSuccess" $ComputerName #Added in 3.40
+	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "IsOnPremStoreFrontPresentInRL" $ComputerName #Added in 3.29
+	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "IsStaTrafficPresentInRL" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "LastOutageModeEndTime" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "LastOutageModeEnteredTime" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\LHC" "LeaderConnectorId" $ComputerName #Added in 3.29
@@ -39191,6 +39290,7 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer\NameCache" "DisableDomainCaching" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer\NameCache" "DomainTrustMappingMaxThreads" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer\NameCache" "DomainTrustMappingRefreshPeriodMins" $ComputerName
+	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer\NameCache" "LookupFailureCountBeforeClearingNamesInCache" $ComputerName #added in 3.44
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer\NameCache" "MachineNameLookupTimeoutMs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer\NameCache" "NameRefreshExponentialBackoffMaximumMins" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer\NameCache" "NameRefreshMaximumPeriodSecs" $ComputerName #Added in 3.29
@@ -39204,6 +39304,7 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\NameCache" "DisableDomainCaching" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\NameCache" "DomainTrustMappingMaxThreads" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\NameCache" "DomainTrustMappingRefreshPeriodMins" $ComputerName
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\NameCache" "LookupFailureCountBeforeClearingNamesInCache" $ComputerName #added in 3.44
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\NameCache" "MachineNameLookupTimeoutMs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\NameCache" "NameRefreshExponentialBackoffMaximumMins" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\NameCache" "NameRefreshMaximumPeriodSecs" $ComputerName #Added in 3.29
@@ -39240,6 +39341,8 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer\SiteServices" "MaxShutdownTimeSecs" $ComputerName
 	
 	#StaState (added in CVAD 2503 and V3.43.003)
+	Get-RegKeyToObject "HKLM:\Software\Citrix\StaService\Service\State\STA" "LastStaActivityTimestamp" $ComputerName #Added in 3.44
+	Get-RegKeyToObject "HKLM:\Software\Citrix\StaService\Service\State\STA" "RecordLastActivityIntervalMinutes" $ComputerName #Added in 3.44
 	Get-RegKeyToObject "HKLM:\Software\Citrix\StaService\Service\State\STA" "StandaloneStaEnabled" $ComputerName #Added in 3.43.003
 
 	#XmlServiceKeyAuthSettings
@@ -39253,41 +39356,19 @@ Function GetControllerRegistryKeys
 	Get-RegKeyToObject "HKLM:\Software\Citrix\Broker\Service\State\XmlServiceKeyAuth" "XmlServiceKey2" $ComputerName #Added in 3.29
 
 	#XmsSettings (not XmlSettings)
-	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "DisableGetPasswordExpiryInfo" $ComputerName #Added in 3.29
-	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "DisableStaNfuseSecurityChecks" $ComputerName
-	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "EnableXmlServiceSidEnumeration" $ComputerName
-	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "LocalXmlAuthHeaderAllowedDelaySecs" $ComputerName #Added in 3.29
-	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "NFuseAppDataBulkLookupThreshold" $ComputerName #Added in 3.40
-	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "StableServerFarmDataCachePeriodSecs" $ComputerName #Added in 3.29
-	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "ThrottledRequestAddressMaxConcurrentTransactions" $ComputerName
-	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "ThrottledRequestAddressRetryIntervalSecs" $ComputerName
-	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "ThrottledRequestAddressTimeoutSecs" $ComputerName
-	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "UnstableServerFarmDataCachePeriodSecs" $ComputerName #Added in 3.29
-	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "UseForwardedHeaderForSFAddress" $ComputerName #Added in 3.29
-	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "UseNetworkLogon" $ComputerName
-	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "XmlAuthHeaderTimeoutMs" $ComputerName #Added in 3.29
-	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "XmlListeners" $ComputerName
-	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "XmlServicesEnableNonSsl" $ComputerName
-	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "XmlServicesEnableSsl" $ComputerName
-	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "XmlServicesPort" $ComputerName
-	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "XmlServicesSslPort" $ComputerName
-	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "XmlServicesTargetAddress" $ComputerName
-	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "XmlStaIdentity" $ComputerName
-	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "XmlStaRefreshableTicketLifetimeInSeconds" $ComputerName
-	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "XmlStaTicketLifetimeInSeconds" $ComputerName
-	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "XmlUserLookupTimeoutMs" $ComputerName #Added in 3.29
-	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "XmlWpnbrRequestTimeoutMs" $ComputerName
-	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "XmsStartupRetryPeriodLimitMs" $ComputerName
-	Get-RegKeyToObject "HKLM:\Software\Policies\Citrix\DesktopServer" "XmsStartupRetryPeriodStartMaxMs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "DisableGetPasswordExpiryInfo" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "DisableStaNfuseSecurityChecks" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "EnableXmlServiceSidEnumeration" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "LocalXmlAuthHeaderAllowedDelaySecs" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "NFuseAppDataBulkLookupThreshold" $ComputerName #Added in 3.40
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "PowerStateCacheEntryExpiryTimeSecs" $ComputerName #Added in 3.44
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "PowerStateCacheEnumerationLifetimeSecs" $ComputerName #Added in 3.44
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "PowerStateCachePollingIntervalSecs" $ComputerName #Added in 3.44
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "StableServerFarmDataCachePeriodSecs" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "ThrottledRequestAddressMaxConcurrentTransactions" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "ThrottledRequestAddressRetryIntervalSecs" $ComputerName
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "ThrottledRequestAddressTimeoutSecs" $ComputerName
+	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "UniqueDeviceIdOptions" $ComputerName #Added in 3.44
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "UnstableServerFarmDataCachePeriodSecs" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "UseForwardedHeaderForSFAddress" $ComputerName #Added in 3.29
 	Get-RegKeyToObject "HKLM:\Software\Citrix\DesktopServer" "UseNetworkLogon" $ComputerName
