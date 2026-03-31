@@ -623,11 +623,11 @@
 	Creates an HTML report with full details on Administrator Scopes and Roles.
 	The computer running the script for the AdminAddress.
 .EXAMPLE
-	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -Logging -StartDate 09/01/2025 -EndDate 
-	09/30/2025	
+	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -Logging -StartDate 09/01/2026 -EndDate 
+	09/30/2026	
 	
-	Creates an HTML report with Configuration Logging details for the dates 09/01/2025 
-	through 09/30/2025.
+	Creates an HTML report with Configuration Logging details for the dates 09/01/2026 
+	through 09/30/2026.
 	The computer running the script for the AdminAddress.
 .EXAMPLE
 	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -Logging -StartDate "09/01/2026 10:00:00" 
@@ -1051,9 +1051,9 @@
 	This script creates a Word, PDF, plain text, or HTML document.
 .NOTES
 	NAME: CVAD_Inventory_V3.ps1
-	VERSION: 3.44 Beta 5
+	VERSION: 3.44
 	AUTHOR: Carl Webster
-	LASTEDIT: February 26, 2026
+	LASTEDIT: March 31, 2026
 #>
 
 #endregion
@@ -1246,7 +1246,7 @@ Param(
 
 # This script is based on the 2.36 script
 #
-#Version 3.44
+#Version 3.44 31-Mar-2026
 #	Thanks to Ferroque Systems, Steve Noel, Prateek Anand, Vikash Kumar, Mathias Alleyn 
 #	for lab access and help in gathering the necessary data for this update
 #
@@ -2945,7 +2945,7 @@ $SaveEAPreference         = $ErrorActionPreference
 $ErrorActionPreference    = 'SilentlyContinue'
 
 #stuff for report footer
-$script:MyVersion   = "3.44 Beta 5"
+$script:MyVersion   = "3.44 Beta 6"
 $Script:ScriptName  = "CVAD_Inventory_V3.ps1"
 $tmpdate            = [datetime] "02/26/2026"
 $Script:ReleaseDate = $tmpdate.ToUniversalTime().ToShortDateString()
@@ -7923,7 +7923,7 @@ Function OutputMachines
 		}
 		Else
 		{
-			$FolderName = $Catalog.AdminFolderName
+			$FolderName = "Machine Catalogs\$Catalog.AdminFolderName"
 		}
 		
 		$Machines = @(Get-BrokerMachine @CVADParams2 -CatalogName $Catalog.Name -SortBy DNSName)

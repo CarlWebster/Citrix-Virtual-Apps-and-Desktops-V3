@@ -623,11 +623,11 @@
 	Creates an HTML report with full details on Administrator Scopes and Roles.
 	The computer running the script for the AdminAddress.
 .EXAMPLE
-	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -Logging -StartDate 09/01/2025 -EndDate 
-	09/30/2025	
+	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -Logging -StartDate 09/01/2026 -EndDate 
+	09/30/2026	
 	
-	Creates an HTML report with Configuration Logging details for the dates 09/01/2025 
-	through 09/30/2025.
+	Creates an HTML report with Configuration Logging details for the dates 09/01/2026 
+	through 09/30/2026.
 	The computer running the script for the AdminAddress.
 .EXAMPLE
 	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -Logging -StartDate "09/01/2026 10:00:00" 
@@ -1051,9 +1051,9 @@
 	This script creates a Word, PDF, plain text, or HTML document.
 .NOTES
 	NAME: CVAD_Inventory_V3.ps1
-	VERSION: 3.44 Beta 5
+	VERSION: 3.44
 	AUTHOR: Carl Webster
-	LASTEDIT: February 26, 2026
+	LASTEDIT: March 31, 2026
 #>
 
 #endregion
@@ -1246,7 +1246,7 @@ Param(
 
 # This script is based on the 2.36 script
 #
-#Version 3.44
+#Version 3.44 31-Mar-2026
 #	Thanks to Ferroque Systems, Steve Noel, Prateek Anand, Vikash Kumar, Mathias Alleyn 
 #	for lab access and help in gathering the necessary data for this update
 #
@@ -2945,7 +2945,7 @@ $SaveEAPreference         = $ErrorActionPreference
 $ErrorActionPreference    = 'SilentlyContinue'
 
 #stuff for report footer
-$script:MyVersion   = "3.44 Beta 5"
+$script:MyVersion   = "3.44 Beta 6"
 $Script:ScriptName  = "CVAD_Inventory_V3.ps1"
 $tmpdate            = [datetime] "02/26/2026"
 $Script:ReleaseDate = $tmpdate.ToUniversalTime().ToShortDateString()
@@ -7923,7 +7923,7 @@ Function OutputMachines
 		}
 		Else
 		{
-			$FolderName = $Catalog.AdminFolderName
+			$FolderName = "Machine Catalogs\$Catalog.AdminFolderName"
 		}
 		
 		$Machines = @(Get-BrokerMachine @CVADParams2 -CatalogName $Catalog.Name -SortBy DNSName)
@@ -43805,8 +43805,8 @@ ProcessScriptEnd
 # SIG # Begin signature block
 # MIIthQYJKoZIhvcNAQcCoIItdjCCLXICAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU/madQy7SzO4IDWhY+sVuLovD
-# pmSggibfMIIFjTCCBHWgAwIBAgIQDpsYjvnQLefv21DiCEAYWjANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUeG9aCpTNOJ7kCBunlfp9n1ev
+# Jw+ggibfMIIFjTCCBHWgAwIBAgIQDpsYjvnQLefv21DiCEAYWjANBgkqhkiG9w0B
 # AQwFADBlMQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYD
 # VQQLExB3d3cuZGlnaWNlcnQuY29tMSQwIgYDVQQDExtEaWdpQ2VydCBBc3N1cmVk
 # IElEIFJvb3QgQ0EwHhcNMjIwODAxMDAwMDAwWhcNMzExMTA5MjM1OTU5WjBiMQsw
@@ -44017,33 +44017,33 @@ ProcessScriptEnd
 # UzEXMBUGA1UEChMORGlnaUNlcnQsIEluYy4xQTA/BgNVBAMTOERpZ2lDZXJ0IFRy
 # dXN0ZWQgRzQgQ29kZSBTaWduaW5nIFJTQTQwOTYgU0hBMzg0IDIwMjEgQ0ExAhAL
 # bN+2Z4EOKufLWhG6HUlwMAkGBSsOAwIaBQCgQDAZBgkqhkiG9w0BCQMxDAYKKwYB
-# BAGCNwIBBDAjBgkqhkiG9w0BCQQxFgQUL+kwlXDt0kHFFbV7RHzShOWxkrcwDQYJ
-# KoZIhvcNAQEBBQAEggIAJ7VUP9sq9ZNKMF2uwfezBdBhDrLID8zjDCnzWkEuNuM6
-# 7MGcark2CoMpkPHtVzht4JrDChaKGW2mxzG3R3ToPfs/sfPL464lQAL3bvfAXwnl
-# vFniam9AWA4rTz7ulbEoRhiDvuUYYxjXQkrWLfFePUSflAfC+OvjEYqJRUthUwd4
-# kc5yn5KA3TcYYGuGrdbW6ZZqxb1bZO+huEGjsPOD4iN9NERggTJrA9oeMFyEp4I5
-# SzIWxYPOvLgLWDQhIlqAvQ1ii5ayXOVyEM0muHpiWXr9zLfoc3YE7g6pg6gaFqGR
-# E3ziYwVF9+YC0npYUHwWY6l/fhp0wojPlQpSN1bEoY5cDzvFg3rJK6oQGStetKfc
-# TlwBzA3F5LaE0ygP/BzqLQ7zV10FUWf3mJziVzrHeJu6WdRMfQ3YbRfZjLf+F2Wf
-# K76thzPQGbyYLk5q/1tlOl2IQQJ1gksN9WKo6u355Cf/ZazTpQTaoHrfGJ/WcJYm
-# NElUUbVSiB4BfZLFvIidSbuMLPv0oMWlvnWuqoyecpAFHr1sv+1yWnlN/1sy0Q0P
-# TJXx+GorWn7WHZlQHwK9Wt9qYgs+gpCXwtEyYP0XY/B/CL6ZExkaYdG3UZsd+8RQ
-# yn0D7FkYD3Dp+QE6hf+ZY6+eKOtJqDjQ1N/2OSMxPD02sm5BhD7nejTIrhwmO2mh
+# BAGCNwIBBDAjBgkqhkiG9w0BCQQxFgQUD2PS9/GcUNj//Kb2JgjXnqZlB78wDQYJ
+# KoZIhvcNAQEBBQAEggIAo+mLPtNaM10isnuZ2LO4td/JU2C0Ba9RzB3rbFfe3kF9
+# vnJSxF4WwfPqcU3BFHGD+TSAU9Zfd8+60RpPOtOBcduN4Yrl9sOOJij6IKzgVWI7
+# 28JHAKEGvbiWCdeScSgxP0upvU48Q1g9u5cJal08TIHEkzepA49cd6+6H4VwgMyq
+# gt2Ygi9ntMYPy6OsbtIMXrwy6O2kJnTLdE5yMSZEW+Xpu9VXrpwdwPIz2nJfnxkD
+# jCDckc0dqH/hg/rBH5dYUkq4vNZ56k9vTlg/NgHlrl63ZfHs9S0BA3gai3GaCQze
+# HTITUOIMSq7XroLpMQG7Kn0dmsOGyom11JrjmmQCZBLIcMoeq293+klNyP3fplY+
+# WWDBHvFQytXZtI1c2KRJaGtRXbyWh864cevSGafYI3ECrP5vKLXzu86sIfbI2o9q
+# uRY3c2L/rw1HVSevuqYvmJ21DwpH7c2bR90u5QRwmDyBShRH4acElpQlJiYl5V01
+# tcNdotnZaeCK6uXyvo3OUrumdxDdZYskiozJWOHcxqsqKeJaLvlaUxWFDN7ODGuJ
+# SPtT3YnVOZM2AL8r8iQ6eaBLXRmgNatnj2326nHqT2N1VkdnFb32EP1uGS2x+++O
+# giHxgNAfSSCkCPMEQ4T3i9xqT/fr6xmIplsy9oLXYTfAD+yzrmovxeBXBPpT2ruh
 # ggMmMIIDIgYJKoZIhvcNAQkGMYIDEzCCAw8CAQEwfTBpMQswCQYDVQQGEwJVUzEX
 # MBUGA1UEChMORGlnaUNlcnQsIEluYy4xQTA/BgNVBAMTOERpZ2lDZXJ0IFRydXN0
 # ZWQgRzQgVGltZVN0YW1waW5nIFJTQTQwOTYgU0hBMjU2IDIwMjUgQ0ExAhAKgO8Y
 # S43xBYLRxHanlXRoMA0GCWCGSAFlAwQCAQUAoGkwGAYJKoZIhvcNAQkDMQsGCSqG
-# SIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMjYwMjI2MTcxMjM3WjAvBgkqhkiG9w0B
-# CQQxIgQg4H6PNsCJwA5qBfqr536aN4fCS4fvDACCZpqc1nWl2o0wDQYJKoZIhvcN
-# AQEBBQAEggIAppJeY0eJ31L4s8/thh7Oxsu55ayqGiFORjlT+3ZLXML8zkb2Ozy3
-# wPiApqGwMaGawSK+wBGYkbWYrPIcbHDIq7euy05qrcbbXMkFUFuHpwA302AyGrUA
-# 1lPtWtotKPZmRlK3fsi3Bij0eDdi+/xdAII6zGVu52fpg4DZM49K4Ixpdh/iyBki
-# sjZzwZOCIqC6XxAC1XUUO9tk4J1FZoC3LZWAh2zf8axYyTtxya9EPlSHhYOihmHK
-# SFZ58JPTe5rtygJBJyj4F/yq/CPV3/Ba+xorA7rkNemczFJpybeM/9IXqfRyAa9L
-# Mkdkpxls9BgfFE4JFJCFPlUvVzGBZpap1fe50k/pch/ott5QJGpvtSgg1+niA8iF
-# kW6kACHpnz2MT1jcUYLVIiHyK8WSuv2ooNWhc+L9Yk8Nb3HI6K2EK+n0mt03NMPy
-# mDDTzszlrwhPe0wls0QcY/j+YicrA9j/t3BVNxVXC8E5dY/uLAsd8BJSEftFeTUG
-# rQIXRta8umG3a7PvhzDy/OvjKqRZVGgvXIXYgp1mWUCm+MKaukpBK7iC2jiycE8K
-# Bo0lQBJ98CKyc+KPRPd3MDPfBq/xPKaKBXAnWbfdaopt8kJdiENaahFy/miNbjmn
-# 34y8X/X8PAlZ0bao4vZ7IHcgBdPpnQL60INjGWagsboDNOcXCkfoowY=
+# SIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMjYwMzMxMTU1MjQ0WjAvBgkqhkiG9w0B
+# CQQxIgQgY5A6JB0aQN3TkREiN78fwNyGAXOnyNz5mA4J6DB7cWYwDQYJKoZIhvcN
+# AQEBBQAEggIAGfAL+v+etnOFYVzZHgLeqgfZgMwyILmxLyrlEn/QbZd3Yytpt1ku
+# MbuV5YFj5eNlinLnaJx+KVTYEj+EN4w8KArcD3deuq6WuIBrb76m/X53HlsfIXhm
+# HEJ1bL48brZtk3cGKxUdNk+S+XPAjrOJUFyvsVpGtYeB7kkIAlvZlZccqcKEEEiP
+# KVQJms/dgs69JhptpKXFaWDk5yk7+cL40fxksOiQR4kfR46Qt+Xn2xasM5gNC0aV
+# H+IIHupij7UCvhFA9XgJgyhSRuMidPfR22Xmvugc0b9r/4R9zWWYpo7Fj6N4O1YT
+# NbL0GFSVfRc0P85y0CBHAOvYXCQZus7Mxddw2c5LEYkxNINPeYAQ15WCO7zD2/rN
+# 0E1MpbIpmkypBS3gt5yyWLGwjVWxc0ZQBPtxMv3cuibicZm+rD/wXRhKz4J/+1Nf
+# F7K73EcwdmGFkRCkQMC8GIJj4NJNcFaC2Vij659ewgACl5t++oAyvg4rktlxSC+j
+# UcO0pM0URrE8DoC+ZX0qe786x8Jfj7pkGIt4YIOBgu/0ZLsa58swr7ZkVD488HHp
+# mnfXw1tzyu1xej/9qEI3TAJnhUZUvyH9XSdmnoh/LaBsdNj0y0rmZhv5FEAU00Cj
+# 3NNYQQUS3zKb4MWzYYFbOxMT9LbkamA6CoE7XlJMmqYXGxKFRJRfp3g=
 # SIG # End signature block

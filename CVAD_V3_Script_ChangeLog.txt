@@ -6,7 +6,7 @@
 
 # This script is based on the 2.36 script
 
-#Version 3.44
+#Version 3.44 31-Mar-2026
 #	Thanks to Ferroque Systems, Steve Noel, Prateek Anand, Vikash Kumar, Mathias Alleyn 
 #	for lab access and help in gathering the necessary data for this update
 #
