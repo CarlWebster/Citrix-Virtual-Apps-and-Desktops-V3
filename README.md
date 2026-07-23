@@ -1,5 +1,5 @@
 # Citrix-Virtual-Apps-and-Desktops-V3
-	Creates an inventory of a Citrix Virtual Apps and Desktops (CVAD) 2006 or later Site 
+	Creates an inventory of a Citrix Virtual Apps and Desktops (CVAD) 2006 through 2511 Site 
 	using Microsoft PowerShell, Word, plain text, or HTML.
 	
 	This script requires at least PowerShell version 5.
