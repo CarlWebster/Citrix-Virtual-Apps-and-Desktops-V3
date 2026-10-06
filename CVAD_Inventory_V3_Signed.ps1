@@ -307,8 +307,8 @@
 .PARAMETER AddDateTime
 	Adds a date timestamp to the end of the file name.
 	The timestamp is in the format of yyyy-MM-dd_HHmm.
-	June 1, 2025, at 6 PM is 2025-06-01_1800.
-	The output filename will be ReportName_2025-06-01_1800.docx (or.pdf).
+	June 1, 2027, at 6 PM is 2027-06-01_1800.
+	The output filename will be ReportName_2027-06-01_1800.docx (or.pdf).
 	This parameter is disabled by default.
 	This parameter has an alias of ADT.
 .PARAMETER CSV
@@ -623,18 +623,18 @@
 	Creates an HTML report with full details on Administrator Scopes and Roles.
 	The computer running the script for the AdminAddress.
 .EXAMPLE
-	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -Logging -StartDate 09/01/2026 -EndDate 
-	09/30/2026	
+	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -Logging -StartDate 09/01/2027 -EndDate 
+	09/30/2027	
 	
-	Creates an HTML report with Configuration Logging details for the dates 09/01/2026 
-	through 09/30/2026.
+	Creates an HTML report with Configuration Logging details for the dates 09/01/2027 
+	through 09/30/2027.
 	The computer running the script for the AdminAddress.
 .EXAMPLE
-	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -Logging -StartDate "09/01/2026 10:00:00" 
-	-EndDate "09/01/2026 14:00:00" -MSWord
+	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -Logging -StartDate "09/01/2027 10:00:00" 
+	-EndDate "09/01/2027 14:00:00" -MSWord
 	
 	Creates a Microsoft Word report with Configuration Logging details for the time range 
-	09/01/2026 10:00:00AM through 09/01/2026 02:00:00PM.
+	09/01/2027 10:00:00AM through 09/01/2027 02:00:00PM.
 	
 	Narrowing the report down to seconds does not work. Seconds must be either 00 or 59.
 	
@@ -743,8 +743,8 @@
 	Creates an HTML report.
 	Adds a date time stamp to the end of the file name.
 	The timestamp is in the format of yyyy-MM-dd_HHmm.
-	June 1, 2026, at 6PM is 2026-06-01_1800.
-	The output filename will be CVADSiteName_2026-06-01_1800.docx
+	June 1, 2027, at 6PM is 2027-06-01_1800.
+	The output filename will be CVADSiteName_2027-06-01_1800.docx
 	The computer running the script for the AdminAddress.
 .EXAMPLE
 	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -PDF -AddDateTime
@@ -762,8 +762,8 @@
 
 	Adds a date time stamp to the end of the file name.
 	The timestamp is in the format of yyyy-MM-dd_HHmm.
-	June 1, 2026, at 6PM is 2026-06-01_1800.
-	The output filename will be CVADSiteName_2026-06-01_1800.pdf
+	June 1, 2027, at 6PM is 2027-06-01_1800.
+	The output filename will be CVADSiteName_2027-06-01_1800.pdf
 	The computer running the script for the AdminAddress.
 .EXAMPLE
 	PS C:\PSScript >.\CVAD_Inventory_V3.ps1 -Hardware
@@ -1051,9 +1051,9 @@
 	This script creates a Word, PDF, plain text, or HTML document.
 .NOTES
 	NAME: CVAD_Inventory_V3.ps1
-	VERSION: 3.44
+	VERSION: 3.45
 	AUTHOR: Carl Webster
-	LASTEDIT: March 31, 2026
+	LASTEDIT: October 6, 2026
 #>
 
 #endregion
@@ -1245,6 +1245,28 @@ Param(
 #started updating for CVAD version 2006 on August 10, 2020
 
 # This script is based on the 2.36 script
+#
+#Version 3.45 6-Oct-2026
+#
+#	Thanks to Ferroque Systems for lab access and help in gathering the necessary data for this update
+#
+#	Add checks for CVAD 2603,2607/7.47,7.48
+#
+#	In Function GetComputerWMIInfo,
+#		Thanks to the help from Guy Leech, we fixed a bug where, if run on a localhost 
+#		that is also the Citrix DB and/or license server, the call to Get-CimInstance failed with the 
+#		FQDN of the localhost
+#
+#	In Functions OutputDesktopOSMachine, OutputMachineDetails and OutputServerOSMachine,
+#		Fixed bugs to prevent an empty machine name and to prevent processing a SID
+#
+#	Add a PDF copy of the ReadMe file so it can be displayed in GitHub
+#
+#	Change Dropbox and CarlWebster.com links to GitHub links
+#
+#	Updated the help text
+#
+#	Updated the ReadMe file
 #
 #Version 3.44 31-Mar-2026
 #	Thanks to Ferroque Systems, Steve Noel, Prateek Anand, Vikash Kumar, Mathias Alleyn 
@@ -2945,9 +2967,9 @@ $SaveEAPreference         = $ErrorActionPreference
 $ErrorActionPreference    = 'SilentlyContinue'
 
 #stuff for report footer
-$script:MyVersion   = "3.44 Beta 6"
+$script:MyVersion   = "3.45"
 $Script:ScriptName  = "CVAD_Inventory_V3.ps1"
-$tmpdate            = [datetime] "02/26/2026"
+$tmpdate            = [datetime] "10/06/2026"
 $Script:ReleaseDate = $tmpdate.ToUniversalTime().ToShortDateString()
 
 If($Null -eq $HTML)
@@ -3460,6 +3482,9 @@ Function GetComputerWMIInfo
 	# modified 17-Aug-2016 to fix a few issues with Text and HTML output
 	# modified 29-Apr-2018 to change from Arrays to New-Object System.Collections.ArrayList
 	# modified 11-Mar-2022 changed from using Get-WmiObject to Get-CimInstance
+	# modified 22-Sep-2026 Thanks to the help from Guy Leech, we fixed a bug where, if run on a localhost 
+	#	that is also the Citrix DB and/or license server, the call to Get-CimInstance failed with the 
+	#	FQDN of the localhost
 
 	#Get Computer info
 	Write-Verbose "$(Get-Date -Format G): `t`tProcessing WMI Computer information"
@@ -3482,7 +3507,7 @@ Function GetComputerWMIInfo
 	
 	Try
 	{
-		If($RemoteComputerName -eq $env:computername)
+		If($RemoteComputerName -match "^$env:COMPUTERNAME\b")
 		{
 			$Results = Get-CimInstance -ClassName win32_computersystem -Verbose:$False
 		}
@@ -3503,7 +3528,7 @@ Function GetComputerWMIInfo
 		@{N="TotalPhysicalRam"; E={[math]::round(($_.TotalPhysicalMemory / 1GB),0)}}, `
 		NumberOfProcessors, NumberOfLogicalProcessors
 		$Results = $Null
-		If($RemoteComputerName -eq $env:computername)
+		If($RemoteComputerName -match "^$env:COMPUTERNAME\b")
 		{
 			[string]$ComputerOS = (Get-CimInstance -ClassName Win32_OperatingSystem -EA 0 -Verbose:$False).Caption
 		}
@@ -3570,7 +3595,7 @@ Function GetComputerWMIInfo
 
 	Try
 	{
-		If($RemoteComputerName -eq $env:computername)
+		If($RemoteComputerName -match "^$env:COMPUTERNAME\b")
 		{
 			$Results = Get-CimInstance -ClassName Win32_LogicalDisk -Verbose:$False
 		}
@@ -3651,7 +3676,7 @@ Function GetComputerWMIInfo
 
 	Try
 	{
-		If($RemoteComputerName -eq $env:computername)
+		If($RemoteComputerName -match "^$env:COMPUTERNAME\b")
 		{
 			$Results = Get-CimInstance -ClassName win32_Processor -Verbose:$False
 		}
@@ -3730,7 +3755,7 @@ Function GetComputerWMIInfo
 	
 	Try
 	{
-		If($RemoteComputerName -eq $env:computername)
+		If($RemoteComputerName -match "^$env:COMPUTERNAME\b")
 		{
 			$Results = Get-CimInstance -ClassName win32_networkadapterconfiguration -Verbose:$False
 		}
@@ -3765,7 +3790,7 @@ Function GetComputerWMIInfo
 			{
 				Try
 				{
-					If($RemoteComputerName -eq $env:computername)
+					If($RemoteComputerName -match "^$env:COMPUTERNAME\b")
 					{
 						$ThisNic = Get-CimInstance -ClassName win32_networkadapter -Verbose:$False | Where-Object {$_.index -eq $nic.index}
 					}
@@ -3880,7 +3905,7 @@ Function OutputComputerItem
 	try 
 	{
 
-		If($RemoteComputerName -eq $env:computername)
+		If($RemoteComputerName -match "^$env:COMPUTERNAME\b")
 		{
 			$PowerPlan = (Get-CimInstance -ClassName Win32_PowerPlan -Namespace "root\cimv2\power" -Verbose:$False |
 				Where-Object {$_.IsActive -eq $true} |
@@ -4220,7 +4245,7 @@ Function OutputNicItem
 {
 	Param([object]$Nic, [object]$ThisNic, [string]$RemoteComputerName)
 	
-	If($RemoteComputerName -eq $env:computername)
+	If($RemoteComputerName -match "^$env:COMPUTERNAME\b")
 	{
 		$powerMgmt = Get-CimInstance -ClassName MSPower_DeviceEnable -Namespace "root\wmi" -Verbose:$False |
 			Where-Object{$_.InstanceName -match [regex]::Escape($ThisNic.PNPDeviceID)}
@@ -4275,7 +4300,7 @@ Function OutputNicItem
 	Try
 	{
 		#https://ios.developreference.com/article/10085450/How+do+I+enable+VRSS+(Virtual+Receive+Side+Scaling)+for+a+Windows+VM+without+relying+on+Enable-NetAdapterRSS%3F
-		If($RemoteComputerName -eq $env:computername)
+		If($RemoteComputerName -match "^$env:COMPUTERNAME\b")
 		{
 			$RSSEnabled = (Get-CimInstance -ClassName MSFT_NetAdapterRssSettingData -Namespace "root\StandardCimV2" -ea 0 -Verbose:$False).Enabled
 		}
@@ -9929,10 +9954,32 @@ Function OutputMachineDetails
 {
 	Param([object] $Machine)
 	
-	#if HostedMachineName is empty, like for RemotePC and unregistered machines, use the first part of DNSName
-	$tmp = $Machine.DNSName.Split(".")
-	$xMachineName = $tmp[0]
-	$tmp = $Null
+	# Regex pattern for a valid Windows SID
+	$SidPattern = "^S-\d-\d+(-\d+)*$"
+
+	#don't use the MachineName property as it is a SID
+	If($Machine.DNSName)	# is there anything in the DNSName property
+	{
+		$tmp = $Machine.DNSName.Split(".")
+		$xMachineName = $tmp[0]
+		$tmp = $Null
+	}
+	ElseIf($Machine.MachineName -and $Machine.MachineName -notmatch $SidPattern)	
+	{
+		# is there anything in the MachineName property and it is not a SID
+		$tmp = $Machine.MachineName.Split("\")
+		$xMachineName = $tmp[1]
+		$tmp = $Null
+	}
+	ElseIf($Machine.HostedMachineName)	# is there anything in the HostedMachineName property
+	{
+		$xMachineName = $Machine.HostedMachineName
+	}
+	Else	# error, there is no name for the Machine
+	{
+		$xMachineName = "error, there was no name found for the Machine"
+	}
+
 	Write-Verbose "$(Get-Date -Format G): `t`tOutput Machine $xMachineName"
 	
 	#first see if VDA is Linux
@@ -40220,15 +40267,18 @@ Function OutputDesktopOSMachine
 {
 	Param([object]$Desktop)
 
-	#updated in V3.40
+	# Regex pattern for a valid Windows SID
+	$SidPattern = "^S-\d-\d+(-\d+)*$"
+
 	If($Desktop.DNSName)	# is there anything in the DNSName property
 	{
 		$tmp = $Desktop.DNSName.Split(".")
 		$xDesktopName = $tmp[0]
 		$tmp = $Null
 	}
-	ElseIf($Desktop.MachineName)	# is there anything in the MachineName property
+	ElseIf($Desktop.MachineName -and $Desktop.MachineName -notmatch $SidPattern)	
 	{
+		# is there anything in the MachineName property and it is not a SID
 		$tmp = $Desktop.MachineName.Split("\")
 		$xDesktopName = $tmp[1]
 		$tmp = $Null
@@ -40391,15 +40441,18 @@ Function OutputServerOSMachine
 {
 	Param([object]$Server)
 	
-	#updated in V3.40
+	# Regex pattern for a valid Windows SID
+	$SidPattern = "^S-\d-\d+(-\d+)*$"
+
 	If($Server.DNSName)	# is there anything in the DNSName property
 	{
 		$tmp = $Server.DNSName.Split(".")
 		$xServerName = $tmp[0]
 		$tmp = $Null
 	}
-	ElseIf($Server.MachineName)	# is there anything in the MachineName property
+	ElseIf($Server.MachineName -and $Server.MachineName -notmatch $SidPattern)	
 	{
+		# is there anything in the MachineName property that is not a SID
 		$tmp = $Server.MachineName.Split("\")
 		$xServerName = $tmp[1]
 		$tmp = $Null
@@ -42347,6 +42400,8 @@ Function ProcessScriptSetup
 			$CVADSiteVersionReal = "Unknown"
 			Switch ($CVADSiteVersion)
 			{
+				"7.48"	{$CVADSiteVersionReal = "CVAD 2607"; Break}
+				"7.47"	{$CVADSiteVersionReal = "CVAD 2603"; Break}
 				"7.46"	{$CVADSiteVersionReal = "CVAD 2511"; Break}
 				"7.45"	{$CVADSiteVersionReal = "CVAD 2507"; Break}
 				"7.44"	{$CVADSiteVersionReal = "CVAD 2503"; Break}
@@ -42417,13 +42472,13 @@ Function ProcessScriptSetup
 	This script is designed for CVAD 2006 and later and should not be run on $CVADSiteVersionReal.
 	`n`n
 	If you are running XA/XD 7.0 through 7.7, please use: 
-	https://carlwebster.com/downloads/download-info/xenappxendesktop-7-x-documentation-script/
+	https://github.com/CarlWebster/Citrix-XenApp-XenDesktop-7-V1
 	`n`n
 	If you are running XA/XD 7.8 through CVAD 2006, please use:
-	https://carlwebster.com/downloads/download-info/xenappxendesktop-7-8/
+	https://github.com/CarlWebster/Citrix-XenApp-XenDesktop-7-V2
 	`n`n
 	If you are running Citrix Cloud, please use:
-	https://carlwebster.com/downloads/download-info/citrix-cloud-citrix-virtual-apps-and-desktops-service/
+	https://github.com/CarlWebster/Citrix-Cloud-Daas-
 	`n`n
 	Script cannot continue
 	`n`n
@@ -42440,17 +42495,17 @@ Function ProcessScriptSetup
 	This script is designed for CVAD 2006 and later and should not be run on any other version.
 	`n`n
 	If you are running XA/XD 7.0 through 7.7, please use: 
-	https://carlwebster.com/downloads/download-info/xenappxendesktop-7-x-documentation-script/
+	https://github.com/CarlWebster/Citrix-XenApp-XenDesktop-7-V1
 	`n`n
 	If you are running XA/XD 7.8 through CVAD 2006, please use:
-	https://carlwebster.com/downloads/download-info/xenappxendesktop-7-8/
+	https://github.com/CarlWebster/Citrix-XenApp-XenDesktop-7-V2
 	`n`n
 	If you are running Citrix Cloud, please use:
-	https://carlwebster.com/downloads/download-info/citrix-cloud-citrix-virtual-apps-and-desktops-service/
+	https://github.com/CarlWebster/Citrix-Cloud-Daas-
 	`n`n
 	If you are running the script remotely, did you install Studio or the PowerShell snapins on $($env:computername)?
 	`n`n
-	Please see the Prerequisites section in the ReadMe file https://www.dropbox.com/scl/fi/987b4bjr2iol24hnvhk2g/CVAD_Inventory_V3_ReadMe.rtf?rlkey=mtvmwvfbtoc97hvwgoc3lxz0p&dl=0
+	Please see the Prerequisites section in the ReadMe file https://github.com/CarlWebster/Citrix-Virtual-Apps-and-Desktops-V3/blob/master/CVAD_Inventory_V3_ReadMe.pdf
 	`n`n
 	Script will now close.
 	`n`n
@@ -42572,6 +42627,8 @@ Script cannot continue
 	$Script:CVADSiteVersionReal = "Unknown"
 	Switch ($Script:CVADSiteVersion)
 	{
+		"7.48"	{$Script:CVADSiteVersionReal = "CVAD 2607"; Break}
+		"7.47"	{$Script:CVADSiteVersionReal = "CVAD 2603"; Break}
 		"7.46"	{$Script:CVADSiteVersionReal = "CVAD 2511"; Break}
 		"7.45"	{$Script:CVADSiteVersionReal = "CVAD 2507"; Break}
 		"7.44"	{$Script:CVADSiteVersionReal = "CVAD 2503"; Break}
@@ -42639,7 +42696,7 @@ Script cannot continue
 	`n`n
 	This script is designed for On-Premises CVAD 2006 and later and should not be run on Citrix Cloud. Please use:
 	`n`n
-	https://carlwebster.com/downloads/download-info/citrix-cloud-citrix-virtual-apps-and-desktops-service/
+	https://github.com/CarlWebster/Citrix-Cloud-Daas-
 	`n`n
 	Script cannot continue
 	`n`n
@@ -42655,13 +42712,13 @@ Script cannot continue
 	This script is designed for CVAD 2006 and later and should not be run on $Script:CVADSiteVersionReal.
 	`n`n
 	If you are running XA/XD 7.0 through 7.7, please use: 
-	https://carlwebster.com/downloads/download-info/xenappxendesktop-7-x-documentation-script/
+	https://github.com/CarlWebster/Citrix-XenApp-XenDesktop-7-V1
 	`n`n
 	If you are running XA/XD 7.8 through CVAD 2006, please use:
-	https://carlwebster.com/downloads/download-info/xenappxendesktop-7-8/
+	https://github.com/CarlWebster/Citrix-XenApp-XenDesktop-7-V2
 	`n`n
 	If you are running Citrix Cloud, please use:
-	https://carlwebster.com/downloads/download-info/citrix-cloud-citrix-virtual-apps-and-desktops-service/
+	https://github.com/CarlWebster/Citrix-Cloud-Daas-
 	`n`n
 	Script cannot continue
 	`n`n
@@ -43805,8 +43862,8 @@ ProcessScriptEnd
 # SIG # Begin signature block
 # MIIthQYJKoZIhvcNAQcCoIItdjCCLXICAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUeG9aCpTNOJ7kCBunlfp9n1ev
-# Jw+ggibfMIIFjTCCBHWgAwIBAgIQDpsYjvnQLefv21DiCEAYWjANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU42IIOypIvsvD99PDuZp9ZgqA
+# /YaggibfMIIFjTCCBHWgAwIBAgIQDpsYjvnQLefv21DiCEAYWjANBgkqhkiG9w0B
 # AQwFADBlMQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYD
 # VQQLExB3d3cuZGlnaWNlcnQuY29tMSQwIgYDVQQDExtEaWdpQ2VydCBBc3N1cmVk
 # IElEIFJvb3QgQ0EwHhcNMjIwODAxMDAwMDAwWhcNMzExMTA5MjM1OTU5WjBiMQsw
@@ -43937,25 +43994,25 @@ ProcessScriptEnd
 # Ru7hAWE6bTEm4XYRkA6Tl4KSFLFk43esaUeqGkH/wyW4N7OigizwJWeukcyIPbAv
 # jSabnf7+Pu0VrFgoiovRDiyx3zEdmcif/sYQsfch28bZeUz2rtY/9TCA6TD8dC3J
 # E3rYkrhLULy7Dc90G6e8BlqmyIjlgp2+VqsS9/wQD7yFylIz0scmbKvFoW2jNrbM
-# 1pD2T7m3XDCCBu0wggTVoAMCAQICEAqA7xhLjfEFgtHEdqeVdGgwDQYJKoZIhvcN
+# 1pD2T7m3XDCCBu0wggTVoAMCAQICEAhP3DNPfkVO28MPj/mSGDUwDQYJKoZIhvcN
 # AQELBQAwaTELMAkGA1UEBhMCVVMxFzAVBgNVBAoTDkRpZ2lDZXJ0LCBJbmMuMUEw
 # PwYDVQQDEzhEaWdpQ2VydCBUcnVzdGVkIEc0IFRpbWVTdGFtcGluZyBSU0E0MDk2
-# IFNIQTI1NiAyMDI1IENBMTAeFw0yNTA2MDQwMDAwMDBaFw0zNjA5MDMyMzU5NTla
+# IFNIQTI1NiAyMDI1IENBMTAeFw0yNjA4MDUwMDAwMDBaFw0zNzExMDQyMzU5NTla
 # MGMxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjE7MDkGA1UE
 # AxMyRGlnaUNlcnQgU0hBMjU2IFJTQTQwOTYgVGltZXN0YW1wIFJlc3BvbmRlciAy
-# MDI1IDEwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQDQRqwtEsae0Oqu
-# YFazK1e6b1H/hnAKAd/KN8wZQjBjMqiZ3xTWcfsLwOvRxUwXcGx8AUjni6bz52fG
-# Tfr6PHRNv6T7zsf1Y/E3IU8kgNkeECqVQ+3bzWYesFtkepErvUSbf+EIYLkrLKd6
-# qJnuzK8Vcn0DvbDMemQFoxQ2Dsw4vEjoT1FpS54dNApZfKY61HAldytxNM89PZXU
-# P/5wWWURK+IfxiOg8W9lKMqzdIo7VA1R0V3Zp3DjjANwqAf4lEkTlCDQ0/fKJLKL
-# kzGBTpx6EYevvOi7XOc4zyh1uSqgr6UnbksIcFJqLbkIXIPbcNmA98Oskkkrvt6l
-# PAw/p4oDSRZreiwB7x9ykrjS6GS3NR39iTTFS+ENTqW8m6THuOmHHjQNC3zbJ6nJ
-# 6SXiLSvw4Smz8U07hqF+8CTXaETkVWz0dVVZw7knh1WZXOLHgDvundrAtuvz0D3T
-# +dYaNcwafsVCGZKUhQPL1naFKBy1p6llN3QgshRta6Eq4B40h5avMcpi54wm0i2e
-# PZD5pPIssoszQyF4//3DoK2O65Uck5Wggn8O2klETsJ7u8xEehGifgJYi+6I03Uu
-# T1j7FnrqVrOzaQoVJOeeStPeldYRNMmSF3voIgMFtNGh86w3ISHNm0IaadCKCkUe
-# 2LnwJKa8TIlwCUNVwppwn4D3/Pt5pwIDAQABo4IBlTCCAZEwDAYDVR0TAQH/BAIw
-# ADAdBgNVHQ4EFgQU5Dv88jHt/f3X85FxYxlQQ89hjOgwHwYDVR0jBBgwFoAU729T
+# MDI2IDEwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQC2e6byyf7NSvjU
+# m0xls/04xjD4fAkOkbnGQi7+Wpx81iYxfzViaxSIctuH3KSl5YEYpMuFgGsA31N2
+# D9ATMbfZdw5uaAhuWevQKhDdZIB4NnqcfpfpWQXJiQnDdAElETC+bhSEvNLGbA8D
+# twUpFMQ4yyYQSPqomT92osQAv6hBi47ATZS6JfVWe6XxhF4jJZ3iSAuf2Cros1cz
+# RSmWRHqMv9AfGZvp8ygYElhudpQjtcPpwoOl6QrZJUyV3iINvN4cO05prGV0fkjG
+# 426xDr2d3z9lcSIHkdvGPdGUrXdxfVbgOUVcp2/8ISEzwKPW++Wa+E2ujI91EZtu
+# kGWDJ/xZ27k3oHKEXBRGfRTqjOU+jE3ba/5++JSE/7oNHnjs5mekExYN96LV/mxU
+# bCKJb8pBNY4r3uD7hEmk/M81XhVgwDA7aMzYC3LZBg9WY5BMmbSay5ecmtJuXaB/
+# 0nKWmQmVZeqTVDgsmzHP5MQuhAJkiWNuC9MmCg9TZHXbJ2/yLVSov9p16UDTLtT0
+# +aa1vN71fHeu1qMLlLNB3WOB/ADCxr3S/1hxI92Z6jKgEED/btwIvbfuXkNNhg8M
+# tDg43c4tMZae9FvqMOt/9PvmAxF9TNIsIFB8G6yb36ZJZGUL8N/pL971DyLXcK6H
+# M5PYnH5X+eVtczhCgHCVQCF6XDAlPQIDAQABo4IBlTCCAZEwDAYDVR0TAQH/BAIw
+# ADAdBgNVHQ4EFgQUFMljijAu1Er7bpTz5uNAfvXszeIwHwYDVR0jBBgwFoAU729T
 # SunkBnx6yuKQVvYv1Ensy04wDgYDVR0PAQH/BAQDAgeAMBYGA1UdJQEB/wQMMAoG
 # CCsGAQUFBwMIMIGVBggrBgEFBQcBAQSBiDCBhTAkBggrBgEFBQcwAYYYaHR0cDov
 # L29jc3AuZGlnaWNlcnQuY29tMF0GCCsGAQUFBzAChlFodHRwOi8vY2FjZXJ0cy5k
@@ -43963,37 +44020,37 @@ ProcessScriptEnd
 # U0hBMjU2MjAyNUNBMS5jcnQwXwYDVR0fBFgwVjBUoFKgUIZOaHR0cDovL2NybDMu
 # ZGlnaWNlcnQuY29tL0RpZ2lDZXJ0VHJ1c3RlZEc0VGltZVN0YW1waW5nUlNBNDA5
 # NlNIQTI1NjIwMjVDQTEuY3JsMCAGA1UdIAQZMBcwCAYGZ4EMAQQCMAsGCWCGSAGG
-# /WwHATANBgkqhkiG9w0BAQsFAAOCAgEAZSqt8RwnBLmuYEHs0QhEnmNAciH45PYi
-# T9s1i6UKtW+FERp8FgXRGQ/YAavXzWjZhY+hIfP2JkQ38U+wtJPBVBajYfrbIYG+
-# Dui4I4PCvHpQuPqFgqp1PzC/ZRX4pvP/ciZmUnthfAEP1HShTrY+2DE5qjzvZs7J
-# IIgt0GCFD9ktx0LxxtRQ7vllKluHWiKk6FxRPyUPxAAYH2Vy1lNM4kzekd8oEARz
-# FAWgeW3az2xejEWLNN4eKGxDJ8WDl/FQUSntbjZ80FU3i54tpx5F/0Kr15zW/mJA
-# xZMVBrTE2oi0fcI8VMbtoRAmaaslNXdCG1+lqvP4FbrQ6IwSBXkZagHLhFU9HCrG
-# /syTRLLhAezu/3Lr00GrJzPQFnCEH1Y58678IgmfORBPC1JKkYaEt2OdDh4GmO0/
-# 5cHelAK2/gTlQJINqDr6JfwyYHXSd+V08X1JUPvB4ILfJdmL+66Gp3CSBXG6IwXM
-# ZUXBhtCyIaehr0XkBoDIGMUG1dUtwq1qmcwbdUfcSYCn+OwncVUXf53VJUNOaMWM
-# ts0VlRYxe5nK+At+DI96HAlXHAL5SlfYxJ7La54i71McVWRP66bW+yERNpbJCjyC
-# YG2j+bdpxo/1Cy4uPcU3AWVPGrbn5PhDBf3Froguzzhk++ami+r3Qrx5bIbY3TVz
-# giFI7Gq3zWcwggdZMIIFQaADAgECAhALbN+2Z4EOKufLWhG6HUlwMA0GCSqGSIb3
+# /WwHATANBgkqhkiG9w0BAQsFAAOCAgEAjcU6YR6dUgrfmawJgH59KECxa9Ji8sEi
+# 2g10CBDaMiqsaxWyW5cwlT/6ZF5sFznazqVsoC85U9dqLOYqQwst+UQQoNlDHgKR
+# La3xoc+OReFreFhnTXSG0Vrd2E2CZqUfm+5a+He1MJ/h+tNLuA+0Zzhn/Fo+FDYA
+# HWZHx4R79ZsfRFYe9UiXpXBDf6DkUo183Y38NYmR/XfDYf7YZ+oR9t3flbDwK+hg
+# GMs0gNNp1w9Z2CyOyI5or/sSwomAuNQ0hWC9xoU4stD8aWsD7RkcmgVRs6vlIk3z
+# PKQ+ylcheWkMlj+CoVRlFE55pv0ZWCaFt04lwP/rdGHE9qEVQZtyRE42ox7oNgC/
+# r+Y4bSlZ3dw9K2x1xLtu6PkPKeLBFjzKigwfqm3Hm+k/+lnME8F5kPZTgiy2HLEH
+# klpryqs6QHnPXrRNeIzkAMyylnRN8P0wmirS0WkU+ywpEWFZ4QNg+9xS43tTuW9x
+# 0eXh7NDc1P/sV+zWxHXKH8tFt1ncHdVzqrZaYPyYMLSn2TOXajveJW1L3joiQSPs
+# WRGxkbDDW15jERFE4LvjnGu2O9zD1nLJSMdlYZEikl4w2w+q4IN/R+TIe0H4ngCI
+# 1moJCTbevGH4punIxM1Uoi0nmX3ZK+XbRT01uowE5ViXWHng0RgsmrX/EdYUo80r
+# 3TfMlkD0/YMwggdZMIIFQaADAgECAhAJuCcgOBs2YT7S+XvCw8f0MA0GCSqGSIb3
 # DQEBCwUAMGkxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFB
 # MD8GA1UEAxM4RGlnaUNlcnQgVHJ1c3RlZCBHNCBDb2RlIFNpZ25pbmcgUlNBNDA5
-# NiBTSEEzODQgMjAyMSBDQTEwHhcNMjQwODEzMDAwMDAwWhcNMjYxMDE4MjM1OTU5
+# NiBTSEEzODQgMjAyMSBDQTEwHhcNMjYwNzEzMDAwMDAwWhcNMjYxMDE4MjM1OTU5
 # WjBhMQswCQYDVQQGEwJVUzESMBAGA1UECBMJVGVubmVzc2VlMRAwDgYDVQQHEwdM
 # ZWJhbm9uMRUwEwYDVQQKEwxDYXJsIFdlYnN0ZXIxFTATBgNVBAMTDENhcmwgV2Vi
-# c3RlcjCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBANObiSjT83zRuTfB
-# koOFsUj74a/sVI6pDCmQpc4uC8XNvrEoZzqKL5mPQD5E7un43xWCwqijpwu9BdOG
-# jmb1Re8XZ0RbJNMKGOTADgLxDAzTXmpCrcfLkQOzhPHmV6biEP6iOGHrC9DGXRkg
-# PUMrElexmeEaN1/9moLgh42klfJPpzlFgiJngFLNCG4mZGvzqcYvkkCkatHxly75
-# G/RTm+uQnss4yclcnSwDKFwIIME1TDM6+kdJfBHdOBONr0jAcxekKNfkA4bG9QIb
-# MphHpbYWgNrdmCqILuHpIyHq0nLWMg8pJNhxjFnHfbiutYQOC0wkRVku1VC6W/rx
-# a/KGxAIURL5M7BrmTwS92SVkr9Y9HDP8lFSZdLT3ZHdLA2fDqE1ryfQ5c23O+WjY
-# IByIvOlGvIRHnXrHP8MgRge+mTKGvBfiIComl8QWyydmvEfQ+xQEgKP7mRePZdGd
-# SiAOkmf9cwe9UDCLaHxzZeqJulGHI6a3gyLgGLv79BtZ0CgW9ehExT32jLtKP0Kf
-# hOgvR4fSC0EymydVWyszSBEcuzxROCebBcNMhN0sjnowrkDrqMwbfDi64IDQJnZ6
-# G+0xpjeM20uWaw+T3A8yGevpFu5fsaCz8huJFaPErXQCEHYNpXUXQrxBgmO+C7W3
-# rzLtmlQwnSOwdx6j9B4EvDIR3+W9AgMBAAGjggIDMIIB/zAfBgNVHSMEGDAWgBRo
-# N+Drtjv4XxGG+/5hewiIZfROQjAdBgNVHQ4EFgQUjXWpkPG7S6X9XiykjcFP7U4f
-# mDUwPgYDVR0gBDcwNTAzBgZngQwBBAEwKTAnBggrBgEFBQcCARYbaHR0cDovL3d3
+# c3RlcjCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBAKsfdK9kJ+4w38Ei
+# ZP7/xd81hmEb1qaRj3Fb1cLVGfsBH+pdNUt/iOEL+0E/t94YKquBDTQmaL439hgL
+# 2LoXpX65cxm5BgqflP5Lj/5B0f1XfmqXZJGMYJU4+PSDNJbs2qQoO33NWLhnZt58
+# qgwBKb7I7//AWWiqvsvB5Qro8Qil0x0JLH2sTFsaPsSpdtGDEnCCuO2d8uxDhcIR
+# 5y2v5EeZQPl4ZYeVVJM5k8IRqTl00QViFSvJ6I17Xw+ltE/KzQ2KU517z2j36Q6Z
+# McCUDuI4AQZbUe9MLgb1DrxmDHkUQDbhA7N+iAF1ufsuFVsod5ecbS1L4pFzQrBw
+# 40H9tBp311J8o3Fnby8NMVJcB1L04Or5GdTvcpHlAOsDxtROVhG9u0gzD2QEm0s2
+# iqwDu8skxg9wEZf65G6Gg8ozY55kArs97B7fcv7iINJByLmzKxgwHkFeE1yFtnIJ
+# mgyEWNdmOmqwPsgHMwnRiNlBhe13/XkV3dsJSysikn4P6ljJ7ok1HUGX0kR9mMtQ
+# tp7q2THs8q0/l23NAuVcXgRbd2b5zT/DD81xqamblaDzMkjiRX0VvPgTVLc1YVlf
+# onaCdeXGQsP2jTUdZcIghLMnJc9T2geKFr2oqZOUSb0DC9vfL42G/nuwZsdmeN8Z
+# G/9kBY3C3tLu/crMsmtYYtF378ZpAgMBAAGjggIDMIIB/zAfBgNVHSMEGDAWgBRo
+# N+Drtjv4XxGG+/5hewiIZfROQjAdBgNVHQ4EFgQU+LRgxllvY8pgTM+rGYb9dI8Y
+# sHMwPgYDVR0gBDcwNTAzBgZngQwBBAEwKTAnBggrBgEFBQcCARYbaHR0cDovL3d3
 # dy5kaWdpY2VydC5jb20vQ1BTMA4GA1UdDwEB/wQEAwIHgDATBgNVHSUEDDAKBggr
 # BgEFBQcDAzCBtQYDVR0fBIGtMIGqMFOgUaBPhk1odHRwOi8vY3JsMy5kaWdpY2Vy
 # dC5jb20vRGlnaUNlcnRUcnVzdGVkRzRDb2RlU2lnbmluZ1JTQTQwOTZTSEEzODQy
@@ -44002,48 +44059,48 @@ ProcessScriptEnd
 # gZQGCCsGAQUFBwEBBIGHMIGEMCQGCCsGAQUFBzABhhhodHRwOi8vb2NzcC5kaWdp
 # Y2VydC5jb20wXAYIKwYBBQUHMAKGUGh0dHA6Ly9jYWNlcnRzLmRpZ2ljZXJ0LmNv
 # bS9EaWdpQ2VydFRydXN0ZWRHNENvZGVTaWduaW5nUlNBNDA5NlNIQTM4NDIwMjFD
-# QTEuY3J0MAkGA1UdEwQCMAAwDQYJKoZIhvcNAQELBQADggIBAELxe271+0s/f2L4
-# jS+stPNIV7xullhe392MKZQTh3kMuGwxhydNNN4+jHZ0kPk3m3HdQCGWirDSWo09
-# TUReBftt0Hof8pxZN5EbmmwiZI7Bjyw2UPlCs34X1kCjsFgiBILJsdkGtxDJvzSw
-# 22fUqrblVVqguvm/NiVoPBIbeodYiWzJwNzLbjPGbohynYynU4vNaXkOwkbunpPJ
-# 435mRKPHefXBVgPBxDOEv5OH97tf4Yx5EwN+Oq/sH9w7EyZfv4w4kA40wvFBdcET
-# EydMiVEJb4VGKhchCDpzCbchD8nxK/T+O/+JCK9v4kDJ7fBQ8/52by8WA2lYwf37
-# xS7LNtsBCl+LWefZ1+2Nb1wNGJOQcONHqBjM+l0kLivwo8e6ChwCYY9+9HpnPNRU
-# ib5Sb9SVXYuIlIX5+i31XHNNYuSHLhEKfIqRlake9AKdxymSt4b3FEEfm85rdB/b
-# Sw9So9iCWax2uUhcobuwEcpsvKqIailleOQ8efp2SL43obD0+SwJh6286TUYtuh9
-# wIiRB/dIwfvuVypwKDfSBROM4+k34+Jrnb8PhMQ4tuP815ITZ/MjmbkneKJ0/yDd
-# RMwO38fazCnXCyQKfbcrr0XLEg4l0usjaRLvyecV3QW4jg2qDMkXcnUyl1vXbybM
-# wlYzaY5hV3xrBtxgBA5Kx0vpwkevMYIGEDCCBgwCAQEwfTBpMQswCQYDVQQGEwJV
+# QTEuY3J0MAkGA1UdEwQCMAAwDQYJKoZIhvcNAQELBQADggIBAGWMr01OM6QQM3Je
+# 2UfeJTUslP8lGHysjagdm9HfXkgNS4Mf9mD4ddh5Y20B1SIJcf4DpTygA1P0w8qM
+# mBMubWJxLlCdVDwOLIgGpckDw7K3xY4RBJ2Vf9YY4KN6Z70pVVg1v8KdbgsmRu1d
+# LfOdNqS2U9E1Frty5ywFl7482Up8z3QHNv9doL1Qd/BSPPXW5P9HfRNoas80b7PF
+# VIeguQbYBOpb1ojQI1H5EdrpRf2sDpSymNHFh3TbPDJ7x26zcNftmeKmiQ/7x4UX
+# pBxTVoUs1CSCOhU9D0ihm8fU0rxFOoiBcq7P9yOy+A+e8Z4UH6SwMOf+NtdyfiH7
+# Tauoi3oe+gl8txLxXJrc7oVtXeYF7YTEmFLOhcxzcigalS/1aVFnaywHJc3c6apn
+# EG0nnpGLzWZFFWFh0OPESd+Phd8zurAw2aqMqx0xjHROz5nEAiKzgt71LZbuAW11
+# GZDYPXXUUyLGIKJXu8PvmhGixXa6xSmKOEuzKfnQ6BXFDiF85w01jhUp6DnfUNCC
+# IUQS7+HDucjdF2c64bbOqRXBaHDxs5b7AfrQbH1V2/iHr7KS9EvndsGq2qOjMiuv
+# BIBqyKL57WjvJ4IEpZXPGxaZH5fe7Xpra3GYrl3x/nq9lKjoqGRG+j2NVOF9JPKH
+# w8Dxa5BLRLZyosNgdnYwyvxWr00FMYIGEDCCBgwCAQEwfTBpMQswCQYDVQQGEwJV
 # UzEXMBUGA1UEChMORGlnaUNlcnQsIEluYy4xQTA/BgNVBAMTOERpZ2lDZXJ0IFRy
-# dXN0ZWQgRzQgQ29kZSBTaWduaW5nIFJTQTQwOTYgU0hBMzg0IDIwMjEgQ0ExAhAL
-# bN+2Z4EOKufLWhG6HUlwMAkGBSsOAwIaBQCgQDAZBgkqhkiG9w0BCQMxDAYKKwYB
-# BAGCNwIBBDAjBgkqhkiG9w0BCQQxFgQUD2PS9/GcUNj//Kb2JgjXnqZlB78wDQYJ
-# KoZIhvcNAQEBBQAEggIAo+mLPtNaM10isnuZ2LO4td/JU2C0Ba9RzB3rbFfe3kF9
-# vnJSxF4WwfPqcU3BFHGD+TSAU9Zfd8+60RpPOtOBcduN4Yrl9sOOJij6IKzgVWI7
-# 28JHAKEGvbiWCdeScSgxP0upvU48Q1g9u5cJal08TIHEkzepA49cd6+6H4VwgMyq
-# gt2Ygi9ntMYPy6OsbtIMXrwy6O2kJnTLdE5yMSZEW+Xpu9VXrpwdwPIz2nJfnxkD
-# jCDckc0dqH/hg/rBH5dYUkq4vNZ56k9vTlg/NgHlrl63ZfHs9S0BA3gai3GaCQze
-# HTITUOIMSq7XroLpMQG7Kn0dmsOGyom11JrjmmQCZBLIcMoeq293+klNyP3fplY+
-# WWDBHvFQytXZtI1c2KRJaGtRXbyWh864cevSGafYI3ECrP5vKLXzu86sIfbI2o9q
-# uRY3c2L/rw1HVSevuqYvmJ21DwpH7c2bR90u5QRwmDyBShRH4acElpQlJiYl5V01
-# tcNdotnZaeCK6uXyvo3OUrumdxDdZYskiozJWOHcxqsqKeJaLvlaUxWFDN7ODGuJ
-# SPtT3YnVOZM2AL8r8iQ6eaBLXRmgNatnj2326nHqT2N1VkdnFb32EP1uGS2x+++O
-# giHxgNAfSSCkCPMEQ4T3i9xqT/fr6xmIplsy9oLXYTfAD+yzrmovxeBXBPpT2ruh
+# dXN0ZWQgRzQgQ29kZSBTaWduaW5nIFJTQTQwOTYgU0hBMzg0IDIwMjEgQ0ExAhAJ
+# uCcgOBs2YT7S+XvCw8f0MAkGBSsOAwIaBQCgQDAZBgkqhkiG9w0BCQMxDAYKKwYB
+# BAGCNwIBBDAjBgkqhkiG9w0BCQQxFgQUu5klEFIvRsqFwvhpmZlvylIddBUwDQYJ
+# KoZIhvcNAQEBBQAEggIAXQEfu0EfvaXmJOSyawKVC0D9ZpMzBHTHnbqYY6WyPrT7
+# P+u5mh4g9yCfIPu/KmkZ4G66xWUo0/Wb6ot8WSBGg/3BUmHGx4kKEYZTepP/UGMy
+# GZpVEoofCnOtwMj2YOEl1aV3VFswYVleQo8dp6WpwXAnv0PXI9IxzgEQfhwccR6v
+# VqWH/sLGyqoDSE4RZv5D4rMvxfMYNlMbOz+ZdyU8P1PvQY7kuM0sGRagA8wpimrO
+# Bpgaz8mz+rBrfuUaLSlzyucsoN4p5dmw6ZZ13JUXt4IsJUT63UdNXnBBebNDN3yW
+# /C3Mc6d6isFkOF+U1xf4muKnyy2YgBNCUUzHfe5Uib7UeUrd9s75fVoa6AV3gnCV
+# PkG5ATecl4VBw7QHbqKenMU4usg/744EhSbiClhMX9ahnNirmM0GV+GjpaD3i1cd
+# AN+XbKIKMvre/itZih0W4x09ZuHr/L9cQ/7DNlT3ky2puaje/EqcscFbT/yq2Fq3
+# hWbXxllEnDAxG1qCI4i93d33GJBiA/79RDbfuB4nz7qhzu0YXjhAJI83YKyDG7tM
+# /nISVo1AcfikqCLglTx+yDl5WJcjoSH+f8bk8IesV3VnFTqzAV5JrKH+q5UJKpNM
+# A1fY/zpgxyWHbnI6c5qslLNZkESrx0ORsnSWhmrOCdiaojxXOF8hgp9yUgsARTKh
 # ggMmMIIDIgYJKoZIhvcNAQkGMYIDEzCCAw8CAQEwfTBpMQswCQYDVQQGEwJVUzEX
 # MBUGA1UEChMORGlnaUNlcnQsIEluYy4xQTA/BgNVBAMTOERpZ2lDZXJ0IFRydXN0
-# ZWQgRzQgVGltZVN0YW1waW5nIFJTQTQwOTYgU0hBMjU2IDIwMjUgQ0ExAhAKgO8Y
-# S43xBYLRxHanlXRoMA0GCWCGSAFlAwQCAQUAoGkwGAYJKoZIhvcNAQkDMQsGCSqG
-# SIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMjYwMzMxMTU1MjQ0WjAvBgkqhkiG9w0B
-# CQQxIgQgY5A6JB0aQN3TkREiN78fwNyGAXOnyNz5mA4J6DB7cWYwDQYJKoZIhvcN
-# AQEBBQAEggIAGfAL+v+etnOFYVzZHgLeqgfZgMwyILmxLyrlEn/QbZd3Yytpt1ku
-# MbuV5YFj5eNlinLnaJx+KVTYEj+EN4w8KArcD3deuq6WuIBrb76m/X53HlsfIXhm
-# HEJ1bL48brZtk3cGKxUdNk+S+XPAjrOJUFyvsVpGtYeB7kkIAlvZlZccqcKEEEiP
-# KVQJms/dgs69JhptpKXFaWDk5yk7+cL40fxksOiQR4kfR46Qt+Xn2xasM5gNC0aV
-# H+IIHupij7UCvhFA9XgJgyhSRuMidPfR22Xmvugc0b9r/4R9zWWYpo7Fj6N4O1YT
-# NbL0GFSVfRc0P85y0CBHAOvYXCQZus7Mxddw2c5LEYkxNINPeYAQ15WCO7zD2/rN
-# 0E1MpbIpmkypBS3gt5yyWLGwjVWxc0ZQBPtxMv3cuibicZm+rD/wXRhKz4J/+1Nf
-# F7K73EcwdmGFkRCkQMC8GIJj4NJNcFaC2Vij659ewgACl5t++oAyvg4rktlxSC+j
-# UcO0pM0URrE8DoC+ZX0qe786x8Jfj7pkGIt4YIOBgu/0ZLsa58swr7ZkVD488HHp
-# mnfXw1tzyu1xej/9qEI3TAJnhUZUvyH9XSdmnoh/LaBsdNj0y0rmZhv5FEAU00Cj
-# 3NNYQQUS3zKb4MWzYYFbOxMT9LbkamA6CoE7XlJMmqYXGxKFRJRfp3g=
+# ZWQgRzQgVGltZVN0YW1waW5nIFJTQTQwOTYgU0hBMjU2IDIwMjUgQ0ExAhAIT9wz
+# T35FTtvDD4/5khg1MA0GCWCGSAFlAwQCAQUAoGkwGAYJKoZIhvcNAQkDMQsGCSqG
+# SIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMjYxMDA2MTg0MjM0WjAvBgkqhkiG9w0B
+# CQQxIgQgK2diq6GFCy/NQJvvfO5E7FFDHCg9la1YVkyZ2m6542kwDQYJKoZIhvcN
+# AQEBBQAEggIATSG9ZkqPrHH53Xoqg9ZN+6cRkqjMGNjM2azbU3THImaLeMFGfC3j
+# Qy6eBrS0M1ldrRstAzvJJs4japXZBEsc+Ip0baIx7iVsJsE4WlOmD0Qr68+Kyx1r
+# LVbeqYixPFEWbhzKsUKlsqd9JX1UXjDzWnYgHYi0VfIZB+IMehytFY4FXmpDm1GR
+# a7ugYdyl0gCCqFoqJlvLfBJ9BfWMDd7HsUPAwwCTPQMydQNU6Lyrdm5RUf5m1udf
+# m63CTwnOGN34+TRwGIXkPyz5cfFhb0XS4i60Mu3+2w1Fz/NwYz6ZjKd8DRvWWBK8
+# iRrthcoR3b2FAjiMYqEmaPNppY9p3gkU9f7fvmsJlilI7TPPrPE4SapJNmkN/4bW
+# BvOCBWRObRfDLcKHeFTkbq70uqqwmQQFoWtcO2QYk92PqFel9a8wnCDBQNglPmAI
+# xQCKsg9/uzxYV+cJtYBAiP+6IZEI1dqi+dnk1EGNCuPxGLAdTSb4yO7T+E31gu6c
+# VspzWiLQYflT82f44hC5v0s0qZ1DUCVO8ebajpd2BNZhrjRt4sEm1/w/tMTXhq7c
+# LAHjVi0VGAC4taHDQAgGUVwAWhccLgT6/FmdTRu4QHqQ9jpc5/7kegzIjyueO2lU
+# GbYCU39DK+N1qcpvanXi9pAq62M84Am9sSLxYS19SbyVVbp9qvDPK08=
 # SIG # End signature block

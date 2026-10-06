@@ -6,6 +6,28 @@
 
 # This script is based on the 2.36 script
 
+#Version 3.45 6-Oct-2026
+#
+#	Thanks to Ferroque Systems for lab access and help in gathering the necessary data for this update
+#
+#	Add checks for CVAD 2603,2607/7.47,7.48
+#
+#	In Function GetComputerWMIInfo,
+#		Thanks to the help from Guy Leech, we fixed a bug where, if run on a localhost 
+#		that is also the Citrix DB and/or license server, the call to Get-CimInstance failed with the 
+#		FQDN of the localhost
+#
+#	In Functions OutputDesktopOSMachine, OutputMachineDetails and OutputServerOSMachine,
+#		Fixed bugs to prevent an empty machine name and to prevent processing a SID
+#
+#	Add a PDF copy of the ReadMe file so it can be displayed in GitHub
+#
+#	Change Dropbox and CarlWebster.com links to GitHub links
+#
+#	Updated the help text
+#
+#	Updated the ReadMe file
+
 #Version 3.44 31-Mar-2026
 #	Thanks to Ferroque Systems, Steve Noel, Prateek Anand, Vikash Kumar, Mathias Alleyn 
 #	for lab access and help in gathering the necessary data for this update
