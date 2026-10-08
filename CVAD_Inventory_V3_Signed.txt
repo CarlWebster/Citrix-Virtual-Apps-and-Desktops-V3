@@ -27,6 +27,9 @@
 	If you are running XA/XD 7.8 through CVAD 2006, please use:
 	https://github.com/CarlWebster/Citrix-XenApp-XenDesktop-7-V2
 
+	If you are running CVAD 2511 or later, please use:
+	https://github.com/CarlWebster/Citrix-Virtual-Apps-and-Desktops-V4
+
 	If you are running Citrix Cloud, please use:
 	https://github.com/CarlWebster/Citrix-Cloud-Daas-
 	
@@ -42477,6 +42480,9 @@ Function ProcessScriptSetup
 	If you are running XA/XD 7.8 through CVAD 2006, please use:
 	https://github.com/CarlWebster/Citrix-XenApp-XenDesktop-7-V2
 	`n`n
+	If you are running CVAD 2511 or later, please use:
+	https://github.com/CarlWebster/Citrix-Virtual-Apps-and-Desktops-V4
+	`n`n
 	If you are running Citrix Cloud, please use:
 	https://github.com/CarlWebster/Citrix-Cloud-Daas-
 	`n`n
@@ -42499,6 +42505,9 @@ Function ProcessScriptSetup
 	`n`n
 	If you are running XA/XD 7.8 through CVAD 2006, please use:
 	https://github.com/CarlWebster/Citrix-XenApp-XenDesktop-7-V2
+	`n`n
+	If you are running CVAD 2511 or later, please use:
+	https://github.com/CarlWebster/Citrix-Virtual-Apps-and-Desktops-V4
 	`n`n
 	If you are running Citrix Cloud, please use:
 	https://github.com/CarlWebster/Citrix-Cloud-Daas-
@@ -42716,6 +42725,9 @@ Script cannot continue
 	`n`n
 	If you are running XA/XD 7.8 through CVAD 2006, please use:
 	https://github.com/CarlWebster/Citrix-XenApp-XenDesktop-7-V2
+	`n`n
+	If you are running CVAD 2511 or later, please use:
+	https://github.com/CarlWebster/Citrix-Virtual-Apps-and-Desktops-V4
 	`n`n
 	If you are running Citrix Cloud, please use:
 	https://github.com/CarlWebster/Citrix-Cloud-Daas-
@@ -43862,8 +43874,8 @@ ProcessScriptEnd
 # SIG # Begin signature block
 # MIIthQYJKoZIhvcNAQcCoIItdjCCLXICAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU42IIOypIvsvD99PDuZp9ZgqA
-# /YaggibfMIIFjTCCBHWgAwIBAgIQDpsYjvnQLefv21DiCEAYWjANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUAGa/eesB3nB5rf4WNM9Fa89r
+# 7qWggibfMIIFjTCCBHWgAwIBAgIQDpsYjvnQLefv21DiCEAYWjANBgkqhkiG9w0B
 # AQwFADBlMQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYD
 # VQQLExB3d3cuZGlnaWNlcnQuY29tMSQwIgYDVQQDExtEaWdpQ2VydCBBc3N1cmVk
 # IElEIFJvb3QgQ0EwHhcNMjIwODAxMDAwMDAwWhcNMzExMTA5MjM1OTU5WjBiMQsw
@@ -44074,33 +44086,33 @@ ProcessScriptEnd
 # UzEXMBUGA1UEChMORGlnaUNlcnQsIEluYy4xQTA/BgNVBAMTOERpZ2lDZXJ0IFRy
 # dXN0ZWQgRzQgQ29kZSBTaWduaW5nIFJTQTQwOTYgU0hBMzg0IDIwMjEgQ0ExAhAJ
 # uCcgOBs2YT7S+XvCw8f0MAkGBSsOAwIaBQCgQDAZBgkqhkiG9w0BCQMxDAYKKwYB
-# BAGCNwIBBDAjBgkqhkiG9w0BCQQxFgQUu5klEFIvRsqFwvhpmZlvylIddBUwDQYJ
-# KoZIhvcNAQEBBQAEggIAXQEfu0EfvaXmJOSyawKVC0D9ZpMzBHTHnbqYY6WyPrT7
-# P+u5mh4g9yCfIPu/KmkZ4G66xWUo0/Wb6ot8WSBGg/3BUmHGx4kKEYZTepP/UGMy
-# GZpVEoofCnOtwMj2YOEl1aV3VFswYVleQo8dp6WpwXAnv0PXI9IxzgEQfhwccR6v
-# VqWH/sLGyqoDSE4RZv5D4rMvxfMYNlMbOz+ZdyU8P1PvQY7kuM0sGRagA8wpimrO
-# Bpgaz8mz+rBrfuUaLSlzyucsoN4p5dmw6ZZ13JUXt4IsJUT63UdNXnBBebNDN3yW
-# /C3Mc6d6isFkOF+U1xf4muKnyy2YgBNCUUzHfe5Uib7UeUrd9s75fVoa6AV3gnCV
-# PkG5ATecl4VBw7QHbqKenMU4usg/744EhSbiClhMX9ahnNirmM0GV+GjpaD3i1cd
-# AN+XbKIKMvre/itZih0W4x09ZuHr/L9cQ/7DNlT3ky2puaje/EqcscFbT/yq2Fq3
-# hWbXxllEnDAxG1qCI4i93d33GJBiA/79RDbfuB4nz7qhzu0YXjhAJI83YKyDG7tM
-# /nISVo1AcfikqCLglTx+yDl5WJcjoSH+f8bk8IesV3VnFTqzAV5JrKH+q5UJKpNM
-# A1fY/zpgxyWHbnI6c5qslLNZkESrx0ORsnSWhmrOCdiaojxXOF8hgp9yUgsARTKh
+# BAGCNwIBBDAjBgkqhkiG9w0BCQQxFgQUje1IP9Iyuoa/ezVs81BHGqm6sCkwDQYJ
+# KoZIhvcNAQEBBQAEggIAlYatafCWVJdDUR6aXsQVIfwB4+LM0N5zxEfFFJ7Iqnma
+# rrYEtqS3iOQSZBuEgjCmJdhiCxWWYAyw1hYsCKPo5OBCeAjukJiexd2joC/ANnSb
+# TuTOXO7BlkXgYKowQFP7p8vB0Dj1Er+kHNasJpe0dH7bPLqcEJaFKheeh0WzvnRd
+# timhLyUMsydmyNIwnPmJKHjoyfcWhnuzonDt1XzxuZ0Z/NnHjfuyZfDsubbPUO8G
+# vFwn8wIn6s9yL0u5Km5dPBKB0tfCjuoXi3fXjaSyUoWwRKpA+w1KmRo7F5bCmqgG
+# le9+RYZ5ujq7xLZmM9c86WLaxUEkSBwoNLuer4GTw7uiiKECif9aG/a3lNi2Aym/
+# laSdBvqOk0WL4hpJyfG9V7JVl47Nb1GNAhxpibgUc7CjjmpXzoFHJmzvdPn1AeLl
+# JHfChS+Kd/6+WL2y2RAG0ITFih//ucn/DWlDZTGbISU/nzUm+mD78cIlyVPu9aw9
+# /qLIRa08BNxSPIrIWrOlIy5vJWQ0aW+4O57qHjhmaLzRwD5tfwZ3NOkN5nsulS4C
+# 4q+yvNJVAUVMqDc2CrYKaiRGtqgkowx6tOVQ7/tauTk20p91S/64uypVnL5KNxcS
+# 4NJaJ1zpG5CngQIhnia3/qJ17zgQprzexzVMuvXKdPXH0aY3lLjBLJ3rXsUH6gyh
 # ggMmMIIDIgYJKoZIhvcNAQkGMYIDEzCCAw8CAQEwfTBpMQswCQYDVQQGEwJVUzEX
 # MBUGA1UEChMORGlnaUNlcnQsIEluYy4xQTA/BgNVBAMTOERpZ2lDZXJ0IFRydXN0
 # ZWQgRzQgVGltZVN0YW1waW5nIFJTQTQwOTYgU0hBMjU2IDIwMjUgQ0ExAhAIT9wz
 # T35FTtvDD4/5khg1MA0GCWCGSAFlAwQCAQUAoGkwGAYJKoZIhvcNAQkDMQsGCSqG
-# SIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMjYxMDA2MTg0MjM0WjAvBgkqhkiG9w0B
-# CQQxIgQgK2diq6GFCy/NQJvvfO5E7FFDHCg9la1YVkyZ2m6542kwDQYJKoZIhvcN
-# AQEBBQAEggIATSG9ZkqPrHH53Xoqg9ZN+6cRkqjMGNjM2azbU3THImaLeMFGfC3j
-# Qy6eBrS0M1ldrRstAzvJJs4japXZBEsc+Ip0baIx7iVsJsE4WlOmD0Qr68+Kyx1r
-# LVbeqYixPFEWbhzKsUKlsqd9JX1UXjDzWnYgHYi0VfIZB+IMehytFY4FXmpDm1GR
-# a7ugYdyl0gCCqFoqJlvLfBJ9BfWMDd7HsUPAwwCTPQMydQNU6Lyrdm5RUf5m1udf
-# m63CTwnOGN34+TRwGIXkPyz5cfFhb0XS4i60Mu3+2w1Fz/NwYz6ZjKd8DRvWWBK8
-# iRrthcoR3b2FAjiMYqEmaPNppY9p3gkU9f7fvmsJlilI7TPPrPE4SapJNmkN/4bW
-# BvOCBWRObRfDLcKHeFTkbq70uqqwmQQFoWtcO2QYk92PqFel9a8wnCDBQNglPmAI
-# xQCKsg9/uzxYV+cJtYBAiP+6IZEI1dqi+dnk1EGNCuPxGLAdTSb4yO7T+E31gu6c
-# VspzWiLQYflT82f44hC5v0s0qZ1DUCVO8ebajpd2BNZhrjRt4sEm1/w/tMTXhq7c
-# LAHjVi0VGAC4taHDQAgGUVwAWhccLgT6/FmdTRu4QHqQ9jpc5/7kegzIjyueO2lU
-# GbYCU39DK+N1qcpvanXi9pAq62M84Am9sSLxYS19SbyVVbp9qvDPK08=
+# SIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMjYxMDA4MTMzMzIxWjAvBgkqhkiG9w0B
+# CQQxIgQgZhDXNH5F107iebCKZUbeDtMnKyLrYbHnlslVNOHQSBQwDQYJKoZIhvcN
+# AQEBBQAEggIAVX+g/y9iJVSQhVdi8SYihVzvHEuzrOTE1TpPahAzDEi/ysAe/clL
+# 1dV89K71Xu+3sL71tdnLNQMfPRTYZ1hh3ECh6esHMfeGpYhE32mtD5GWYxgQ2IEF
+# oF6bEfwDNNGT4zy3gIfysJhoVZvhJf/pyTVl97dNIdcVDKbF+4QaM63E54McNNNZ
+# DOy2or7lDkBiy2YUsc0JvNw1kVyC6Z6ok/b9pSOc1DJsTCuZY7xxq5Ppg5JbywFM
+# htnsCpVAPxjzYBLkZjw+d+VLnUR5fI5UAu43cuqesAg746Y+ZrTwYLKLPUJtyupd
+# tDjjKYlyRVRmXxH8taW3JqFiCMpiaBOWVnHZ2qTRR6//dB3NG4ZTfD41IAx07pFI
+# mtLil7/+YExGfCrhQTDogdg8zeHsOuqF8tVlWHwGz9oMDKEoxyjpT5vkaMXgI7wH
+# fb0knUaRse8o9pFBpmHj9rEsCfIxZQDRTlRCz4GImAwNMpWwg+C8FIwaKt61NQTQ
+# ErCu3d4yZLx337nokdxruizw7muktjHc+LTNJHXTYGam0gfE8SElshcLS9uhwqcW
+# eMmsmratQ/C48gjEpXifc47cN/obXIrii51FtISp2Q9lkSgzo4NUOZMdpW0FbSsr
+# y736atyyizAXXxbLsWHNtnDjbYaGtNueqZojqiJqMfkrQHZUTVXim/M=
 # SIG # End signature block

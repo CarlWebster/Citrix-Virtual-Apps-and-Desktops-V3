@@ -27,6 +27,9 @@
 	If you are running XA/XD 7.8 through CVAD 2006, please use:
 	https://github.com/CarlWebster/Citrix-XenApp-XenDesktop-7-V2
 
+	If you are running CVAD 2511 or later, please use:
+	https://github.com/CarlWebster/Citrix-Virtual-Apps-and-Desktops-V4
+
 	If you are running Citrix Cloud, please use:
 	https://github.com/CarlWebster/Citrix-Cloud-Daas-
 	
@@ -42477,6 +42480,9 @@ Function ProcessScriptSetup
 	If you are running XA/XD 7.8 through CVAD 2006, please use:
 	https://github.com/CarlWebster/Citrix-XenApp-XenDesktop-7-V2
 	`n`n
+	If you are running CVAD 2511 or later, please use:
+	https://github.com/CarlWebster/Citrix-Virtual-Apps-and-Desktops-V4
+	`n`n
 	If you are running Citrix Cloud, please use:
 	https://github.com/CarlWebster/Citrix-Cloud-Daas-
 	`n`n
@@ -42499,6 +42505,9 @@ Function ProcessScriptSetup
 	`n`n
 	If you are running XA/XD 7.8 through CVAD 2006, please use:
 	https://github.com/CarlWebster/Citrix-XenApp-XenDesktop-7-V2
+	`n`n
+	If you are running CVAD 2511 or later, please use:
+	https://github.com/CarlWebster/Citrix-Virtual-Apps-and-Desktops-V4
 	`n`n
 	If you are running Citrix Cloud, please use:
 	https://github.com/CarlWebster/Citrix-Cloud-Daas-
@@ -42716,6 +42725,9 @@ Script cannot continue
 	`n`n
 	If you are running XA/XD 7.8 through CVAD 2006, please use:
 	https://github.com/CarlWebster/Citrix-XenApp-XenDesktop-7-V2
+	`n`n
+	If you are running CVAD 2511 or later, please use:
+	https://github.com/CarlWebster/Citrix-Virtual-Apps-and-Desktops-V4
 	`n`n
 	If you are running Citrix Cloud, please use:
 	https://github.com/CarlWebster/Citrix-Cloud-Daas-
